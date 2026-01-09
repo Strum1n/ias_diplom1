@@ -1,0 +1,13 @@
+# --- AUTH ---
+SECRET_KEY=gV64m9aIzFG4qpgVphvQbPQrtAO0nM-7YwwOvu0XPt5KJOjAy4AfgLkqJXYEt
+ALGORITHM=HS256
+
+# --- DATABASE ---
+# ВАЖНО: вместо localhost — имя сервиса Postgres в docker-compose
+DB_URL=postgresql+asyncpg://postgres:1@postgres:5432/diplom_db
+
+# --- APPLICATION ---
+APP_PASSWORD=ilgw fkum cqts kxtt
+
+# В докере рабочая директория = /app
+PYTHONPATH=/app

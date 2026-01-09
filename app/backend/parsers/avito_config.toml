@@ -1,0 +1,21 @@
+
+url="https://www.avito.ru"
+url_api="https://www.avito.ru/web/1/js/items?s=104&params[201]=1059"
+selector="pre"
+regex_selector="isVerifiedItem\".*?urlPath\":\"([^\"]+)"
+[params]
+# region
+"locationId"=623880
+# offer_type
+"categoryId"=24
+# object_type
+"params[499]"=5255
+# rooms_count
+"params[549]"=5696
+# min_floor
+"params[2950][from]"=1
+# max_floor
+"params[2950][to]"=1
+# page
+p=1
+max_page=2

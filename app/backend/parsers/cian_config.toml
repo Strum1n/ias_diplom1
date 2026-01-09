@@ -1,0 +1,14 @@
+url = "https://www.cian.ru"
+url_api = "https://cian.ru/cat.php?deal_type=sale&engine_version=2&sort=creation_date_asc"
+selector = "[data-name=\"Offers\"]"
+regex_selector = "media\" href=\"([^\"]+)"
+max_page = 101
+
+[params]
+region = "region=1"
+offer_type = "offer_type=flat"
+object_type = "object_type=2"
+rooms_count = "room=1"
+min_floor = "min_floor=2"
+max_floor = "max_floor=2"
+page = "p=1"

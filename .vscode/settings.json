@@ -1,0 +1,11 @@
+{
+    "python.analysis.extraPaths": [
+        "./real_estate_analysis/app",
+        "./real_estate_analysis/database",
+        "./app/backend/db"
+    ],
+    "python.analysis.typeCheckingMode": "standard",
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python-envs.pythonProjects": [],
+    "terminal.integrated.defaultProfile.windows": "Git Bash"
+}

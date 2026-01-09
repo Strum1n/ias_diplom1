@@ -1,0 +1,31 @@
+[avito]
+url = "https://www.avito.ru/web/1/js/items"
+
+[avito.params]
+
+[avito.location]
+
+[avito.location.values]
+"moskva"=637640
+"bryansk"=623880
+
+[avito.category]
+[avito.category.values]
+"kvartiry"=24
+"doma_dachi_kottedzhi"=25
+
+[avito.params.rooms_count]
+param_id = "params[549]"
+
+[avito.params.rooms_count.values]
+"1" = "5996"
+"2" = "5697"
+"3" = "5698"
+"studio" = "5699"
+
+[cian]
+url = "https://www.avito.ru/web/1/js/items"
+
+[cian.params]
+[cian.params.rooms_count]
+param_id = "params[549]"
