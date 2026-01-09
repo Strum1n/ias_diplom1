@@ -1,0 +1,51 @@
+services:
+  api:
+    build:
+      context: .
+    image: artomot/ias-diplom-api
+    container_name: fastapi-app
+    command: >
+      uvicorn app.backend.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+
+  postgres:
+    image: postgis/postgis:17-3.4
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "1"
+      POSTGRES_DB: diplom_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d  # ← ДОБАВЬ ЭТУ СТРОКУ
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d diplom_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./app/frontend/nuxt-app
+    image: artomot/ias-diplom-frontend
+    container_name: nuxt-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
