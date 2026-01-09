@@ -1,0 +1,1 @@
+import{c as o}from"./DyDj7E--.js";import{l as e,D as i}from"./BFpNsVDb.js";const[n]=o("ConfigProvider");function s(t){const r=n({dir:e("ltr")});return i(()=>t?.value||r.dir?.value||"ltr")}export{n as i,s as u};
