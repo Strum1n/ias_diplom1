@@ -1,0 +1,1 @@
+import{t as s}from"./C7xPbMrx.js";import{a7 as n,D as c,c as l,o as p,i as u,ad as i}from"./BFpNsVDb.js";const m={base:""},_={__name:"ProseStrong",props:{class:{type:null,required:!1}},setup(e){const o=e,a=n(),t=c(()=>s({extend:s(m),...a.ui?.prose?.strong||{}}));return(r,f)=>(p(),l("strong",{class:i(t.value({class:o.class}))},[u(r.$slots,"default")],2))}};export{_ as default};
