@@ -12,7 +12,7 @@ from sqlalchemy.orm import joinedload
 from sqlmodel import and_, case, func, or_, select, text
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.backend.db.db_config import get_async_session
+from app.backend.db.config import get_async_session
 from app.backend.db.models import *
 from app.backend.fuzzy_logic.fuzzy_evaluator import FuzzyEvaluator
 from app.backend.MCDA.electre2 import electre
@@ -447,9 +447,7 @@ async def offers_count_by_property_type(
             func.count(Offer.id).label("count"),
             func.sum(Offer.last_ten_days_views_count).label("last_ten_days_views_sum"),
             func.sum(case((and_(Offer.is_new_house == True, PropertyType.name.in_(["Квартира", "Аппартаменты"])), 1), else_=0)).label("new_houses_count"),
-            func.sum(case((and_(Offer.is_new_house == False, PropertyType.name.in_(["Квартира", "Аппартаменты"])), 1), else_=0)).label(
-                "secondary_houses_count"
-            ),
+            func.sum(case((and_(Offer.is_new_house == False, PropertyType.name.in_(["Квартира", "Аппартаменты"])), 1), else_=0)).label("secondary_houses_count"),
             func.sum(case((and_(Offer.rooms_count == 0, PropertyType.name.in_(["Квартира", "Аппартаменты"])), 1), else_=0)).label("studio"),
             func.sum(case((and_(Offer.rooms_count == 1, PropertyType.name.in_(["Квартира", "Аппартаменты"])), 1), else_=0)).label("rooms_1"),
             func.sum(case((and_(Offer.rooms_count == 2, PropertyType.name.in_(["Квартира", "Аппартаменты"])), 1), else_=0)).label("rooms_2"),
@@ -595,8 +593,7 @@ async def offers_count_by_property_type(
 
     avg_price_stmt = avg_price_stmt.group_by(id_col)
     avg_price_rows = {
-        r[f"{group_by}_id"]: round(float(r["avg_price_per_sqm"]), 2) if r["avg_price_per_sqm"] else None
-        for r in (await session.exec(avg_price_stmt)).mappings().all()
+        r[f"{group_by}_id"]: round(float(r["avg_price_per_sqm"]), 2) if r["avg_price_per_sqm"] else None for r in (await session.exec(avg_price_stmt)).mappings().all()
     }
 
     # --- 7️⃣ Сборка результата ---

@@ -1,35 +1,72 @@
 import asyncio
-import urllib.parse
+from typing import Optional
 
-import zendriver as driver
-from fake_useragent import UserAgent
-from geopy.geocoders import Nominatim
+import aiohttp
+from sqlmodel import select
+
+from app.backend.db.config import async_session_maker
+from app.backend.db.models import Offer
 
 
-async def main():
-    ua_desktop = UserAgent(platforms="desktop")
-    browser_args_desktop = ["--window-size=1280,720", "--ignore-gpu-blocklist", f"--user-agent={ua_desktop.random}"]
-    parse_url = "https://www.avito.ru/bryansk/kvartiry/"
-    browser = await driver.start(browser_args=browser_args_desktop, headless=False)
-    page = await browser.get(parse_url)
-    while True:
-        try:
-            await page.wait_for_ready_state("complete", timeout=2)
-            items_el = await page.select_all('[data-marker="item-photo-sliderLink"]')
-            break
-        except Exception as e:
-            print(e)
-        await page.reload()
+async def check_image(session: aiohttp.ClientSession, img_url: str) -> Optional[int]:
+    try:
+        async with session.head(img_url, allow_redirects=True, timeout=10) as resp:
+            return resp.status
+    except Exception:
+        return None
 
-    info_el = await page.find(r'window.__mfe__ = "%7B%22user-navigation-tools', timeout=3)
-    info = await info_el.get_html()
-    encoded_json_string = info.split("preloadedState__ = ")[1].split(";</script>")[0]
 
-    decoded_string = urllib.parse.unquote(encoded_json_string)
-    geolocator = Nominatim(api_key="516c69e6-532f-4aff-880f-f743b8c0e2a2", user_agent="sassessds")
-    location_reverse = geolocator.reverse("пр-т Станке Димитрова, д. 67, корп. 7")
-    location = geolocator.geocode("34.363731,53.243325")
-    print("sas")
+async def main(concurrency: int = 50, batch_size: int = 1000) -> None:
+    sem = asyncio.Semaphore(concurrency)
+    try:
+        timeout = aiohttp.ClientTimeout(total=15)
+        connector = aiohttp.TCPConnector(limit=concurrency)
+        async with aiohttp.ClientSession(timeout=timeout, connector=connector) as http:
+
+            async def worker(id_: int, images, url: str | None) -> None:
+                if not images:
+                    return
+                first = images[0] if isinstance(images, (list, tuple)) and images else None
+                if not first or not isinstance(first, str) or not first.startswith("http"):
+                    return
+
+                async with sem:
+                    status = await check_image(http, first)
+                if status == 404:
+                    print(url or f"offer id {id_} (no offer.url)")
+
+            last_id = 0
+            while True:
+                async with async_session_maker() as db_session:
+                    stmt = select(Offer.id, Offer.images_urls, Offer.url).where(Offer.id > last_id).order_by(Offer.id).limit(batch_size)
+                    result = await db_session.exec(stmt)
+                    rows = result.all()
+
+                if not rows:
+                    break
+
+                tasks = []
+                for row in rows:
+                    # row is (id, images_urls, url)
+                    try:
+                        id_, images, url = row
+                    except Exception:
+                        # fallback in case Row object behaves differently
+                        id_ = row[0]
+                        images = row[1]
+                        url = row[2] if len(row) > 2 else None
+                    tasks.append(asyncio.create_task(worker(id_, images, url)))
+
+                if tasks:
+                    await asyncio.gather(*tasks)
+
+                # advance last_id to the greatest id in this batch
+                try:
+                    last_id = int(rows[-1][0])
+                except Exception:
+                    break
+    except Exception as e:
+        print(f"Error occurred: {e}")
 
 
 if __name__ == "__main__":

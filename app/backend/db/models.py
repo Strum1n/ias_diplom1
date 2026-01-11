@@ -9,7 +9,7 @@ from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlmodel import ARRAY, DateTime, Field, Index, Relationship, UniqueConstraint
 
-from app.backend.db.db_config import BaseModel
+from app.backend.db.config import BaseModel
 
 # TODO ПОМЕНЯТЬ ТИПЫ У КООРДИНАТ НА GEOGRAPHY 4691
 # 4593 московская область
@@ -75,6 +75,7 @@ class Offer(BaseModel, table=True):
     description: str | None
     images_urls: List[str] | None = Field(sa_column=Column(ARRAY(String(500))))
     url: str | None = Field(max_length=500, index=True)
+    source: str | None
 
     # 11. Аналитика и скоринг
     transport_access_score: float | None

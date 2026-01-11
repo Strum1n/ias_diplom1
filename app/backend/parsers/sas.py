@@ -1,9 +1,11 @@
 import json
+import dateparser
 
 # Английский → Русский
-
 from geopy.geocoders import Nominatim
 
+kok = "19 декабря 2025"
+date = dateparser.parse(kok, languages=["ru"])
 kek = {"sas": 45464, "lol": 4849894, "mda": 865116}
 ses = "Квартал Медовый"
 sdasd = ses[0].lower() + ses[1:]
