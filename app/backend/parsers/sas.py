@@ -20,6 +20,6 @@ location = geolocator.geocode(
     country_codes="ru",  # Ограничиваем поиск Россией
     exactly_one=True,
 )
-location_reverse = geolocator.reverse("55.550305, 40.008986", exactly_one=True, namedetails=True, addressdetails=True)
+location_reverse = geolocator.reverse("55.608073, 37.362145", exactly_one=True, namedetails=True, addressdetails=True)
 location_text = json.dumps(location_reverse._raw, ensure_ascii=False)
 print("sas")

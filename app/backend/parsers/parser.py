@@ -31,6 +31,11 @@ from app.backend.db.config import async_session_maker
 from app.backend.db.models import *
 from app.backend.parsers.solver_last_with_debug import get_simple_distance
 
+logging.basicConfig(
+    level=logging.INFO,  # Уровень логирования
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 PATH_TO_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cian.config")
 PATH_TO_CIAN_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cian_config.toml")
@@ -51,7 +56,7 @@ def load_config(path: str) -> dict:
 
 def use_config(path: str, read_or_write: Literal["r", "w"], config: dict[str, Any] = {}) -> dict:
     try:
-        with open(path, read_or_write) as f:
+        with open(path, read_or_write, encoding="utf-8") as f:
             config = toml.load(f) if read_or_write == "r" else toml.dump(config, f)
     except Exception as e:
         raise e
@@ -89,14 +94,14 @@ async def captcha_solver(page: driver.Tab):
         distance = get_simple_distance("background_with_puzzle.png", "background.png")
         await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(15, 25))
         await page.sleep(5)
-        print("Капча успешно пройдена!")
+        print("Капча возможно пройдена")
         return
     except Exception as e:
         await page.reload()
         print(e)
 
 
-async def parse_offers_last(source: Literal["avito", "cian"], object_category: Literal["flat", "suburban"]):
+async def parse_offers_last(source: Literal["avito", "cian"]):
     path_to_config = PATH_TO_AVITO_CONFIG
     config = use_config(path_to_config, "r")
 
@@ -127,12 +132,21 @@ async def parse_offers_last(source: Literal["avito", "cian"], object_category: L
         break
     try:
         while True:
-            max_price_filter_el = await page.select('[data-marker="price-to/input"]')
-            min_price_filter_el = await page.select('[data-marker="price-from/input"]')
+            if config[source]["price_filter_btn_selector"] != "":
+                price_filter_btn = await page.select(config[source]["price_filter_btn_selector"])
+                await price_filter_btn.mouse_click()
+            max_price_filter_el = await page.select(config[source]["max_price_selector"])
+            min_price_filter_el = await page.select(config[source]["min_price_selector"])
+            # max_price_filter_el = await page.select('[data-marker="price-to/input"]')
+            # min_price_filter_el = await page.select('[data-marker="price-from/input"]')
 
             filtered_offers_count = 0
-            while filtered_offers_count < config[source]["items_on_page"] * config[source]["max_available_on_page"]:
+            while filtered_offers_count < config[source]["items_on_page"] * config[source]["max_available_page"]:
                 while True:
+                    await max_price_filter_el.clear_input()
+                    await max_price_filter_el.clear_input_by_deleting()
+                    await min_price_filter_el.clear_input()
+                    await min_price_filter_el.clear_input_by_deleting()
                     try:
                         for digit in str(config[source]["max_price"]):
                             await max_price_filter_el.send_keys(digit)
@@ -141,26 +155,22 @@ async def parse_offers_last(source: Literal["avito", "cian"], object_category: L
                         for digit in str(config[source]["min_price"]):
                             await min_price_filter_el.send_keys(digit)
                             await page.sleep(0.25)
-                        await page.sleep(1.5)
-                        filter_btn = await page.select('[data-marker="search-filters/submit-button"]')
-                        filtered_offers_count = int(re.findall(r"\d+", filter_btn.text_all)[0])
-                        if filtered_offers_count > config[source]["items_on_page"] * config[source]["max_available_on_page"]:
+                        await page.sleep(2)
+                        filter_btn = await page.select(config[source]["filter_btn_selector"])
+                        # filter_btn = await page.select('[data-marker="search-filters/submit-button"]')
+                        filtered_offers_count = int(re.findall(r"\d+", filter_btn.text_all.replace(" ", ""))[0])
+                        if (
+                            filtered_offers_count > config[source]["items_on_page"] * config[source]["max_available_page"]
+                            or "Показать больше 1 тыс. объявлений" in filter_btn.text_all
+                        ):
                             config[source]["max_price"] -= config[source]["price_step"]
-                            break
-                        elif "Показать больше 1 тыс. объявлений" in filter_btn.text_all:
                             break
                         elif "Ничего не найден" in filter_btn.text_all:
                             await page.reload()
                         else:
                             config[source]["max_price"] += config[source]["price_step"]
-                        await max_price_filter_el.focus()
-                        await max_price_filter_el.clear_input_by_deleting()
-                        await min_price_filter_el.focus()
-                        await max_price_filter_el.clear_input_by_deleting()
                     except Exception as e:
                         print(e)
-                        await max_price_filter_el.clear_input_by_deleting()
-                        await min_price_filter_el.clear_input_by_deleting()
                         continue
                 break
             await filter_btn.click()
@@ -173,8 +183,11 @@ async def parse_offers_last(source: Literal["avito", "cian"], object_category: L
                 await page.get(correct_url)
                 await page.wait_for_ready_state("interactive")
                 await page.sleep(1.5)
-                offers_urls = ["https://www.avito.ru" + url_el.attrs["href"] for url_el in await page.select_all('[data-marker="item-photo-sliderLink"]')]
-
+                # offers_urls = ["https://www.avito.ru" + url_el.attrs["href"] for url_el in await page.select_all('[data-marker="item-photo-sliderLink"]')]
+                offers_urls = [
+                    config[source]["domen_url"] + url_el.attrs["href"].replace(config[source]["domen_url"], "")
+                    for url_el in await page.select_all(config[source]["offer_urls_selector"])
+                ]
                 tasks = []
                 for url in offers_urls:
                     active_tasks = [t for t in tasks if not t.done()]
@@ -182,7 +195,10 @@ async def parse_offers_last(source: Literal["avito", "cian"], object_category: L
                         await asyncio.sleep(5)
                     while STOP_CREATE_NEW_PAGE == True:
                         await asyncio.sleep(3)
-                    task = asyncio.create_task(parse_offer_to_db_avito(browser, url))
+                    if source == "avito":
+                        task = asyncio.create_task(parse_offer_to_db_avito(browser, url))
+                    elif source == "cian":
+                        task = asyncio.create_task(parse_offer_to_db(browser, url))
                     tasks.append(task)
                     await asyncio.sleep(random.uniform(1, 1.5))
                 results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -209,13 +225,17 @@ async def parse_offers_last(source: Literal["avito", "cian"], object_category: L
                 )
                 next_page_btn = None
                 try:
-                    next_page_btn = await page.select('[data-marker="pagination-button/nextPage"]')
+                    sos = config[source]["next_btn_selector"]
+                    next_page_btn = await page.select(config[source]["next_btn_selector"], timeout=2)
+                    kek = "lol"
+                    # next_page_btn = await page.select('[data-marker="pagination-button/nextPage"]')
                 except TimeoutError:
                     print(f"Спарсили последнюю страницу {config[source]['p']}")
                 if next_page_btn is None:
                     config[source]["p"] = 1
                     config[source]["min_price"] = config[source]["max_price"] + 1
                     config[source]["max_price"] += config[source]["price_step"]
+
                     use_config(path_to_config, "w", config)
                     break
                 config[source]["p"] += 1
@@ -229,7 +249,7 @@ async def parse_offers_last(source: Literal["avito", "cian"], object_category: L
 
 async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | None:
     start_time_origin = time.time()
-    max_retries = 2
+    max_retries = 3
     property_page = None
     global STOP_CREATE_NEW_PAGE
     for attempt in range(max_retries):
@@ -252,14 +272,15 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
             offer_info_raw_text_encoded = await offer_info_el.get_html()
             offer_info_raw_text_encoded = offer_info_raw_text_encoded.split('preloadedState__ = "')[1].split('";</script>')[0]
             offer_info_raw_text_decoded = unquote(offer_info_raw_text_encoded)
+
             offer_json = deep_parse_json(json.loads(offer_info_raw_text_decoded.replace("\xa0", "")))
             kekes = json.dumps(offer_json, ensure_ascii=False)
             start_time_parse_offer_info_from_json = time.time()
-            offer_info = await parse_offer_info_from_json(offer_json)
+            offer_info = await parse_offer_info_avito(offer_json)
             end_time_parse_offer_info_from_json = time.time()
             print(f"Время работы parse_offer_info_from_json: {(end_time_parse_offer_info_from_json - start_time_parse_offer_info_from_json):.3f}")
             start_time1 = time.time()
-            geo_info = await parse_geo_info_from_json(offer_json, "https://www.avito.ru/" + url)
+            geo_info = await parse_address_avito(offer_json, "https://www.avito.ru/" + url)
             end_time1 = time.time()
             print(f"Время parse_geo_info_from_json {(end_time1 - start_time1):.3f}")
             print()
@@ -292,34 +313,189 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
     return
 
 
-async def parse_geo_info_from_json(json_data: dict, url: str):
+# async def parse_geo_info_from_json(json_data: dict, url: str):
+#     try:
+#         geo_info = parse("$..geo").find(json_data)[0].value
+#         district_short_name = (parse("$..content").find(geo_info)[0].value) if len(parse("$..content").find(geo_info)) > 0 else None
+#         coordinates = (geo_info["coords"]["lat"], geo_info["coords"]["lng"])
+#         ses = json.dumps(json_data, ensure_ascii=False)
+#         geolocator = Nominatim(user_agent="sassessds")
+#         address_from_url = parse("$..address").find(geo_info)[0].value
+#         location = geolocator.reverse(f"{coordinates[0]},{coordinates[1]}")
+
+#         location_s = json.dumps(location.raw, ensure_ascii=False)
+#         address_elements = location.raw["address"]
+#         address_elements["house_number"] = address_from_url.split(",")[len(address_from_url.split(", ")) - 1].strip()
+#         if parse("$..houseParams..items..title").find(json_data) and parse("$..houseParams..items..title").find(json_data)[0].value == "Название новостройки":
+#             residential_complex_short_name = parse("$..houseParams..items..description").find(json_data)[0].value
+#             address_elements["residential_complex"] = residential_complex_short_name
+
+#         if district_short_name:
+#             address_elements["district1"] = district_short_name
+#         address_from_geocode = location._address.replace("Россия", "")
+#         address_from_url += f", {district_short_name}" if district_short_name else ""
+#         address_objects = await initialize_address(address_elements, url, address_from_url, address_from_geocode)
+
+#         return
+#     except Exception as e:
+#         print(e)
+
+
+async def parse_address_avito(json_data: dict, url: str):
     try:
         geo_info = parse("$..geo").find(json_data)[0].value
         district_short_name = (parse("$..content").find(geo_info)[0].value) if len(parse("$..content").find(geo_info)) > 0 else None
-        coordinates = (geo_info["coords"]["lat"], geo_info["coords"]["lng"])
         ses = json.dumps(json_data, ensure_ascii=False)
         geolocator = Nominatim(user_agent="sassessds")
-        address_from_url = parse("$..address").find(geo_info)[0].value
+        address_from_url = parse("$..address").find(geo_info)[0].value + f", {district_short_name}" if district_short_name else ""
+        coordinates = (geo_info["coords"]["lat"], geo_info["coords"]["lng"])
         location = geolocator.reverse(f"{coordinates[0]},{coordinates[1]}")
-
         location_s = json.dumps(location.raw, ensure_ascii=False)
-        address_elements = location.raw["address"]
-        address_elements["house_number"] = address_from_url.split(",")[len(address_from_url.split(", ")) - 1].strip()
-        if parse("$..houseParams..items..title").find(json_data) and parse("$..houseParams..items..title").find(json_data)[0].value == "Название новостройки":
-            residential_complex_short_name = parse("$..houseParams..items..description").find(json_data)[0].value
-            address_elements["residential_complex"] = residential_complex_short_name
 
+        address_elements = location.raw["address"]
         if district_short_name:
             address_elements["district1"] = district_short_name
-        address_from_geocode = location._address.replace("Россия", "")
-        address_from_url += f", {district_short_name}" if district_short_name else ""
-        address_objects = await initialize_address(address_elements, url, address_from_url, address_from_geocode)
 
-        return
+        if region := address_elements.get("state"):
+            region_name = region.replace(" область", "")
+            region_full_name = region
+            region_short_name = region.replace(" область", " обл.")
+
+        if munipality := address_elements.get("county"):
+            municipality_name = re.findall(r"\b[А-ЯЁ][а-яё]*(?:-[А-ЯЁ]?[а-яё]+)*(?:\s+[А-ЯЁ][а-яё]*(?:-[А-ЯЁ]?[а-яё]+)*)*", munipality)[0]
+            municipality_full_name = munipality
+            municipality_short_name = munipality
+
+        settlements_keys = {
+            "city": ("город", "г."),
+            "village": ("деревня", "д."),
+            "hamlet": ("поселок", "пос."),
+            "town": ("поселок городского типа", "пгт"),
+        }
+        settlements_keys["hamlet"] = ("деревня", "д.") if "д." in address_from_url else ("поселок", "пос.")
+        settlements_keys["village"] = (
+            ("село", "с.")
+            if "с." in address_from_url
+            else ("поселок", "пос.")
+            if "пос." in address_from_url
+            else ("рабочий поселок", "рп.")
+            if "рп." in address_from_url
+            else ("деревня", "д.")
+        )
+
+        for key, value in settlements_keys.items():
+            if address_elements.get(key):
+                settlement_name = address_elements[key]
+                settlement_full_name = value[0] + " " + address_elements[key]
+                settlement_short_name = value[1] + " " + address_elements[key]
+
+        if district := address_elements.get("district1"):
+            district_name = district.replace("район", "").replace("р-н", "").strip()
+            district_short_name = "р-н " + district.replace("район", "").replace("р-н", "").strip()
+            district_full_name = "район " + district.replace("район", "").replace("р-н", "").strip()
+
+        if microdistrict := address_elements.get("neighbourhood") or address_elements.get("quarter"):
+            microdistrict_name = microdistrict.replace("микрорайон", "").strip()
+            microdistrict_short_name = "мкр. " + microdistrict.replace("микрорайон", "").strip()
+            microdistrict_full_name = "микрорайон " + microdistrict.replace("микрорайон", "").strip()
+
+        street_name = None
+
+        street_keys = {
+            "road": ("улица", "ул."),
+            "street": ("улица", "ул."),
+        }
+        street = address_elements.get("road") or address_elements.get("street")
+        street_keys["road"] = (
+            ("шоссе", "ш.")
+            if "шоссе" in street
+            else ("тупик", "туп.")
+            if "тупик" in street
+            else ("аллея", "ал.")
+            if "аллея" in street
+            else ("проспект", "просп.")
+            if "проспект" in street
+            else ("бульвар", "бул.")
+            if "бульвар" in street
+            else ("набережная", "наб.")
+            if "набережная" in street
+            else ("переулок", "пер.")
+            if "переулок" in street
+            else ("проезд", "проезд")
+            if "проезд" in street
+            else ("площадь", "пл.")
+        )
+        for key, value in street_keys.items():
+            if address_elements.get(key):
+                street_name = re.findall(r"\b[А-ЯЁ][а-яё]*(?:-[А-ЯЁ]?[а-яё]+)*(?:\s+[А-ЯЁ][а-яё]*(?:-[А-ЯЁ]?[а-яё]+)*)*", address_elements[key])[0]
+                street_full_name = value[0] + " " + re.findall(r"\b[А-ЯЁ][а-яё]*(?:-[А-ЯЁ]?[а-яё]+)*(?:\s+[А-ЯЁ][а-яё]*(?:-[А-ЯЁ]?[а-яё]+)*)*", address_elements[key])[0]
+                street_short_name = value[1] + " " + re.findall(r"\b[А-ЯЁ][а-яё]*(?:-[А-ЯЁ]?[а-яё]+)*(?:\s+[А-ЯЁ][а-яё]*(?:-[А-ЯЁ]?[а-яё]+)*)*", address_elements[key])[0]
+
+        if street_name and street_name not in address_from_url:
+            print(f"Неверный геокод для адреса: {address_elements}, где верный адрес: {address_from_url}")
+            return
+
+        residential_complex = None
+        if parse("$..houseParams..items..title").find(json_data) and parse("$..houseParams..items..title").find(json_data)[0].value == "Название новостройки":
+            residential_complex = parse("$..houseParams..items..description").find(json_data)[0].value
+            address_elements["residential_complex"] = residential_complex
+
+        if address_elements.get("residential_complex") is None:
+            residential_complex = re.findall(r"жилой комплекс [^,][А-яЁ ]+", address_from_url)[0] if len(re.findall(r"жилой комплекс [^,][А-яЁ ]+", address_from_url)) > 0 else None
+
+        if residential_complex:
+            residential_complex_name = (residential_complex.replace("жилой комплекс", "").replace("ЖК", "").strip(),)
+            residential_complex_short_name = (
+                "ЖК "
+                + residential_complex.replace("жилой комплекс", "").replace("ЖК", "").strip()[0].lower()
+                + residential_complex.replace("жилой комплекс", "").replace("ЖК", "").strip()[1:]
+            )
+            residential_complex_full_name = (residential_complex.replace("жилой комплекс", "").replace("ЖК", "").strip() + " жилой комплекс",)
+            is_suburban = True if "КП" in residential_complex else False
+        house_number = re.findall(r"д\. (\d.*?(?=р-н|$))", address_from_url)
+        if house_number:
+            house_number = house_number[0].strip().replace(",", "").replace("корп.", "к").replace(" ", "")
+        address = {
+            "latitude": coordinates[0],
+            "longitude": coordinates[1],
+            "house_number": house_number,
+            "region_name": region_name if "region_name" in locals() else None,
+            "region_full_name": region_full_name if "region_full_name" in locals() else None,
+            "region_short_name": region_short_name if "region_short_name" in locals() else None,
+            "settlement_name": settlement_name if "settlement_name" in locals() else None,
+            "settlement_full_name": settlement_full_name if "settlement_full_name" in locals() else None,
+            "settlement_short_name": settlement_short_name if "settlement_short_name" in locals() else None,
+            "municipality_name": municipality_name if "municipality_name" in locals() else None,
+            "municipality_full_name": municipality_full_name if "municipality_full_name" in locals() else None,
+            "municipality_short_name": municipality_short_name if "municipality_short_name" in locals() else None,
+            "district_name": district_name if "district_name" in locals() else None,
+            "district_full_name": district_full_name if "district_full_name" in locals() else None,
+            "district_short_name": district_short_name if "district_short_name" in locals() else None,
+            "microdistrict_name": microdistrict_name if "microdistrict_name" in locals() else None,
+            "microdistrict_full_name": microdistrict_full_name if "microdistrict_full_name" in locals() else None,
+            "microdistrict_short_name": microdistrict_short_name if "microdistrict_short_name" in locals() else None,
+            "street_name": street_name if "street_name" in locals() else None,
+            "street_full_name": street_full_name if "street_full_name" in locals() else None,
+            "street_short_name": street_short_name if "street_short_name" in locals() else None,
+            "residential_complex_name": residential_complex_name if "residential_complex_name" in locals() else None,
+            "residential_complex_full_name": residential_complex_full_name if "residential_complex_full_name" in locals() else None,
+            "residential_complex_short_name": residential_complex_short_name if "residential_complex_short_name" in locals() else None,
+            "is_complex_suburban": True if ("is_suburban" in locals() and is_suburban) else False if ("is_suburban" in locals() and is_suburban == False) else None,
+        }
+
+        print(f"С url'a: {url} спаршены объекты:")
+        print()
+        print(address_from_url)
+        print()
+        print(address_elements)
+        print("-" * 40)
+        for key, value in address.items():
+            print(f"{key}:{value}")
+        print("-" * 40)
+        return address
+
     except Exception as e:
         print(e)
-
-    return address_objects
 
 
 async def initialize_address(address_elements: dict, url: str, full_address: str, full_address_from_api):
@@ -442,7 +618,7 @@ async def initialize_address(address_elements: dict, url: str, full_address: str
 
 
 # TODO ИНФУ О ЗАСТРОЙЩИКЕ ПАРСИТЬ
-async def parse_offer_info_from_json(json_data: dict):
+async def parse_offer_info_avito(json_data: dict):
     try:
         url = parse("$..canonicalUrl").find(json_data)[0].value
         source = "avito" if "avito.ru" in url else None
@@ -484,6 +660,7 @@ async def parse_offer_info_from_json(json_data: dict):
         )
         description = parse("$..descriptionHtml").find(json_data)[0].value
         contact_phone = None
+
     except Exception as e:
         print(e)
     return {"today_views": daily_views_count, "total_views": total_views_count}
@@ -793,7 +970,6 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
                     }
                 )
 
-        # координаты и полный адрес
         address = {
             "latitude": geo["coordinates"]["lat"],
             "longitude": geo["coordinates"]["lng"],
@@ -886,9 +1062,9 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
             (item for item in address_info if item["type"] == "mikroraion" or item["locationTypeId"] == 174),
             None,
         ):
-            address["microdistrict_full_name"] = microdistrict_match["shortName"]
+            address["microdistrict_full_name"] = microdistrict_match["fullName"]
             address["microdistrict_name"] = microdistrict_match["name"]
-            address["microdistrict_short_name"] = microdistrict_match["fullName"]
+            address["microdistrict_short_name"] = microdistrict_match["shortName"]
 
         if street_match := next((item for item in address_info if item["type"] == "street"), None):
             address["street_full_name"] = street_match["fullName"]
@@ -1122,7 +1298,7 @@ async def parse_offer_to_db(browser: driver.Browser, url: str) -> Offer | None:
             offerId = offer_json["offerData"]["offer"].get("id")
             await property_page.get(f"https://api.cian.ru/offer-card/v1/get-offer-card-statistic/?offerCreationDate={creation_date[0:10]}&offerId={offerId}")
             views_stats_text = await property_page.get_content()
-            views_stats_json = json.loads(re.findall(r"{\".+\"}", views_stats_text)[0])
+            views_stats_json = json.loads(re.findall(r"{\".+}", views_stats_text)[0])
             offer_json = offer_json["offerData"]
             offer_json["dailyViews"] = views_stats_json.get("daily", {}).get("dailyViews", {})
             offer_json["lastTenDaysViewsCount"] = int(re.findall(r"\d+", views_stats_json.get("daily", {}).get("totalViews", ""))[0])
@@ -1431,7 +1607,7 @@ def deep_parse_json(value):
 
 
 async def main():
-    await parse_offers_last("avito", "suburban")
+    await parse_offers_last("avito")
     # await parse_offers_cian()
 
 

@@ -21,7 +21,11 @@ def get_simple_distance(img1_path, img2_path, debug=False):
     # Находим разницу
     gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-    diff = cv2.absdiff(gray1, gray2)
+
+    edges1 = cv2.Canny(gray1, 50, 150)
+    edges2 = cv2.Canny(gray2, 50, 150)
+
+    diff = cv2.absdiff(edges1, edges2)
 
     # Бинаризация
     _, thresh = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -68,11 +72,10 @@ def get_simple_distance(img1_path, img2_path, debug=False):
     # threshold_value = max(0, min(255, int(mean_val - std_val)))
 
     # Стратегия 2: Порог на 30% ниже медианы (более устойчив к выбросам)
-    threshold_value = max(0, min(255, int(median_val * 0.7)))
+    threshold_value = max(0, min(255, int(median_val * 0.65)))
 
     # Стратегия 3: Адаптивная бинаризация (лучше для неравномерного освещения)
-    # dark_mask = cv2.adaptiveThreshold(gray_area, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-    #                                   cv2.THRESH_BINARY_INV, 11, 2)
+    dark_mask = cv2.adaptiveThreshold(gray_area, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 3, 1)
 
     # Применяем порог
     _, dark_mask = cv2.threshold(gray_area, threshold_value, 255, cv2.THRESH_BINARY_INV)
@@ -99,7 +102,7 @@ def get_simple_distance(img1_path, img2_path, debug=False):
     left2 = x2  # Левая граница темного объекта
 
     # Вычисляем расстояние
-    distance = left2 - right1 + 57
+    distance = left2 - right1 + 58
 
     # ДЕБАГ-РЕЖИМ: создаем изображения с разметкой
     if debug:
@@ -155,7 +158,7 @@ def get_simple_distance(img1_path, img2_path, debug=False):
         try:
             cv2.imshow("Added Object", debug_img1)
             cv2.imshow("Search Result", debug_img2)
-            cv2.waitKey(999999)  # Показываем 0.5 секунды
+            cv2.waitKey(0)  # Показываем 0.5 секунды
             cv2.destroyAllWindows()
         except:
             pass  # Если нет дисплея, просто пропускаем
@@ -166,8 +169,8 @@ def get_simple_distance(img1_path, img2_path, debug=False):
 
 # Пример использования с дебагом
 if __name__ == "__main__":
-    img1_path = "background_with_puzzle1.png"
-    img2_path = "background1.png"
+    img1_path = "background_with_puzzle.png"
+    img2_path = "background.png"
 
     # Простой вариант без дебага
     distance = get_simple_distance(img1_path, img2_path, debug=False)
