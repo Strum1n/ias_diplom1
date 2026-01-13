@@ -1,6 +1,6 @@
 [avito]
 domen_url = "https://www.avito.ru"
-url = "https://www.avito.ru/bryansk/kvartiry/prodam/novostroyka-ASgBAgICAkSSA8YQ5geOUg?f=ASgBAgICA0SSA8YQ5geOUtKEEsyKiwM&localPriority=0"
+url = "https://www.avito.ru/moskva_i_mo/kvartiry/prodam-ASgBAgICAUSSA8YQ?context=H4sIAAAAAAAA_wEtANL_YToxOntzOjg6ImZyb21QYWdlIjtzOjE2OiJzZWFyY2hGb3JtV2lkZ2V0Ijt9F_yIfi0AAAA"
 price_filter_btn_selector = ""
 filter_btn_selector = "[data-marker=\"search-filters/submit-button\"]"
 next_btn_selector = "[data-marker=\"pagination-button/nextPage\"]"
@@ -8,11 +8,11 @@ min_price_selector = "[data-marker=\"price-from/input\"]"
 max_price_selector = "[data-marker=\"price-to/input\"]"
 offer_urls_selector = "[data-marker=\"item-photo-sliderLink\"]"
 min_price = 3250001
-max_price = 7250000
+max_price = 4250000
 price_step = 500000
 items_on_page = 50
 max_available_page = 100
-p = 3
+p = 12
 
 [cian]
 domen_url = "https://www.cian.ru"

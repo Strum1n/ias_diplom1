@@ -102,7 +102,7 @@ def get_simple_distance(img1_path, img2_path, debug=False):
     left2 = x2  # Левая граница темного объекта
 
     # Вычисляем расстояние
-    distance = left2 - right1 + 58
+    distance = left2 - right1 + 55
 
     # ДЕБАГ-РЕЖИМ: создаем изображения с разметкой
     if debug:

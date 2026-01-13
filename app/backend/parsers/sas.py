@@ -4,6 +4,13 @@ import dateparser
 # Английский → Русский
 from geopy.geocoders import Nominatim
 
+
+kek = "22-го Съезда КПСС"
+sas = "пер. 22-го съезда КПСС"
+lol = kek.lower() in sas.lower()
+print(lol)
+
+
 kok = "19 декабря 2025"
 date = dateparser.parse(kok, languages=["ru"])
 kek = {"sas": 45464, "lol": 4849894, "mda": 865116}
