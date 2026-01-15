@@ -3,8 +3,8 @@ from typing import Optional
 
 from geoalchemy2 import WKBElement
 
-from app.backend.database.database import BaseModel
-from app.backend.database.models import *
+from app.backend.db.config import BaseModel
+from app.backend.db.models import *
 
 
 class UserRequest(BaseModel):

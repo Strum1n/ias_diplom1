@@ -22,10 +22,8 @@ def get_simple_distance(img1_path, img2_path, debug=False):
     gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
-    edges1 = cv2.Canny(gray1, 50, 150)
-    edges2 = cv2.Canny(gray2, 50, 150)
-
-    diff = cv2.absdiff(edges1, edges2)
+    diff = cv2.absdiff(gray1, gray2)
+    diff = cv2.GaussianBlur(diff, (1, 19), 0)
 
     # Бинаризация
     _, thresh = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -38,6 +36,7 @@ def get_simple_distance(img1_path, img2_path, debug=False):
         return None
 
     # Самый большой контур - добавленный объект
+
     cnt = max(contours, key=cv2.contourArea)
     x1, y1, w1, h1 = cv2.boundingRect(cnt)
     right1 = x1 + w1  # Правая граница добавленного объекта
@@ -72,15 +71,21 @@ def get_simple_distance(img1_path, img2_path, debug=False):
     # threshold_value = max(0, min(255, int(mean_val - std_val)))
 
     # Стратегия 2: Порог на 30% ниже медианы (более устойчив к выбросам)
-    threshold_value = max(0, min(255, int(median_val * 0.65)))
+    threshold_value = max(0, min(255, int(median_val * 0.6)))
 
     # Стратегия 3: Адаптивная бинаризация (лучше для неравномерного освещения)
-    dark_mask = cv2.adaptiveThreshold(gray_area, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 3, 1)
+    # dark_mask = cv2.adaptiveThreshold(gray_area, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 41, 1)
 
+    gray_area = cv2.GaussianBlur(gray_area, (1, 11), 0)
     # Применяем порог
     _, dark_mask = cv2.threshold(gray_area, threshold_value, 255, cv2.THRESH_BINARY_INV)
 
-    dark_contours, _ = cv2.findContours(dark_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 9))
+
+    # Открытие (сужает объекты, убирает тонкие линии)
+    cleaned = cv2.morphologyEx(dark_mask, cv2.MORPH_OPEN, kernel)
+
+    dark_contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if not dark_contours:
         # Если не нашли темных объектов, пробуем с более низким порогом
@@ -101,8 +106,13 @@ def get_simple_distance(img1_path, img2_path, debug=False):
     y2 = search_start_y + y2_rel
     left2 = x2  # Левая граница темного объекта
 
+    center1_x = x1 + w1 // 2
+    center1_y = y1 + h1 // 2
+
+    center2_x = x2 + w2 // 2
+    center2_y = y2 + h2 // 2
     # Вычисляем расстояние
-    distance = left2 - right1 + 55
+    distance = center2_x - center1_x
 
     # ДЕБАГ-РЕЖИМ: создаем изображения с разметкой
     if debug:

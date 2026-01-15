@@ -13,8 +13,8 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.backend.config import settings
-from app.backend.database.database import get_async_session
-from app.backend.database.models import *
+from app.backend.db.config import get_async_session
+from app.backend.db.models import *
 
 SECRET_KEY = "f63d08c5f18200fc83c961ccdb307115218838ac929c1102cd2d25b759c85039"
 REFRESH_SECRET_KEY = "3ec60d3271d4b0df960f5f4972f10e065298b228c1a64085420b3beeb0518cbf"

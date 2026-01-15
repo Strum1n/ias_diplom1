@@ -7,7 +7,7 @@ from pydantic import field_serializer
 from shapely.geometry import mapping
 from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
-from sqlmodel import ARRAY, DateTime, Field, Index, Relationship, UniqueConstraint
+from sqlmodel import ARRAY, Boolean, DateTime, Field, Index, Relationship, UniqueConstraint, text
 
 from app.backend.db.config import BaseModel
 
@@ -24,6 +24,12 @@ class Favorite(BaseModel, table=True):
 class Offer(BaseModel, table=True):
     # 1. Идентификаторы
     id: int | None = Field(primary_key=True)
+
+    is_active: bool = Field(
+        default=True,
+        sa_column_kwargs={"server_default": text("true")},
+        index=True,
+    )
 
     # 4. Цена
     price: int | None = Field(index=True)
@@ -75,6 +81,7 @@ class Offer(BaseModel, table=True):
     description: str | None
     images_urls: List[str] | None = Field(sa_column=Column(ARRAY(String(500))))
     url: str | None = Field(max_length=500, index=True)
+    identical_urls: List[str] | None = Field(sa_column=Column(ARRAY(String(500))))
     source: str | None
 
     # 11. Аналитика и скоринг

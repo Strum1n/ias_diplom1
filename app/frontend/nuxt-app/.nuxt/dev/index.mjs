@@ -3,44 +3,44 @@ import { Server } from 'node:http';
 import { resolve, dirname, join } from 'node:path';
 import crypto$1 from 'node:crypto';
 import { parentPort, threadId } from 'node:worker_threads';
-import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, getResponseStatus, useSession, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getRouterParam, getResponseStatusText } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/h3/dist/index.mjs';
-import { escapeHtml } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@vue/shared/dist/shared.cjs.js';
-import { createOnigurumaEngine } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/engine-oniguruma/dist/index.mjs';
-import { createJavaScriptRegexEngine } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/engine-javascript/dist/index.mjs';
-import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/vue-bundle-renderer/dist/runtime.mjs';
-import { parseURL, withoutBase, joinURL, getQuery, withQuery, withTrailingSlash, decodePath, withLeadingSlash, withoutTrailingSlash, joinRelativeURL } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/ufo/dist/index.mjs';
-import destr, { destr as destr$1 } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/destr/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, createError, getQuery as getQuery$1, readBody, getResponseStatus, useSession, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getRouterParam, getResponseStatusText } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/h3/dist/index.mjs';
+import { escapeHtml } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@vue/shared/dist/shared.cjs.js';
+import { createOnigurumaEngine } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/engine-oniguruma/dist/index.mjs';
+import { createJavaScriptRegexEngine } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/engine-javascript/dist/index.mjs';
+import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/vue-bundle-renderer/dist/runtime.mjs';
+import { parseURL, withoutBase, joinURL, getQuery, withQuery, withTrailingSlash, decodePath, withLeadingSlash, withoutTrailingSlash, joinRelativeURL } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/ufo/dist/index.mjs';
+import destr, { destr as destr$1 } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/destr/dist/index.mjs';
 import process$1 from 'node:process';
-import { renderToString } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/vue/server-renderer/index.mjs';
-import { klona } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/klona/dist/index.mjs';
-import defu, { defuFn, defu as defu$1 } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/defu/dist/defu.mjs';
-import { snakeCase } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/scule/dist/index.mjs';
-import { createHead as createHead$1, propsToString, renderSSRHead } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/unhead/dist/server.mjs';
-import { stringify, uneval } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/devalue/index.js';
-import { isVNode, toValue, isRef } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/vue/index.mjs';
-import { createHooks } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/hookable/dist/index.mjs';
-import { createFetch, Headers as Headers$1 } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/ofetch/dist/node.mjs';
-import { fetchNodeRequestHandler, callNodeRequestHandler } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/node-mock-http/dist/index.mjs';
-import { createStorage, prefixStorage } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/unstorage/dist/index.mjs';
-import unstorage_47drivers_47fs from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/unstorage/drivers/fs.mjs';
-import { digest, hash as hash$1 } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/ohash/dist/index.mjs';
-import { toRouteMatcher, createRouter } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/radix3/dist/index.mjs';
+import { renderToString } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/vue/server-renderer/index.mjs';
+import { klona } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/klona/dist/index.mjs';
+import defu, { defuFn, defu as defu$1 } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/defu/dist/defu.mjs';
+import { snakeCase } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/scule/dist/index.mjs';
+import { createHead as createHead$1, propsToString, renderSSRHead } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/unhead/dist/server.mjs';
+import { stringify, uneval } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/devalue/index.js';
+import { isVNode, toValue, isRef } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/vue/index.mjs';
+import { createHooks } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/hookable/dist/index.mjs';
+import { createFetch, Headers as Headers$1 } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/ofetch/dist/node.mjs';
+import { fetchNodeRequestHandler, callNodeRequestHandler } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/node-mock-http/dist/index.mjs';
+import { createStorage, prefixStorage } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/unstorage/dist/index.mjs';
+import unstorage_47drivers_47fs from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/unstorage/drivers/fs.mjs';
+import { digest, hash as hash$1 } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/ohash/dist/index.mjs';
+import { toRouteMatcher, createRouter } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/radix3/dist/index.mjs';
 import { readFile } from 'node:fs/promises';
-import consola, { consola as consola$1 } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/consola/dist/index.mjs';
-import { ErrorParser } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/youch-core/build/index.js';
-import { Youch } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/youch/build/index.js';
-import { SourceMapConsumer } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/source-map/source-map.js';
+import consola, { consola as consola$1 } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/consola/dist/index.mjs';
+import { ErrorParser } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/youch-core/build/index.js';
+import { Youch } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/youch/build/index.js';
+import { SourceMapConsumer } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/source-map/source-map.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { getContext } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/unctx/dist/index.mjs';
-import { captureRawStackTrace, parseRawStackTrace } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/errx/dist/index.js';
+import { getContext } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/unctx/dist/index.mjs';
+import { captureRawStackTrace, parseRawStackTrace } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/errx/dist/index.js';
 import { promises } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname as dirname$1, resolve as resolve$1, basename } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/pathe/dist/index.mjs';
-import { walkResolver } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/unhead/dist/utils.mjs';
-import { getIcons } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@iconify/utils/lib/index.js';
-import { collections } from 'file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/.nuxt/nuxt-icon-server-bundle.mjs';
+import { dirname as dirname$1, resolve as resolve$1, basename } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/pathe/dist/index.mjs';
+import { walkResolver } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/unhead/dist/utils.mjs';
+import { getIcons } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@iconify/utils/lib/index.js';
+import { collections } from 'file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/.nuxt/nuxt-icon-server-bundle.mjs';
 
-const serverAssets = [{"baseName":"server","dir":"G:/My Programs/IAS-diplom/app/frontend/nuxt-app/server/assets"}];
+const serverAssets = [{"baseName":"server","dir":"G:/My Programs/ias_diplom1/app/frontend/nuxt-app/server/assets"}];
 
 const assets$1 = createStorage();
 
@@ -52,11 +52,11 @@ const storage = createStorage({});
 
 storage.mount('/assets', assets$1);
 
-storage.mount('root', unstorage_47drivers_47fs({"driver":"fs","readOnly":true,"base":"G:/My Programs/IAS-diplom/app/frontend/nuxt-app","watchOptions":{"ignored":[null]}}));
-storage.mount('src', unstorage_47drivers_47fs({"driver":"fs","readOnly":true,"base":"G:/My Programs/IAS-diplom/app/frontend/nuxt-app/server","watchOptions":{"ignored":[null]}}));
-storage.mount('build', unstorage_47drivers_47fs({"driver":"fs","readOnly":false,"base":"G:/My Programs/IAS-diplom/app/frontend/nuxt-app/.nuxt"}));
-storage.mount('cache', unstorage_47drivers_47fs({"driver":"fs","readOnly":false,"base":"G:/My Programs/IAS-diplom/app/frontend/nuxt-app/.nuxt/cache"}));
-storage.mount('data', unstorage_47drivers_47fs({"driver":"fs","base":"G:/My Programs/IAS-diplom/app/frontend/nuxt-app/.data/kv"}));
+storage.mount('root', unstorage_47drivers_47fs({"driver":"fs","readOnly":true,"base":"G:/My Programs/ias_diplom1/app/frontend/nuxt-app","watchOptions":{"ignored":[null]}}));
+storage.mount('src', unstorage_47drivers_47fs({"driver":"fs","readOnly":true,"base":"G:/My Programs/ias_diplom1/app/frontend/nuxt-app/server","watchOptions":{"ignored":[null]}}));
+storage.mount('build', unstorage_47drivers_47fs({"driver":"fs","readOnly":false,"base":"G:/My Programs/ias_diplom1/app/frontend/nuxt-app/.nuxt"}));
+storage.mount('cache', unstorage_47drivers_47fs({"driver":"fs","readOnly":false,"base":"G:/My Programs/ias_diplom1/app/frontend/nuxt-app/.nuxt/cache"}));
+storage.mount('data', unstorage_47drivers_47fs({"driver":"fs","base":"G:/My Programs/ias_diplom1/app/frontend/nuxt-app/.data/kv"}));
 
 function useStorage(base = "") {
   return base ? prefixStorage(storage, base) : storage;
@@ -915,7 +915,7 @@ const _inlineRuntimeConfig = {
   "public": {
     "apiBase": "/api",
     "yandexMaps": {
-      "apikey": "314886a8-d1c0-4824-878c-46d76b59030a"
+      "apikey": "c5e28dc9-864f-4c09-9ae2-bd82441ff849"
     },
     "mdc": {
       "components": {
@@ -1991,13 +1991,13 @@ if (!window.__NUXT_DEVTOOLS_TIME_METRIC__) {
 window.__NUXT_DEVTOOLS_TIME_METRIC__.appInit = Date.now()
 `;
 
-const _t3arIcSaIg7EEKKfLsSllwVQE96UMfDxkgX_sOpRoGI = (function(nitro) {
+const _y3x5HC25tw7UXPKz8Hfwsv97Qshau7ugtUwB8Qo0k_E = (function(nitro) {
   nitro.hooks.hook("render:html", (htmlContext) => {
     htmlContext.head.push(`<script>${script$1}<\/script>`);
   });
 });
 
-const _MAThlEKwMVNVX34Jlv3w8R7YPb7FkmB3Pvm5hsjj0M = defineNitroPlugin((nitroApp) => {
+const _Mp9DiIEVkCZ3gI4aIKRzMDxy5da2j2AncYS1GMKPUk = defineNitroPlugin((nitroApp) => {
   if (process.env.NUXT_OAUTH_FACEBOOK_CLIENT_ID && process.env.NUXT_OAUTH_FACEBOOK_CLIENT_SECRET || process.env.NUXT_OAUTH_INSTAGRAM_CLIENT_ID && process.env.NUXT_OAUTH_INSTAGRAM_CLIENT_SECRET) {
     nitroApp.hooks.hook("render:html", (html) => {
       html.head.unshift(`
@@ -2013,7 +2013,7 @@ const _MAThlEKwMVNVX34Jlv3w8R7YPb7FkmB3Pvm5hsjj0M = defineNitroPlugin((nitroApp)
   }
 });
 
-const rootDir = "G:/My Programs/IAS-diplom/app/frontend/nuxt-app";
+const rootDir = "G:/My Programs/ias_diplom1/app/frontend/nuxt-app";
 
 const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[],"style":[],"script":[],"noscript":[]};
 
@@ -2036,7 +2036,7 @@ const devReducers = {
   URL: (data) => data instanceof URL ? data.toString() : void 0
 };
 const asyncContext = getContext("nuxt-dev", { asyncContext: true, AsyncLocalStorage });
-const _ylK6erP6zye82uUQuurolKL6UbtTgOul5HS2SWolN98 = (nitroApp) => {
+const _D2efxAMwVuqLkqlDSkNPWWuNOIHzIiiHjhIvs3B6rA = (nitroApp) => {
   const handler = nitroApp.h3App.handler;
   nitroApp.h3App.handler = (event) => {
     return asyncContext.callAsync({ logs: [], event }, () => handler(event));
@@ -2107,17 +2107,17 @@ function onConsoleLog(callback) {
 
 const script = "\"use strict\";(()=>{const t=window,e=document.documentElement,c=[\"dark\",\"light\"],n=getStorageValue(\"localStorage\",\"nuxt-color-mode\")||\"system\";let i=n===\"system\"?u():n;const r=e.getAttribute(\"data-color-mode-forced\");r&&(i=r),l(i),t[\"__NUXT_COLOR_MODE__\"]={preference:n,value:i,getColorScheme:u,addColorScheme:l,removeColorScheme:d};function l(o){const s=\"\"+o+\"\",a=\"\";e.classList?e.classList.add(s):e.className+=\" \"+s,a&&e.setAttribute(\"data-\"+a,o)}function d(o){const s=\"\"+o+\"\",a=\"\";e.classList?e.classList.remove(s):e.className=e.className.replace(new RegExp(s,\"g\"),\"\"),a&&e.removeAttribute(\"data-\"+a)}function f(o){return t.matchMedia(\"(prefers-color-scheme\"+o+\")\")}function u(){if(t.matchMedia&&f(\"\").media!==\"not all\"){for(const o of c)if(f(\":\"+o).matches)return o}return\"light\"}})();function getStorageValue(t,e){switch(t){case\"localStorage\":return window.localStorage.getItem(e);case\"sessionStorage\":return window.sessionStorage.getItem(e);case\"cookie\":return getCookie(e);default:return null}}function getCookie(t){const c=(\"; \"+window.document.cookie).split(\"; \"+t+\"=\");if(c.length===2)return c.pop()?.split(\";\").shift()}";
 
-const _GoDbW5B7MglZH_9SFMPBFQNCTBwHPvE6xNnNot3ImFE = (function(nitro) {
+const _8h5qROsGlYQici2dQd8VQvai83l1U3uXRMl1W19g4g = (function(nitro) {
   nitro.hooks.hook("render:html", (htmlContext) => {
     htmlContext.head.push(`<script>${script}<\/script>`);
   });
 });
 
 const plugins = [
-  _t3arIcSaIg7EEKKfLsSllwVQE96UMfDxkgX_sOpRoGI,
-_MAThlEKwMVNVX34Jlv3w8R7YPb7FkmB3Pvm5hsjj0M,
-_ylK6erP6zye82uUQuurolKL6UbtTgOul5HS2SWolN98,
-_GoDbW5B7MglZH_9SFMPBFQNCTBwHPvE6xNnNot3ImFE
+  _y3x5HC25tw7UXPKz8Hfwsv97Qshau7ugtUwB8Qo0k_E,
+_Mp9DiIEVkCZ3gI4aIKRzMDxy5da2j2AncYS1GMKPUk,
+_D2efxAMwVuqLkqlDSkNPWWuNOIHzIiiHjhIvs3B6rA,
+_8h5qROsGlYQici2dQd8VQvai83l1U3uXRMl1W19g4g
 ];
 
 const assets = {};
@@ -2145,7 +2145,7 @@ function getAsset (id) {
 
 const METHODS = /* @__PURE__ */ new Set(["HEAD", "GET"]);
 const EncodingMap = { gzip: ".gz", br: ".br" };
-const _nFIDPv = eventHandler((event) => {
+const _2QAO8Q = eventHandler((event) => {
   if (event.method && !METHODS.has(event.method)) {
     return;
   }
@@ -2281,8 +2281,8 @@ function publicAssetsURL(...path) {
 
 const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`;
 const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`;
-const getServerEntry = () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/.nuxt//dist/server/server.mjs').then((r) => r.default || r);
-const getClientManifest = () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/.nuxt//dist/server/client.manifest.mjs').then((r) => r.default || r).then((r) => typeof r === "function" ? r() : r);
+const getServerEntry = () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/.nuxt//dist/server/server.mjs').then((r) => r.default || r);
+const getClientManifest = () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/.nuxt//dist/server/client.manifest.mjs').then((r) => r.default || r).then((r) => typeof r === "function" ? r() : r);
 const getSSRRenderer = lazyCachedFunction(async () => {
   const createSSRApp = await getServerEntry();
   if (!createSSRApp) {
@@ -2640,7 +2640,7 @@ function _useSession(event, config = {}) {
 
 const warnOnceSet = /* @__PURE__ */ new Set();
 const DEFAULT_ENDPOINT = "https://api.iconify.design";
-const _BRpfTR = defineCachedEventHandler(async (event) => {
+const _vNDcQr = defineCachedEventHandler(async (event) => {
   const url = getRequestURL(event);
   if (!url)
     return createError({ status: 400, message: "Invalid icon request" });
@@ -2698,7 +2698,7 @@ const _BRpfTR = defineCachedEventHandler(async (event) => {
   // 1 week
 });
 
-const _LHoQx6 = eventHandler(async (event) => {
+const _d6Ut_8 = eventHandler(async (event) => {
   const { code, lang, theme: themeString, options: optionsStr } = getQuery$1(event);
   const theme = JSON.parse(themeString);
   const options = optionsStr ? JSON.parse(optionsStr) : {};
@@ -2706,12 +2706,12 @@ const _LHoQx6 = eventHandler(async (event) => {
   return await highlighter(code, lang, theme, options);
 });
 
-const _oz5lI7 = eventHandler(async (event) => {
+const _a2IHMO = eventHandler(async (event) => {
   await clearUserSession(event);
   return { loggedOut: true };
 });
 
-const _z9SRtS = eventHandler(async (event) => {
+const _iDIwLH = eventHandler(async (event) => {
   const session = await getUserSession(event);
   if (Object.keys(session).length > 0) {
     await sessionHooks.callHookParallel("fetch", session, event);
@@ -2720,18 +2720,18 @@ const _z9SRtS = eventHandler(async (event) => {
   return data;
 });
 
-const _lazy_mOpv5o = () => Promise.resolve().then(function () { return renderer$1; });
+const _lazy_KgbdjP = () => Promise.resolve().then(function () { return renderer$1; });
 
 const handlers = [
-  { route: '', handler: _nFIDPv, lazy: false, middleware: true, method: undefined },
-  { route: '/__nuxt_error', handler: _lazy_mOpv5o, lazy: true, middleware: false, method: undefined },
+  { route: '', handler: _2QAO8Q, lazy: false, middleware: true, method: undefined },
+  { route: '/__nuxt_error', handler: _lazy_KgbdjP, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: _SxA8c9, lazy: false, middleware: false, method: undefined },
-  { route: '/api/_nuxt_icon/:collection', handler: _BRpfTR, lazy: false, middleware: false, method: undefined },
-  { route: '/api/_mdc/highlight', handler: _LHoQx6, lazy: false, middleware: false, method: undefined },
-  { route: '/api/_auth/session', handler: _oz5lI7, lazy: false, middleware: false, method: "delete" },
-  { route: '/api/_auth/session', handler: _z9SRtS, lazy: false, middleware: false, method: "get" },
-  { route: '/_fonts/**', handler: _lazy_mOpv5o, lazy: true, middleware: false, method: undefined },
-  { route: '/**', handler: _lazy_mOpv5o, lazy: true, middleware: false, method: undefined }
+  { route: '/api/_nuxt_icon/:collection', handler: _vNDcQr, lazy: false, middleware: false, method: undefined },
+  { route: '/api/_mdc/highlight', handler: _d6Ut_8, lazy: false, middleware: false, method: undefined },
+  { route: '/api/_auth/session', handler: _a2IHMO, lazy: false, middleware: false, method: "delete" },
+  { route: '/api/_auth/session', handler: _iDIwLH, lazy: false, middleware: false, method: "get" },
+  { route: '/_fonts/**', handler: _lazy_KgbdjP, lazy: true, middleware: false, method: undefined },
+  { route: '/**', handler: _lazy_KgbdjP, lazy: true, middleware: false, method: undefined }
 ];
 
 function createNitroApp() {
@@ -3007,8 +3007,8 @@ function createShikiHighlighter({
   let shiki;
   let configs;
   async function _getShiki() {
-    const { createHighlighterCore, addClassToHast, isSpecialLang, isSpecialTheme } = await import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/core/dist/index.mjs');
-    const { transformerNotationDiff, transformerNotationErrorLevel, transformerNotationFocus, transformerNotationHighlight } = await import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/transformers/dist/index.mjs');
+    const { createHighlighterCore, addClassToHast, isSpecialLang, isSpecialTheme } = await import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/core/dist/index.mjs');
+    const { transformerNotationDiff, transformerNotationErrorLevel, transformerNotationFocus, transformerNotationHighlight } = await import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/transformers/dist/index.mjs');
     const shiki2 = await createHighlighterCore({
       langs,
       themes,
@@ -3176,38 +3176,38 @@ function createShikiHighlighter({
 }
 
 const bundledLangs = {
-"javascript": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/javascript.mjs').then(r => r.default || r),
-"js": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/javascript.mjs').then(r => r.default || r),
-"cjs": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/javascript.mjs').then(r => r.default || r),
-"mjs": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/javascript.mjs').then(r => r.default || r),
-"jsx": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/jsx.mjs').then(r => r.default || r),
-"json": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/json.mjs').then(r => r.default || r),
-"typescript": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/typescript.mjs').then(r => r.default || r),
-"ts": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/typescript.mjs').then(r => r.default || r),
-"cts": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/typescript.mjs').then(r => r.default || r),
-"mts": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/typescript.mjs').then(r => r.default || r),
-"tsx": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/tsx.mjs').then(r => r.default || r),
-"vue": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/vue.mjs').then(r => r.default || r),
-"css": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/css.mjs').then(r => r.default || r),
-"html": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/html.mjs').then(r => r.default || r),
-"shellscript": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
-"bash": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
-"sh": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
-"shell": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
-"zsh": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
-"markdown": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/markdown.mjs').then(r => r.default || r),
-"md": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/markdown.mjs').then(r => r.default || r),
-"mdc": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/mdc.mjs').then(r => r.default || r),
-"yaml": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/yaml.mjs').then(r => r.default || r),
-"yml": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/yaml.mjs').then(r => r.default || r),
+"javascript": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/javascript.mjs').then(r => r.default || r),
+"js": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/javascript.mjs').then(r => r.default || r),
+"cjs": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/javascript.mjs').then(r => r.default || r),
+"mjs": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/javascript.mjs').then(r => r.default || r),
+"jsx": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/jsx.mjs').then(r => r.default || r),
+"json": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/json.mjs').then(r => r.default || r),
+"typescript": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/typescript.mjs').then(r => r.default || r),
+"ts": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/typescript.mjs').then(r => r.default || r),
+"cts": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/typescript.mjs').then(r => r.default || r),
+"mts": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/typescript.mjs').then(r => r.default || r),
+"tsx": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/tsx.mjs').then(r => r.default || r),
+"vue": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/vue.mjs').then(r => r.default || r),
+"css": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/css.mjs').then(r => r.default || r),
+"html": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/html.mjs').then(r => r.default || r),
+"shellscript": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
+"bash": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
+"sh": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
+"shell": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
+"zsh": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/shellscript.mjs').then(r => r.default || r),
+"markdown": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/markdown.mjs').then(r => r.default || r),
+"md": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/markdown.mjs').then(r => r.default || r),
+"mdc": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/mdc.mjs').then(r => r.default || r),
+"yaml": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/yaml.mjs').then(r => r.default || r),
+"yml": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/langs/dist/yaml.mjs').then(r => r.default || r),
 };
 const bundledThemes = {
-"material-theme-lighter": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/themes/dist/material-theme-lighter.mjs').then(r => r.default || r),
-"material-theme": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/themes/dist/material-theme.mjs').then(r => r.default || r),
-"material-theme-palenight": () => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@shikijs/themes/dist/material-theme-palenight.mjs').then(r => r.default || r),
+"material-theme-lighter": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/themes/dist/material-theme-lighter.mjs').then(r => r.default || r),
+"material-theme": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/themes/dist/material-theme.mjs').then(r => r.default || r),
+"material-theme-palenight": () => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@shikijs/themes/dist/material-theme-palenight.mjs').then(r => r.default || r),
 };
 const options = {};
-const engine = createOnigurumaEngine(() => import('file://G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/shiki/dist/wasm.mjs'));
+const engine = createOnigurumaEngine(() => import('file://G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/shiki/dist/wasm.mjs'));
 const highlighter = createShikiHighlighter({ bundledLangs, bundledThemes, options, getMdcConfigs, engine });
 
 const mdcHighlighter = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

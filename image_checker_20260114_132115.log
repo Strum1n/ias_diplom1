@@ -1,0 +1,374 @@
+2026-01-14 13:21:15,458 - WARNING - Starting in DELETE mode (concurrency=50, batch=1000)
+2026-01-14 13:21:17,724 - INFO - Processing batch #1, last_id=0
+2026-01-14 13:21:17,871 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:18,665 - INFO - Batch #1 completed: checked=1000, 404_found=0, exceptions=0, total_checked=1000, total_404=0, pending_deletes=0, total_deleted=0, total_deactivated=0, avg_speed=1062.3 records/sec
+2026-01-14 13:21:18,666 - INFO - Processing batch #2, last_id=29665
+2026-01-14 13:21:18,673 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:19,300 - INFO - Batch #2 completed: checked=1000, 404_found=0, exceptions=0, total_checked=2000, total_404=0, pending_deletes=0, total_deleted=0, total_deactivated=0, avg_speed=1268.6 records/sec
+2026-01-14 13:21:19,300 - INFO - Processing batch #3, last_id=30678
+2026-01-14 13:21:19,309 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:19,791 - INFO - Batch #3 completed: checked=1000, 404_found=0, exceptions=0, total_checked=3000, total_404=0, pending_deletes=0, total_deleted=0, total_deactivated=0, avg_speed=1451.4 records/sec
+2026-01-14 13:21:19,791 - INFO - Processing batch #4, last_id=31690
+2026-01-14 13:21:19,811 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:22,227 - INFO - Batch #4 completed: checked=1000, 404_found=0, exceptions=0, total_checked=4000, total_404=0, pending_deletes=0, total_deleted=0, total_deactivated=0, avg_speed=888.2 records/sec
+2026-01-14 13:21:22,227 - INFO - Processing batch #5, last_id=32703
+2026-01-14 13:21:22,234 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:27,576 - INFO - Batch #5 completed: checked=1000, 404_found=0, exceptions=0, total_checked=5000, total_404=0, pending_deletes=0, total_deleted=0, total_deactivated=0, avg_speed=507.5 records/sec
+2026-01-14 13:21:27,576 - INFO - Processing batch #6, last_id=33721
+2026-01-14 13:21:27,585 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:28,757 - INFO - Batch #6 completed: checked=1000, 404_found=0, exceptions=0, total_checked=6000, total_404=0, pending_deletes=0, total_deleted=0, total_deactivated=0, avg_speed=543.8 records/sec
+2026-01-14 13:21:28,758 - INFO - Processing batch #7, last_id=34792
+2026-01-14 13:21:28,769 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:28,834 - WARNING - 404 found: https://www.cian.ru/sale/flat/314798951/
+2026-01-14 13:21:30,073 - INFO - Batch #7 completed: checked=1000, 404_found=1, exceptions=0, total_checked=7000, total_404=1, pending_deletes=1, total_deleted=0, total_deactivated=0, avg_speed=566.8 records/sec
+2026-01-14 13:21:30,074 - INFO - Processing batch #8, last_id=35860
+2026-01-14 13:21:30,081 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:35,195 - INFO - Batch #8 completed: checked=1000, 404_found=0, exceptions=0, total_checked=8000, total_404=1, pending_deletes=1, total_deleted=0, total_deactivated=0, avg_speed=457.9 records/sec
+2026-01-14 13:21:35,196 - INFO - Processing batch #9, last_id=36916
+2026-01-14 13:21:35,204 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:35,309 - WARNING - 404 found: https://www.cian.ru/sale/flat/314434648/
+2026-01-14 13:21:36,110 - INFO - Batch #9 completed: checked=1000, 404_found=1, exceptions=0, total_checked=9000, total_404=2, pending_deletes=2, total_deleted=0, total_deactivated=0, avg_speed=489.5 records/sec
+2026-01-14 13:21:36,110 - INFO - Processing batch #10, last_id=37974
+2026-01-14 13:21:36,118 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:36,351 - WARNING - 404 found: https://www.cian.ru/sale/flat/320159740/
+2026-01-14 13:21:36,538 - INFO - Batch #10 completed: checked=1000, 404_found=1, exceptions=0, total_checked=10000, total_404=3, pending_deletes=3, total_deleted=0, total_deactivated=0, avg_speed=531.5 records/sec
+2026-01-14 13:21:36,538 - INFO - Processing batch #11, last_id=39025
+2026-01-14 13:21:36,548 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:36,896 - WARNING - 404 found: https://www.cian.ru/sale/flat/320595292/
+2026-01-14 13:21:38,047 - INFO - Batch #11 completed: checked=1000, 404_found=1, exceptions=0, total_checked=11000, total_404=4, pending_deletes=4, total_deleted=0, total_deactivated=0, avg_speed=541.3 records/sec
+2026-01-14 13:21:38,047 - INFO - Processing batch #12, last_id=40083
+2026-01-14 13:21:38,056 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:38,672 - INFO - Batch #12 completed: checked=1000, 404_found=0, exceptions=0, total_checked=12000, total_404=4, pending_deletes=4, total_deleted=0, total_deactivated=0, avg_speed=572.8 records/sec
+2026-01-14 13:21:38,673 - INFO - Processing batch #13, last_id=41131
+2026-01-14 13:21:38,680 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:39,163 - INFO - Batch #13 completed: checked=1000, 404_found=0, exceptions=0, total_checked=13000, total_404=4, pending_deletes=4, total_deleted=0, total_deactivated=0, avg_speed=606.4 records/sec
+2026-01-14 13:21:39,163 - INFO - Processing batch #14, last_id=42205
+2026-01-14 13:21:39,171 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:39,239 - WARNING - 404 found: https://www.cian.ru/sale/flat/323237916/
+2026-01-14 13:21:39,371 - WARNING - 404 found: https://www.cian.ru/sale/flat/320949111/
+2026-01-14 13:21:39,421 - WARNING - 404 found: https://www.cian.ru/sale/flat/318651816/
+2026-01-14 13:21:39,590 - INFO - Batch #14 completed: checked=1000, 404_found=3, exceptions=0, total_checked=14000, total_404=7, pending_deletes=7, total_deleted=0, total_deactivated=0, avg_speed=640.2 records/sec
+2026-01-14 13:21:39,590 - INFO - Processing batch #15, last_id=43284
+2026-01-14 13:21:39,599 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:39,749 - WARNING - 404 found: https://www.cian.ru/sale/flat/322778991/
+2026-01-14 13:21:40,936 - INFO - Batch #15 completed: checked=1000, 404_found=1, exceptions=0, total_checked=15000, total_404=8, pending_deletes=8, total_deleted=0, total_deactivated=0, avg_speed=646.2 records/sec
+2026-01-14 13:21:40,936 - INFO - Processing batch #16, last_id=44356
+2026-01-14 13:21:40,949 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:41,099 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/321770492/
+2026-01-14 13:21:41,135 - WARNING - 404 found: https://chekhov.cian.ru/sale/flat/321361431/
+2026-01-14 13:21:41,456 - WARNING - 404 found: https://dmitrov.cian.ru/sale/flat/312665973/
+2026-01-14 13:21:41,617 - INFO - Batch #16 completed: checked=1000, 404_found=3, exceptions=0, total_checked=16000, total_404=11, pending_deletes=11, total_deleted=0, total_deactivated=0, avg_speed=669.6 records/sec
+2026-01-14 13:21:41,617 - INFO - Processing batch #17, last_id=45410
+2026-01-14 13:21:41,627 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:46,869 - INFO - Batch #17 completed: checked=1000, 404_found=0, exceptions=0, total_checked=17000, total_404=11, pending_deletes=11, total_deleted=0, total_deactivated=0, avg_speed=583.3 records/sec
+2026-01-14 13:21:46,869 - INFO - Processing batch #18, last_id=46453
+2026-01-14 13:21:46,892 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:47,474 - INFO - Batch #18 completed: checked=1000, 404_found=0, exceptions=0, total_checked=18000, total_404=11, pending_deletes=11, total_deleted=0, total_deactivated=0, avg_speed=605.0 records/sec
+2026-01-14 13:21:47,474 - INFO - Processing batch #19, last_id=47492
+2026-01-14 13:21:47,484 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:48,138 - INFO - Batch #19 completed: checked=1000, 404_found=0, exceptions=0, total_checked=19000, total_404=11, pending_deletes=11, total_deleted=0, total_deactivated=0, avg_speed=624.7 records/sec
+2026-01-14 13:21:48,138 - INFO - Processing batch #20, last_id=48535
+2026-01-14 13:21:48,147 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:48,823 - INFO - Batch #20 completed: checked=1000, 404_found=0, exceptions=0, total_checked=20000, total_404=11, pending_deletes=11, total_deleted=0, total_deactivated=0, avg_speed=643.1 records/sec
+2026-01-14 13:21:48,823 - INFO - Processing batch #21, last_id=49566
+2026-01-14 13:21:48,832 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:49,920 - INFO - Batch #21 completed: checked=1000, 404_found=0, exceptions=0, total_checked=21000, total_404=11, pending_deletes=11, total_deleted=0, total_deactivated=0, avg_speed=652.2 records/sec
+2026-01-14 13:21:49,921 - INFO - Processing batch #22, last_id=50580
+2026-01-14 13:21:49,930 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:50,366 - INFO - Batch #22 completed: checked=1000, 404_found=0, exceptions=0, total_checked=22000, total_404=11, pending_deletes=11, total_deleted=0, total_deactivated=0, avg_speed=674.0 records/sec
+2026-01-14 13:21:50,366 - INFO - Processing batch #23, last_id=51586
+2026-01-14 13:21:50,373 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:50,575 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/311586441/
+2026-01-14 13:21:51,070 - INFO - Batch #23 completed: checked=1000, 404_found=1, exceptions=0, total_checked=23000, total_404=12, pending_deletes=12, total_deleted=0, total_deactivated=0, avg_speed=689.7 records/sec
+2026-01-14 13:21:51,070 - INFO - Processing batch #24, last_id=52612
+2026-01-14 13:21:51,079 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:51,119 - WARNING - 404 found: https://luhovicy.cian.ru/sale/flat/323688649/
+2026-01-14 13:21:51,551 - INFO - Batch #24 completed: checked=1000, 404_found=1, exceptions=0, total_checked=24000, total_404=13, pending_deletes=13, total_deleted=0, total_deactivated=0, avg_speed=709.5 records/sec
+2026-01-14 13:21:51,552 - INFO - Processing batch #25, last_id=53647
+2026-01-14 13:21:51,561 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:51,757 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/321431469/
+2026-01-14 13:21:51,924 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/322523958/
+2026-01-14 13:21:52,174 - INFO - Batch #25 completed: checked=1000, 404_found=2, exceptions=0, total_checked=25000, total_404=15, pending_deletes=15, total_deleted=0, total_deactivated=0, avg_speed=725.7 records/sec
+2026-01-14 13:21:52,175 - INFO - Processing batch #26, last_id=54683
+2026-01-14 13:21:52,185 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:52,796 - INFO - Batch #26 completed: checked=1000, 404_found=0, exceptions=0, total_checked=26000, total_404=15, pending_deletes=15, total_deleted=0, total_deactivated=0, avg_speed=741.3 records/sec
+2026-01-14 13:21:52,797 - INFO - Processing batch #27, last_id=55724
+2026-01-14 13:21:52,806 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:53,307 - INFO - Batch #27 completed: checked=1000, 404_found=0, exceptions=0, total_checked=27000, total_404=15, pending_deletes=15, total_deleted=0, total_deactivated=0, avg_speed=758.8 records/sec
+2026-01-14 13:21:53,307 - INFO - Processing batch #28, last_id=56767
+2026-01-14 13:21:53,317 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:53,646 - WARNING - 404 found: https://luhovicy.cian.ru/sale/flat/323354838/
+2026-01-14 13:21:53,925 - INFO - Batch #28 completed: checked=1000, 404_found=1, exceptions=0, total_checked=28000, total_404=16, pending_deletes=16, total_deleted=0, total_deactivated=0, avg_speed=773.5 records/sec
+2026-01-14 13:21:53,925 - INFO - Processing batch #29, last_id=57807
+2026-01-14 13:21:53,933 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:54,376 - INFO - Batch #29 completed: checked=1000, 404_found=0, exceptions=0, total_checked=29000, total_404=16, pending_deletes=16, total_deleted=0, total_deactivated=0, avg_speed=791.2 records/sec
+2026-01-14 13:21:54,376 - INFO - Processing batch #30, last_id=58846
+2026-01-14 13:21:54,387 - INFO - Fetched 1000 rows from database
+2026-01-14 13:21:56,418 - INFO - Batch #30 completed: checked=1000, 404_found=0, exceptions=0, total_checked=30000, total_404=16, pending_deletes=16, total_deleted=0, total_deactivated=0, avg_speed=775.3 records/sec
+2026-01-14 13:21:56,418 - INFO - Processing batch #31, last_id=59858
+2026-01-14 13:21:56,430 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:01,888 - INFO - Batch #31 completed: checked=1000, 404_found=0, exceptions=0, total_checked=31000, total_404=16, pending_deletes=16, total_deleted=0, total_deactivated=0, avg_speed=701.9 records/sec
+2026-01-14 13:22:01,889 - INFO - Processing batch #32, last_id=60862
+2026-01-14 13:22:01,912 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:02,336 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/321800417/
+2026-01-14 13:22:02,426 - INFO - Batch #32 completed: checked=1000, 404_found=1, exceptions=0, total_checked=32000, total_404=17, pending_deletes=17, total_deleted=0, total_deactivated=0, avg_speed=715.8 records/sec
+2026-01-14 13:22:02,427 - INFO - Processing batch #33, last_id=61906
+2026-01-14 13:22:02,434 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:02,758 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323249810/
+2026-01-14 13:22:02,773 - WARNING - 404 found: https://domodedovo.cian.ru/sale/flat/323220557/
+2026-01-14 13:22:03,217 - INFO - Batch #33 completed: checked=1000, 404_found=2, exceptions=0, total_checked=33000, total_404=19, pending_deletes=19, total_deleted=0, total_deactivated=0, avg_speed=725.4 records/sec
+2026-01-14 13:22:03,217 - INFO - Processing batch #34, last_id=62940
+2026-01-14 13:22:03,226 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:03,754 - INFO - Batch #34 completed: checked=1000, 404_found=0, exceptions=0, total_checked=34000, total_404=19, pending_deletes=19, total_deleted=0, total_deactivated=0, avg_speed=738.6 records/sec
+2026-01-14 13:22:03,754 - INFO - Processing batch #35, last_id=63959
+2026-01-14 13:22:03,764 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:04,653 - INFO - Batch #35 completed: checked=1000, 404_found=0, exceptions=0, total_checked=35000, total_404=19, pending_deletes=19, total_deleted=0, total_deactivated=0, avg_speed=745.8 records/sec
+2026-01-14 13:22:04,653 - INFO - Processing batch #36, last_id=65002
+2026-01-14 13:22:04,663 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:04,871 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/323462893/
+2026-01-14 13:22:05,183 - INFO - Batch #36 completed: checked=1000, 404_found=1, exceptions=0, total_checked=36000, total_404=20, pending_deletes=20, total_deleted=0, total_deactivated=0, avg_speed=758.5 records/sec
+2026-01-14 13:22:05,184 - INFO - Processing batch #37, last_id=66030
+2026-01-14 13:22:05,192 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:05,650 - INFO - Batch #37 completed: checked=1000, 404_found=0, exceptions=0, total_checked=37000, total_404=20, pending_deletes=20, total_deleted=0, total_deactivated=0, avg_speed=772.0 records/sec
+2026-01-14 13:22:05,650 - INFO - Processing batch #38, last_id=67058
+2026-01-14 13:22:05,660 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:06,236 - INFO - Batch #38 completed: checked=1000, 404_found=0, exceptions=0, total_checked=38000, total_404=20, pending_deletes=20, total_deleted=0, total_deactivated=0, avg_speed=783.3 records/sec
+2026-01-14 13:22:06,236 - INFO - Processing batch #39, last_id=68090
+2026-01-14 13:22:06,246 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:06,448 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323305869/
+2026-01-14 13:22:07,497 - INFO - Batch #39 completed: checked=1000, 404_found=1, exceptions=0, total_checked=39000, total_404=21, pending_deletes=21, total_deleted=0, total_deactivated=0, avg_speed=783.5 records/sec
+2026-01-14 13:22:07,498 - INFO - Processing batch #40, last_id=69128
+2026-01-14 13:22:07,507 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:08,754 - INFO - Batch #40 completed: checked=1000, 404_found=0, exceptions=0, total_checked=40000, total_404=21, pending_deletes=21, total_deleted=0, total_deactivated=0, avg_speed=783.8 records/sec
+2026-01-14 13:22:08,754 - INFO - Processing batch #41, last_id=70157
+2026-01-14 13:22:08,764 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:08,915 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/323135789/
+2026-01-14 13:22:09,244 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/322489354/
+2026-01-14 13:22:09,425 - INFO - Batch #41 completed: checked=1000, 404_found=2, exceptions=0, total_checked=41000, total_404=23, pending_deletes=23, total_deleted=0, total_deactivated=0, avg_speed=793.0 records/sec
+2026-01-14 13:22:09,426 - INFO - Processing batch #42, last_id=71196
+2026-01-14 13:22:09,434 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:10,111 - INFO - Batch #42 completed: checked=1000, 404_found=0, exceptions=0, total_checked=42000, total_404=23, pending_deletes=23, total_deleted=0, total_deactivated=0, avg_speed=801.7 records/sec
+2026-01-14 13:22:10,112 - INFO - Processing batch #43, last_id=72234
+2026-01-14 13:22:10,121 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:11,547 - INFO - Batch #43 completed: checked=1000, 404_found=0, exceptions=0, total_checked=43000, total_404=23, pending_deletes=23, total_deleted=0, total_deactivated=0, avg_speed=798.9 records/sec
+2026-01-14 13:22:11,547 - INFO - Processing batch #44, last_id=73254
+2026-01-14 13:22:11,559 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:11,595 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/323352638/
+2026-01-14 13:22:11,972 - INFO - Batch #44 completed: checked=1000, 404_found=1, exceptions=0, total_checked=44000, total_404=24, pending_deletes=24, total_deleted=0, total_deactivated=0, avg_speed=811.1 records/sec
+2026-01-14 13:22:11,972 - INFO - Processing batch #45, last_id=74273
+2026-01-14 13:22:11,982 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:12,401 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/323945619/
+2026-01-14 13:22:12,585 - INFO - Batch #45 completed: checked=1000, 404_found=1, exceptions=0, total_checked=45000, total_404=25, pending_deletes=25, total_deleted=0, total_deactivated=0, avg_speed=820.2 records/sec
+2026-01-14 13:22:12,586 - INFO - Processing batch #46, last_id=75290
+2026-01-14 13:22:12,615 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:12,796 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/320009873/
+2026-01-14 13:22:13,064 - INFO - Batch #46 completed: checked=1000, 404_found=1, exceptions=0, total_checked=46000, total_404=26, pending_deletes=26, total_deleted=0, total_deactivated=0, avg_speed=831.2 records/sec
+2026-01-14 13:22:13,064 - INFO - Processing batch #47, last_id=76301
+2026-01-14 13:22:13,075 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:13,489 - INFO - Batch #47 completed: checked=1000, 404_found=0, exceptions=0, total_checked=47000, total_404=26, pending_deletes=26, total_deleted=0, total_deactivated=0, avg_speed=842.8 records/sec
+2026-01-14 13:22:13,489 - INFO - Processing batch #48, last_id=77319
+2026-01-14 13:22:13,501 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:14,783 - INFO - Batch #48 completed: checked=1000, 404_found=0, exceptions=0, total_checked=48000, total_404=26, pending_deletes=26, total_deleted=0, total_deactivated=0, avg_speed=841.2 records/sec
+2026-01-14 13:22:14,784 - INFO - Processing batch #49, last_id=78345
+2026-01-14 13:22:14,793 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:14,904 - WARNING - 404 found: https://www.cian.ru/sale/flat/318475037/
+2026-01-14 13:22:16,154 - INFO - Batch #49 completed: checked=1000, 404_found=1, exceptions=0, total_checked=49000, total_404=27, pending_deletes=27, total_deleted=0, total_deactivated=0, avg_speed=838.6 records/sec
+2026-01-14 13:22:16,154 - INFO - Processing batch #50, last_id=79373
+2026-01-14 13:22:16,167 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:16,558 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/322327514/
+2026-01-14 13:22:21,237 - INFO - Batch #50 completed: checked=1000, 404_found=1, exceptions=0, total_checked=50000, total_404=28, pending_deletes=28, total_deleted=0, total_deactivated=0, avg_speed=787.2 records/sec
+2026-01-14 13:22:21,237 - INFO - Processing batch #51, last_id=80392
+2026-01-14 13:22:21,247 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:21,667 - INFO - Batch #51 completed: checked=1000, 404_found=0, exceptions=0, total_checked=51000, total_404=28, pending_deletes=28, total_deleted=0, total_deactivated=0, avg_speed=797.6 records/sec
+2026-01-14 13:22:21,668 - INFO - Processing batch #52, last_id=81403
+2026-01-14 13:22:21,676 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:22,158 - INFO - Batch #52 completed: checked=1000, 404_found=0, exceptions=0, total_checked=52000, total_404=28, pending_deletes=28, total_deleted=0, total_deactivated=0, avg_speed=807.0 records/sec
+2026-01-14 13:22:22,158 - INFO - Processing batch #53, last_id=82431
+2026-01-14 13:22:22,167 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:22,185 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323790636/
+2026-01-14 13:22:22,516 - WARNING - 404 found: https://losino-petrovskiy.cian.ru/sale/flat/321767127/
+2026-01-14 13:22:22,624 - INFO - Batch #53 completed: checked=1000, 404_found=2, exceptions=0, total_checked=53000, total_404=30, pending_deletes=30, total_deleted=0, total_deactivated=0, avg_speed=816.6 records/sec
+2026-01-14 13:22:22,624 - INFO - Processing batch #54, last_id=83453
+2026-01-14 13:22:22,634 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:23,121 - INFO - Batch #54 completed: checked=1000, 404_found=0, exceptions=0, total_checked=54000, total_404=30, pending_deletes=30, total_deleted=0, total_deactivated=0, avg_speed=825.7 records/sec
+2026-01-14 13:22:23,121 - INFO - Processing batch #55, last_id=84473
+2026-01-14 13:22:23,129 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:28,534 - INFO - Batch #55 completed: checked=1000, 404_found=0, exceptions=0, total_checked=55000, total_404=30, pending_deletes=30, total_deleted=0, total_deactivated=0, avg_speed=776.7 records/sec
+2026-01-14 13:22:28,534 - INFO - Processing batch #56, last_id=85486
+2026-01-14 13:22:28,542 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:29,454 - WARNING - 404 found: https://domodedovo.cian.ru/sale/flat/323918328/
+2026-01-14 13:22:30,156 - INFO - Batch #56 completed: checked=1000, 404_found=1, exceptions=0, total_checked=56000, total_404=31, pending_deletes=31, total_deleted=0, total_deactivated=0, avg_speed=773.1 records/sec
+2026-01-14 13:22:30,156 - INFO - Processing batch #57, last_id=86501
+2026-01-14 13:22:30,164 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:31,654 - INFO - Batch #57 completed: checked=1000, 404_found=0, exceptions=0, total_checked=57000, total_404=31, pending_deletes=31, total_deleted=0, total_deactivated=0, avg_speed=771.0 records/sec
+2026-01-14 13:22:31,655 - INFO - Processing batch #58, last_id=87508
+2026-01-14 13:22:31,662 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:33,130 - INFO - Batch #58 completed: checked=1000, 404_found=0, exceptions=0, total_checked=58000, total_404=31, pending_deletes=31, total_deleted=0, total_deactivated=0, avg_speed=769.2 records/sec
+2026-01-14 13:22:33,130 - INFO - Processing batch #59, last_id=88515
+2026-01-14 13:22:33,140 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:33,753 - INFO - Batch #59 completed: checked=1000, 404_found=0, exceptions=0, total_checked=59000, total_404=31, pending_deletes=31, total_deleted=0, total_deactivated=0, avg_speed=776.0 records/sec
+2026-01-14 13:22:33,753 - INFO - Processing batch #60, last_id=89522
+2026-01-14 13:22:33,762 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:38,935 - INFO - Batch #60 completed: checked=1000, 404_found=0, exceptions=0, total_checked=60000, total_404=31, pending_deletes=31, total_deleted=0, total_deactivated=0, avg_speed=738.8 records/sec
+2026-01-14 13:22:38,935 - INFO - Processing batch #61, last_id=90535
+2026-01-14 13:22:38,943 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:38,999 - WARNING - 404 found: https://domodedovo.cian.ru/sale/flat/324250383/
+2026-01-14 13:22:39,000 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/322782425/
+2026-01-14 13:22:39,212 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322764389/
+2026-01-14 13:22:39,401 - INFO - Batch #61 completed: checked=1000, 404_found=3, exceptions=0, total_checked=61000, total_404=34, pending_deletes=34, total_deleted=0, total_deactivated=0, avg_speed=746.8 records/sec
+2026-01-14 13:22:39,401 - INFO - Processing batch #62, last_id=91551
+2026-01-14 13:22:39,407 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:39,529 - WARNING - 404 found: https://domodedovo.cian.ru/sale/flat/322566515/
+2026-01-14 13:22:40,611 - INFO - Batch #62 completed: checked=1000, 404_found=1, exceptions=0, total_checked=62000, total_404=35, pending_deletes=35, total_deleted=0, total_deactivated=0, avg_speed=748.0 records/sec
+2026-01-14 13:22:40,611 - INFO - Processing batch #63, last_id=92565
+2026-01-14 13:22:40,619 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:41,238 - INFO - Batch #63 completed: checked=1000, 404_found=0, exceptions=0, total_checked=63000, total_404=35, pending_deletes=35, total_deleted=0, total_deactivated=0, avg_speed=754.4 records/sec
+2026-01-14 13:22:41,239 - INFO - Processing batch #64, last_id=93573
+2026-01-14 13:22:41,248 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:46,561 - INFO - Batch #64 completed: checked=1000, 404_found=0, exceptions=0, total_checked=64000, total_404=35, pending_deletes=35, total_deleted=0, total_deactivated=0, avg_speed=720.4 records/sec
+2026-01-14 13:22:46,561 - INFO - Processing batch #65, last_id=94579
+2026-01-14 13:22:46,569 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:47,119 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/316454734/
+2026-01-14 13:22:48,206 - INFO - Batch #65 completed: checked=1000, 404_found=1, exceptions=0, total_checked=65000, total_404=36, pending_deletes=36, total_deleted=0, total_deactivated=0, avg_speed=718.4 records/sec
+2026-01-14 13:22:48,207 - INFO - Processing batch #66, last_id=95590
+2026-01-14 13:22:48,213 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:53,369 - INFO - Batch #66 completed: checked=1000, 404_found=0, exceptions=0, total_checked=66000, total_404=36, pending_deletes=36, total_deleted=0, total_deactivated=0, avg_speed=690.0 records/sec
+2026-01-14 13:22:53,369 - INFO - Processing batch #67, last_id=96624
+2026-01-14 13:22:53,377 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:54,817 - INFO - Batch #67 completed: checked=1000, 404_found=0, exceptions=0, total_checked=67000, total_404=36, pending_deletes=36, total_deleted=0, total_deactivated=0, avg_speed=690.1 records/sec
+2026-01-14 13:22:54,817 - INFO - Processing batch #68, last_id=97639
+2026-01-14 13:22:54,824 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:54,872 - WARNING - 404 found: https://reutov.cian.ru/sale/flat/322376896/
+2026-01-14 13:22:55,347 - INFO - Batch #68 completed: checked=1000, 404_found=1, exceptions=0, total_checked=68000, total_404=37, pending_deletes=37, total_deleted=0, total_deactivated=0, avg_speed=696.6 records/sec
+2026-01-14 13:22:55,347 - INFO - Processing batch #69, last_id=98653
+2026-01-14 13:22:55,358 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:55,674 - WARNING - 404 found: https://balashikha.cian.ru/sale/suburban/305010465/
+2026-01-14 13:22:56,715 - INFO - Batch #69 completed: checked=1000, 404_found=1, exceptions=0, total_checked=69000, total_404=38, pending_deletes=38, total_deleted=0, total_deactivated=0, avg_speed=697.0 records/sec
+2026-01-14 13:22:56,716 - INFO - Processing batch #70, last_id=99683
+2026-01-14 13:22:56,724 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:57,084 - INFO - Batch #70 completed: checked=1000, 404_found=0, exceptions=0, total_checked=70000, total_404=38, pending_deletes=38, total_deleted=0, total_deactivated=0, avg_speed=704.5 records/sec
+2026-01-14 13:22:57,084 - INFO - Processing batch #71, last_id=100698
+2026-01-14 13:22:57,092 - INFO - Fetched 1000 rows from database
+2026-01-14 13:22:57,259 - WARNING - 404 found: https://www.cian.ru/sale/flat/323597993/
+2026-01-14 13:23:00,513 - INFO - Batch #71 completed: checked=1000, 404_found=1, exceptions=0, total_checked=71000, total_404=39, pending_deletes=39, total_deleted=0, total_deactivated=0, avg_speed=690.7 records/sec
+2026-01-14 13:23:00,513 - INFO - Processing batch #72, last_id=101722
+2026-01-14 13:23:00,524 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:00,771 - WARNING - 404 found: https://khimki.cian.ru/sale/suburban/324257473/
+2026-01-14 13:23:00,881 - INFO - Batch #72 completed: checked=1000, 404_found=1, exceptions=0, total_checked=72000, total_404=40, pending_deletes=40, total_deleted=0, total_deactivated=0, avg_speed=698.0 records/sec
+2026-01-14 13:23:00,881 - INFO - Processing batch #73, last_id=102728
+2026-01-14 13:23:00,891 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:01,267 - INFO - Batch #73 completed: checked=1000, 404_found=0, exceptions=0, total_checked=73000, total_404=40, pending_deletes=40, total_deleted=0, total_deactivated=0, avg_speed=705.0 records/sec
+2026-01-14 13:23:01,267 - INFO - Processing batch #74, last_id=103741
+2026-01-14 13:23:01,280 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:02,442 - INFO - Batch #74 completed: checked=1000, 404_found=0, exceptions=0, total_checked=74000, total_404=40, pending_deletes=40, total_deleted=0, total_deactivated=0, avg_speed=706.7 records/sec
+2026-01-14 13:23:02,442 - INFO - Processing batch #75, last_id=104757
+2026-01-14 13:23:02,452 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:02,916 - INFO - Batch #75 completed: checked=1000, 404_found=0, exceptions=0, total_checked=75000, total_404=40, pending_deletes=40, total_deleted=0, total_deactivated=0, avg_speed=713.0 records/sec
+2026-01-14 13:23:02,916 - INFO - Processing batch #76, last_id=105780
+2026-01-14 13:23:02,925 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:03,126 - WARNING - 404 found: https://shchyolkovo.cian.ru/sale/suburban/324064245/
+2026-01-14 13:23:03,435 - INFO - Batch #76 completed: checked=1000, 404_found=1, exceptions=0, total_checked=76000, total_404=41, pending_deletes=41, total_deleted=0, total_deactivated=0, avg_speed=718.9 records/sec
+2026-01-14 13:23:03,436 - INFO - Processing batch #77, last_id=106793
+2026-01-14 13:23:03,444 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:03,593 - WARNING - 404 found: https://www.cian.ru/sale/suburban/319694116/
+2026-01-14 13:23:03,749 - WARNING - 404 found: https://www.cian.ru/sale/suburban/324369421/
+2026-01-14 13:23:04,647 - INFO - Batch #77 completed: checked=1000, 404_found=2, exceptions=0, total_checked=77000, total_404=43, pending_deletes=43, total_deleted=0, total_deactivated=0, avg_speed=720.1 records/sec
+2026-01-14 13:23:04,648 - INFO - Processing batch #78, last_id=107810
+2026-01-14 13:23:04,658 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:06,715 - INFO - Batch #78 completed: checked=1000, 404_found=0, exceptions=0, total_checked=78000, total_404=43, pending_deletes=43, total_deleted=0, total_deactivated=0, avg_speed=715.7 records/sec
+2026-01-14 13:23:06,716 - INFO - Processing batch #79, last_id=108837
+2026-01-14 13:23:06,726 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:06,805 - WARNING - 404 found: https://podolsk.cian.ru/sale/suburban/324027197/
+2026-01-14 13:23:08,333 - INFO - Batch #79 completed: checked=1000, 404_found=1, exceptions=0, total_checked=79000, total_404=44, pending_deletes=44, total_deleted=0, total_deactivated=0, avg_speed=714.2 records/sec
+2026-01-14 13:23:08,333 - INFO - Processing batch #80, last_id=109860
+2026-01-14 13:23:08,344 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:08,715 - INFO - Batch #80 completed: checked=1000, 404_found=0, exceptions=0, total_checked=80000, total_404=44, pending_deletes=44, total_deleted=0, total_deactivated=0, avg_speed=720.8 records/sec
+2026-01-14 13:23:08,715 - INFO - Processing batch #81, last_id=110877
+2026-01-14 13:23:08,726 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:10,094 - INFO - Batch #81 completed: checked=1000, 404_found=0, exceptions=0, total_checked=81000, total_404=44, pending_deletes=44, total_deleted=0, total_deactivated=0, avg_speed=720.8 records/sec
+2026-01-14 13:23:10,095 - INFO - Processing batch #82, last_id=111890
+2026-01-14 13:23:10,105 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:10,201 - WARNING - 404 found: https://www.cian.ru/sale/suburban/323149311/
+2026-01-14 13:23:11,489 - INFO - Batch #82 completed: checked=1000, 404_found=1, exceptions=0, total_checked=82000, total_404=45, pending_deletes=45, total_deleted=0, total_deactivated=0, avg_speed=720.8 records/sec
+2026-01-14 13:23:11,489 - INFO - Processing batch #83, last_id=112896
+2026-01-14 13:23:11,499 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:11,855 - INFO - Batch #83 completed: checked=1000, 404_found=0, exceptions=0, total_checked=83000, total_404=45, pending_deletes=45, total_deleted=0, total_deactivated=0, avg_speed=727.2 records/sec
+2026-01-14 13:23:11,855 - INFO - Processing batch #84, last_id=113905
+2026-01-14 13:23:11,864 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:12,233 - INFO - Batch #84 completed: checked=1000, 404_found=0, exceptions=0, total_checked=84000, total_404=45, pending_deletes=45, total_deleted=0, total_deactivated=0, avg_speed=733.6 records/sec
+2026-01-14 13:23:12,234 - INFO - Processing batch #85, last_id=114914
+2026-01-14 13:23:12,244 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:12,650 - WARNING - 404 found: https://www.cian.ru/sale/suburban/323260394/
+2026-01-14 13:23:12,650 - INFO - Batch #85 completed: checked=1000, 404_found=1, exceptions=0, total_checked=85000, total_404=46, pending_deletes=46, total_deleted=0, total_deactivated=0, avg_speed=739.6 records/sec
+2026-01-14 13:23:12,650 - INFO - Processing batch #86, last_id=115920
+2026-01-14 13:23:12,661 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:13,147 - INFO - Batch #86 completed: checked=1000, 404_found=0, exceptions=0, total_checked=86000, total_404=46, pending_deletes=46, total_deleted=0, total_deactivated=0, avg_speed=745.1 records/sec
+2026-01-14 13:23:13,147 - INFO - Processing batch #87, last_id=116931
+2026-01-14 13:23:13,156 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:14,356 - INFO - Batch #87 completed: checked=1000, 404_found=0, exceptions=0, total_checked=87000, total_404=46, pending_deletes=46, total_deleted=0, total_deactivated=0, avg_speed=745.9 records/sec
+2026-01-14 13:23:14,356 - INFO - Processing batch #88, last_id=117937
+2026-01-14 13:23:14,368 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:16,076 - INFO - Batch #88 completed: checked=1000, 404_found=0, exceptions=0, total_checked=88000, total_404=46, pending_deletes=46, total_deleted=0, total_deactivated=0, avg_speed=743.5 records/sec
+2026-01-14 13:23:16,076 - INFO - Processing batch #89, last_id=118944
+2026-01-14 13:23:16,086 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:16,598 - INFO - Batch #89 completed: checked=1000, 404_found=0, exceptions=0, total_checked=89000, total_404=46, pending_deletes=46, total_deleted=0, total_deactivated=0, avg_speed=748.7 records/sec
+2026-01-14 13:23:16,598 - INFO - Processing batch #90, last_id=119959
+2026-01-14 13:23:16,608 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:17,855 - INFO - Batch #90 completed: checked=1000, 404_found=0, exceptions=0, total_checked=90000, total_404=46, pending_deletes=46, total_deleted=0, total_deactivated=0, avg_speed=749.2 records/sec
+2026-01-14 13:23:17,856 - INFO - Processing batch #91, last_id=120962
+2026-01-14 13:23:17,864 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:18,241 - INFO - Batch #91 completed: checked=1000, 404_found=0, exceptions=0, total_checked=91000, total_404=46, pending_deletes=46, total_deleted=0, total_deactivated=0, avg_speed=755.1 records/sec
+2026-01-14 13:23:18,242 - INFO - Processing batch #92, last_id=121976
+2026-01-14 13:23:18,253 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:23,413 - INFO - Batch #92 completed: checked=1000, 404_found=0, exceptions=0, total_checked=92000, total_404=46, pending_deletes=46, total_deleted=0, total_deactivated=0, avg_speed=732.0 records/sec
+2026-01-14 13:23:23,413 - INFO - Processing batch #93, last_id=122980
+2026-01-14 13:23:23,423 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:23,565 - WARNING - 404 found: https://www.cian.ru/sale/suburban/320369324/
+2026-01-14 13:23:28,539 - INFO - Batch #93 completed: checked=1000, 404_found=1, exceptions=0, total_checked=93000, total_404=47, pending_deletes=47, total_deleted=0, total_deactivated=0, avg_speed=710.9 records/sec
+2026-01-14 13:23:28,539 - INFO - Processing batch #94, last_id=123994
+2026-01-14 13:23:28,550 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:28,817 - WARNING - 404 found: https://www.cian.ru/sale/suburban/323957491/
+2026-01-14 13:23:29,117 - INFO - Batch #94 completed: checked=1000, 404_found=1, exceptions=0, total_checked=94000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=715.4 records/sec
+2026-01-14 13:23:29,117 - INFO - Processing batch #95, last_id=125000
+2026-01-14 13:23:29,126 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:29,851 - INFO - Batch #95 completed: checked=1000, 404_found=0, exceptions=0, total_checked=95000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=719.0 records/sec
+2026-01-14 13:23:29,851 - INFO - Processing batch #96, last_id=126006
+2026-01-14 13:23:29,861 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:31,235 - INFO - Batch #96 completed: checked=1000, 404_found=0, exceptions=0, total_checked=96000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=719.0 records/sec
+2026-01-14 13:23:31,235 - INFO - Processing batch #97, last_id=127016
+2026-01-14 13:23:31,247 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:31,629 - INFO - Batch #97 completed: checked=1000, 404_found=0, exceptions=0, total_checked=97000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=724.4 records/sec
+2026-01-14 13:23:31,629 - INFO - Processing batch #98, last_id=128024
+2026-01-14 13:23:31,640 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:32,450 - INFO - Batch #98 completed: checked=1000, 404_found=0, exceptions=0, total_checked=98000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=727.4 records/sec
+2026-01-14 13:23:32,450 - INFO - Processing batch #99, last_id=129028
+2026-01-14 13:23:32,462 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:32,984 - INFO - Batch #99 completed: checked=1000, 404_found=0, exceptions=0, total_checked=99000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=731.9 records/sec
+2026-01-14 13:23:32,984 - INFO - Processing batch #100, last_id=130034
+2026-01-14 13:23:32,993 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:33,869 - INFO - Batch #100 completed: checked=1000, 404_found=0, exceptions=0, total_checked=100000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=734.5 records/sec
+2026-01-14 13:23:33,869 - INFO - Processing batch #101, last_id=131049
+2026-01-14 13:23:33,879 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:34,725 - INFO - Batch #101 completed: checked=1000, 404_found=0, exceptions=0, total_checked=101000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=737.2 records/sec
+2026-01-14 13:23:34,725 - INFO - Processing batch #102, last_id=132069
+2026-01-14 13:23:34,737 - INFO - Fetched 1000 rows from database
+2026-01-14 13:23:35,883 - INFO - Batch #102 completed: checked=1000, 404_found=0, exceptions=0, total_checked=102000, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=738.3 records/sec
+2026-01-14 13:23:35,883 - INFO - Processing batch #103, last_id=133672
+2026-01-14 13:23:35,888 - INFO - Fetched 208 rows from database
+2026-01-14 13:23:36,171 - INFO - Batch #103 completed: checked=208, 404_found=0, exceptions=0, total_checked=102208, total_404=48, pending_deletes=48, total_deleted=0, total_deactivated=0, avg_speed=738.2 records/sec
+2026-01-14 13:23:36,172 - INFO - Processing batch #104, last_id=133880
+2026-01-14 13:23:36,173 - INFO - No more rows to process
+2026-01-14 13:23:36,193 - INFO - Deleted 48 offers: [34925, 37138, 38610, 39872, 42380, 42795, 42932, 43658, 44770, 44839, 45275, 51936, 52679, 54109, 54467, 57589, 61698, 62642, 62653, 65516, 68593, 70509, 71179, 73329, 75277, 75776, 78642, 80369, 82436, 83288, 86189, 90625, 90660, 91097, 91847, 95200, 97742, 99376, 101168, 102446, 106337, 107157, 107587, 109021, 112151, 115909, 123400, 124836]
+2026-01-14 13:23:36,210 - INFO - ============================================================
+2026-01-14 13:23:36,210 - INFO - PROCESSING COMPLETED
+2026-01-14 13:23:36,211 - INFO - ============================================================
+2026-01-14 13:23:36,211 - INFO - Total batches processed: 104
+2026-01-14 13:23:36,211 - INFO - Total records checked: 102208
+2026-01-14 13:23:36,211 - INFO - Total 404 images found: 48
+2026-01-14 13:23:36,212 - INFO - Total offers deleted: 48
+2026-01-14 13:23:36,212 - INFO - Total offers deactivated: 0
+2026-01-14 13:23:36,212 - INFO - Delete mode: ENABLED
+2026-01-14 13:23:36,212 - INFO - Total time: 138.49 seconds
+2026-01-14 13:23:36,212 - INFO - Average speed: 738.0 records/sec
+2026-01-14 13:23:36,213 - INFO - 404 rate: 0.05%
+2026-01-14 13:23:36,213 - INFO - Delete rate: 100.00%

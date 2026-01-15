@@ -766,16 +766,14 @@ defineExpose({
 <style scoped>
 @reference "tailwindcss";
 
-.filters-sidebar {
-    @apply w-90 sticky top-16
-}
+
 
 .filters-header {
-    @apply flex justify-between px-6 py-5 border-b border-b-[var(--ui-border-muted)]
+    @apply flex justify-between px-6 py-5 rounded-lg ring-1 ring-gray-200
 }
 
 .filters-content {
-    @apply border border-[var(--ui-border-muted)] max-h-[89vh] flex flex-col w-90 sticky top-16 rounded-md
+    @apply rounded-lg ring-1 ring-gray-200 max-h-[89vh] flex flex-col w-96 sticky top-16 
 }
 
 .filter-section {

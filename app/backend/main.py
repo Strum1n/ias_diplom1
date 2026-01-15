@@ -7,7 +7,7 @@ from app.backend.api.analysis_routers import analysis_router
 from app.backend.api.auth_routers import auth_router
 from app.backend.api.offer_routers import offer_router
 from app.backend.auth_utils.auth import get_current_user, oauth2_scheme
-from app.backend.database.models import User
+from app.backend.db.models import User
 
 app = FastAPI()
 app.include_router(auth_router)

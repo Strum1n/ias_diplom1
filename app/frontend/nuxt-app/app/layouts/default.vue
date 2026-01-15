@@ -3,8 +3,6 @@
         <UContainer class="flex min-w-360 justify-between items-center gap-3 h-16">
 
 
-            <!-- Логотип + навигация -->
-
             <NuxtLink to="/" class="logo">
                 <UIcon name="ic:round-maps-home-work" class="logo-icon" />
                 <span>Real</span>
@@ -126,7 +124,7 @@ const items = ref([
 .logo {
     display: flex;
     align-items: end;
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 700;
 }
 

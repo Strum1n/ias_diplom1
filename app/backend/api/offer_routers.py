@@ -10,8 +10,8 @@ from app.backend.api.response_models import (
     OfferResponseWithPagination,
 )
 from app.backend.auth_utils.auth import get_current_user
-from app.backend.database.database import get_async_session
-from app.backend.database.models import *
+from app.backend.db.config import get_async_session
+from app.backend.db.models import *
 
 offer_router = APIRouter(prefix="/offers", tags=["Offers"])
 

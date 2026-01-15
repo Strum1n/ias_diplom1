@@ -6,22 +6,22 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     'vue-yandex-maps/nuxt',
     '@nuxtjs/mdc',
-    'nuxt-auth-utils',
+    'nuxt-auth-utils'
   ],
   devServer: {
     host: '127.0.0.1',
     port: 3000
   },
   yandexMaps: {
-    apikey: '314886a8-d1c0-4824-878c-46d76b59030a'
+    apikey: 'c5e28dc9-864f-4c09-9ae2-bd82441ff849'
   },
 
   css: ['~/assets/css/main.css'],
- runtimeConfig: {
-  apiBase: 'http://localhost:8000', // 👈 SSR (Node)
-  public: {
-    apiBase: '/api',                // 👈 browser (vite proxy)
-  },
-}
+  runtimeConfig: {
+    apiBase: 'http://localhost:8000',
+    public: {
+      apiBase: '/api',
+    },
+  }
 
 })

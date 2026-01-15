@@ -1,6 +1,6 @@
 <template>
     <div class="favorites-page">
-        <div class="container">
+        <div class="max-w-(--ui-container) mx-auto px-4 py-6">
             <header class="page-header">
                 <h1>Избранные объявления</h1>
                 <div class="stats">

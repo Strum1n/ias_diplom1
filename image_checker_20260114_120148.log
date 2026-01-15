@@ -1,0 +1,645 @@
+2026-01-14 12:01:48,226 - INFO - Processing batch #1, last_id=0
+2026-01-14 12:01:48,616 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:49,366 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/319010357/
+2026-01-14 12:01:49,463 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:49,463 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:49,463 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:49,463 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:49,464 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:49,464 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:49,464 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:49,464 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:49,464 - INFO - Batch #1 completed: checked=1000, 404_found=1, exceptions=8, total_checked=1000, total_404=1, avg_speed=807.3 records/sec
+2026-01-14 12:01:49,464 - INFO - Processing batch #2, last_id=29663
+2026-01-14 12:01:49,502 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:50,060 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,061 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,062 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,062 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,062 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,062 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,063 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,063 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,063 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,063 - INFO - Batch #2 completed: checked=1000, 404_found=0, exceptions=9, total_checked=2000, total_404=1, avg_speed=1088.3 records/sec
+2026-01-14 12:01:50,064 - INFO - Processing batch #3, last_id=30674
+2026-01-14 12:01:50,088 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:50,222 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/322878656/
+2026-01-14 12:01:50,555 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,555 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,556 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,557 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,558 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,559 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:50,560 - INFO - Batch #3 completed: checked=1000, 404_found=1, exceptions=53, total_checked=3000, total_404=2, avg_speed=1284.9 records/sec
+2026-01-14 12:01:50,561 - INFO - Processing batch #4, last_id=31678
+2026-01-14 12:01:50,581 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:51,028 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,029 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,030 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,031 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,032 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,033 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,034 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,034 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,034 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,034 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,034 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,035 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,036 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,036 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,036 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,036 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,036 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,036 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,036 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,037 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,037 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,037 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,037 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,037 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,037 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,038 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,038 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,038 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,038 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,038 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,038 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,038 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,038 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,039 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,039 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,039 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,039 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,039 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,039 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,039 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,039 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,040 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,040 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,040 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,040 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,040 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,040 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,040 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,041 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,041 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,042 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,042 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,042 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,042 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,042 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,042 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,042 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,042 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,043 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,043 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,043 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,043 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,043 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,043 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,043 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,044 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,045 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,046 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,046 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,046 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,046 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,046 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,046 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,046 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,046 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,047 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,047 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,047 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,047 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,047 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,047 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,047 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,048 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,049 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,050 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,050 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,050 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,050 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,050 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:51,050 - INFO - Batch #4 completed: checked=1000, 404_found=0, exceptions=170, total_checked=4000, total_404=2, avg_speed=1416.3 records/sec
+2026-01-14 12:01:51,050 - INFO - Processing batch #5, last_id=32678
+2026-01-14 12:01:51,082 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:52,143 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,143 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,143 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,143 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,143 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,143 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,143 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,144 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,145 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,146 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,146 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,146 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,146 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,146 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,147 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,147 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,147 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,147 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,147 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,147 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,148 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,148 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,148 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,148 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,148 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,149 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,149 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,149 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,149 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,150 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,151 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,152 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,153 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,153 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,153 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,153 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,156 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,157 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,157 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,157 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,157 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,157 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,157 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,157 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,157 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,158 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,158 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,158 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,158 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,159 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,160 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,161 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,161 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,161 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,161 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,161 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,161 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,161 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,161 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,162 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,162 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,162 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,162 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,162 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,162 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,162 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,162 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,163 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,164 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,164 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,165 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,166 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,167 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,168 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,168 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,168 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,168 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,168 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,168 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,168 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,168 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,169 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,169 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,169 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,169 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,169 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,169 - INFO - Batch #5 completed: checked=1000, 404_found=0, exceptions=192, total_checked=5000, total_404=2, avg_speed=1267.8 records/sec
+2026-01-14 12:01:52,170 - INFO - Processing batch #6, last_id=33694
+2026-01-14 12:01:52,213 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:52,272 - WARNING - 404 found: https://www.cian.ru/sale/flat/321863109/
+2026-01-14 12:01:52,278 - WARNING - 404 found: https://www.cian.ru/sale/flat/321904685/
+2026-01-14 12:01:52,294 - WARNING - 404 found: https://www.cian.ru/sale/flat/321002464/
+2026-01-14 12:01:52,412 - WARNING - 404 found: https://www.cian.ru/sale/flat/323391123/
+2026-01-14 12:01:52,467 - WARNING - 404 found: https://www.cian.ru/sale/flat/323018326/
+2026-01-14 12:01:52,469 - WARNING - 404 found: https://www.cian.ru/sale/flat/323053875/
+2026-01-14 12:01:52,487 - WARNING - 404 found: https://www.cian.ru/sale/flat/323013405/
+2026-01-14 12:01:52,679 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,680 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,680 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,680 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,681 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,681 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,681 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,681 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,681 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,681 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,682 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,682 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,682 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,682 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:52,682 - INFO - Batch #6 completed: checked=1000, 404_found=7, exceptions=14, total_checked=6000, total_404=9, avg_speed=1346.3 records/sec
+2026-01-14 12:01:52,682 - INFO - Processing batch #7, last_id=34748
+2026-01-14 12:01:52,717 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:52,932 - WARNING - 404 found: https://www.cian.ru/sale/flat/323203512/
+2026-01-14 12:01:52,933 - WARNING - 404 found: https://www.cian.ru/sale/flat/323183070/
+2026-01-14 12:01:53,018 - WARNING - 404 found: https://www.cian.ru/sale/flat/322090527/
+2026-01-14 12:01:53,131 - WARNING - 404 found: https://www.cian.ru/sale/flat/318557253/
+2026-01-14 12:01:53,226 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,227 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,227 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,227 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,227 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,227 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,227 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,227 - INFO - Batch #7 completed: checked=1000, 404_found=4, exceptions=7, total_checked=7000, total_404=13, avg_speed=1399.5 records/sec
+2026-01-14 12:01:53,227 - INFO - Processing batch #8, last_id=35794
+2026-01-14 12:01:53,252 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:53,359 - WARNING - 404 found: https://www.cian.ru/sale/flat/322816100/
+2026-01-14 12:01:53,406 - WARNING - 404 found: https://www.cian.ru/sale/flat/322499525/
+2026-01-14 12:01:53,424 - WARNING - 404 found: https://www.cian.ru/sale/flat/322164302/
+2026-01-14 12:01:53,559 - WARNING - 404 found: https://www.cian.ru/sale/flat/321951854/
+2026-01-14 12:01:53,673 - WARNING - 404 found: https://www.cian.ru/sale/flat/323261061/
+2026-01-14 12:01:53,789 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,791 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:53,791 - INFO - Batch #8 completed: checked=1000, 404_found=5, exceptions=11, total_checked=8000, total_404=18, avg_speed=1437.5 records/sec
+2026-01-14 12:01:53,791 - INFO - Processing batch #9, last_id=36828
+2026-01-14 12:01:53,816 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:58,979 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,979 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,979 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,980 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,981 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,981 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,981 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,981 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:58,981 - INFO - Batch #9 completed: checked=1000, 404_found=0, exceptions=16, total_checked=9000, total_404=18, avg_speed=836.8 records/sec
+2026-01-14 12:01:58,981 - INFO - Processing batch #10, last_id=37865
+2026-01-14 12:01:59,002 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:59,298 - WARNING - 404 found: https://www.cian.ru/sale/flat/321099023/
+2026-01-14 12:01:59,598 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:59,598 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:59,599 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:59,599 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:59,599 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:59,599 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:59,599 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:59,599 - ERROR - Task exception: list index out of range
+2026-01-14 12:01:59,599 - INFO - Batch #10 completed: checked=1000, 404_found=1, exceptions=8, total_checked=10000, total_404=19, avg_speed=879.2 records/sec
+2026-01-14 12:01:59,599 - INFO - Processing batch #11, last_id=38905
+2026-01-14 12:01:59,623 - INFO - Fetched 1000 rows from database
+2026-01-14 12:01:59,654 - WARNING - 404 found: https://www.cian.ru/sale/flat/322928130/
+2026-01-14 12:01:59,720 - WARNING - 404 found: https://www.cian.ru/sale/flat/321426960/
+2026-01-14 12:02:00,255 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,256 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,256 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,256 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,256 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,257 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,257 - INFO - Batch #11 completed: checked=1000, 404_found=2, exceptions=6, total_checked=11000, total_404=21, avg_speed=914.3 records/sec
+2026-01-14 12:02:00,257 - INFO - Processing batch #12, last_id=39941
+2026-01-14 12:02:00,278 - INFO - Fetched 1000 rows from database
+2026-01-14 12:02:00,332 - WARNING - 404 found: https://www.cian.ru/sale/flat/323405557/
+2026-01-14 12:02:00,847 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,848 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,848 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,848 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,848 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,848 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,848 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:00,849 - INFO - Batch #12 completed: checked=1000, 404_found=1, exceptions=7, total_checked=12000, total_404=22, avg_speed=950.6 records/sec
+2026-01-14 12:02:00,849 - INFO - Processing batch #13, last_id=40979
+2026-01-14 12:02:00,877 - INFO - Fetched 1000 rows from database
+2026-01-14 12:02:03,280 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,280 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,280 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,280 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,280 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,280 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,280 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,281 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,281 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,281 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:03,281 - INFO - Batch #13 completed: checked=1000, 404_found=0, exceptions=10, total_checked=13000, total_404=22, avg_speed=863.5 records/sec
+2026-01-14 12:02:03,281 - INFO - Processing batch #14, last_id=42040
+2026-01-14 12:02:03,304 - INFO - Fetched 1000 rows from database
+2026-01-14 12:02:03,564 - WARNING - 404 found: https://www.cian.ru/sale/flat/322439948/
+2026-01-14 12:02:03,765 - WARNING - 404 found: https://www.cian.ru/sale/flat/308425560/
+2026-01-14 12:02:04,788 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,788 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,788 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,788 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,788 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,788 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,788 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,789 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,789 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,789 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,789 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,789 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,789 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,789 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,790 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:04,790 - INFO - Batch #14 completed: checked=1000, 404_found=2, exceptions=15, total_checked=14000, total_404=24, avg_speed=845.2 records/sec
+2026-01-14 12:02:04,790 - INFO - Processing batch #15, last_id=43101
+2026-01-14 12:02:04,810 - INFO - Fetched 1000 rows from database
+2026-01-14 12:02:04,969 - WARNING - 404 found: https://www.cian.ru/sale/flat/323123467/
+2026-01-14 12:02:04,976 - WARNING - 404 found: https://www.cian.ru/sale/flat/323121816/
+2026-01-14 12:02:05,002 - WARNING - 404 found: https://www.cian.ru/sale/flat/323039190/
+2026-01-14 12:02:05,081 - WARNING - 404 found: https://www.cian.ru/sale/flat/322734030/
+2026-01-14 12:02:05,589 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:05,590 - INFO - Batch #15 completed: checked=1000, 404_found=4, exceptions=9, total_checked=15000, total_404=28, avg_speed=863.8 records/sec
+2026-01-14 12:02:05,591 - INFO - Processing batch #16, last_id=44150
+2026-01-14 12:02:05,664 - INFO - Fetched 1000 rows from database
+2026-01-14 12:02:05,846 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/322667216/
+2026-01-14 12:02:06,815 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,817 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,817 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,817 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,817 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,817 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,818 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,818 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,818 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,818 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,818 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:06,818 - INFO - Batch #16 completed: checked=1000, 404_found=1, exceptions=11, total_checked=16000, total_404=29, avg_speed=860.5 records/sec
+2026-01-14 12:02:06,819 - INFO - Processing batch #17, last_id=45188
+2026-01-14 12:02:06,903 - INFO - Fetched 1000 rows from database
+2026-01-14 12:02:07,055 - WARNING - 404 found: https://orekhovo-zuyevo.cian.ru/sale/flat/323540612/
+2026-01-14 12:02:07,061 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323388319/
+2026-01-14 12:02:07,139 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/322932385/
+2026-01-14 12:02:07,195 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/322574914/
+2026-01-14 12:02:07,352 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,353 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,353 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,353 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,353 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,353 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,353 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,353 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,353 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,354 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,354 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,354 - ERROR - Task exception: list index out of range
+2026-01-14 12:02:07,354 - INFO - Batch #17 completed: checked=1000, 404_found=4, exceptions=12, total_checked=17000, total_404=33, avg_speed=888.7 records/sec
+2026-01-14 12:02:07,354 - INFO - Processing batch #18, last_id=46217
+2026-01-14 12:02:07,430 - INFO - Fetched 1000 rows from database
+2026-01-14 12:02:07,695 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323653721/

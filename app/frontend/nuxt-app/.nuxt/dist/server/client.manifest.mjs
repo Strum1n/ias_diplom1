@@ -1,1 +1,1 @@
-export { default } from "file:///G:/My%20Programs/IAS-diplom/app/frontend/nuxt-app/node_modules/@nuxt/vite-builder/dist/runtime/client.manifest.mjs"
+export { default } from "file:///G:/My%20Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@nuxt/vite-builder/dist/runtime/client.manifest.mjs"

@@ -1,0 +1,39 @@
+2026-01-14 13:56:33,951 - INFO - Batch #1, last_id=0
+2026-01-14 13:56:34,687 - WARNING - 404 image detected | offer_id=29097 | image_url=https://images.cdn-cian.ru/images/2521054706-1.jpg
+2026-01-14 13:56:34,822 - INFO - checked=500, 404=1, deleted=0, deactivated=0, speed=573.9/s
+2026-01-14 13:56:34,822 - INFO - Batch #2, last_id=29155
+2026-01-14 13:56:39,970 - INFO - checked=1000, 404=1, deleted=0, deactivated=0, speed=166.1/s
+2026-01-14 13:56:39,971 - INFO - Batch #3, last_id=29665
+2026-01-14 13:56:40,459 - INFO - checked=1500, 404=1, deleted=0, deactivated=0, speed=230.5/s
+2026-01-14 13:56:40,460 - INFO - Batch #4, last_id=30170
+2026-01-14 13:56:40,885 - INFO - checked=2000, 404=1, deleted=0, deactivated=0, speed=288.4/s
+2026-01-14 13:56:40,886 - INFO - Batch #5, last_id=30678
+2026-01-14 13:56:41,108 - WARNING - 404 image detected | offer_id=31009 | image_url=https://images.cdn-cian.ru/images/2685216470-1.jpg
+2026-01-14 13:56:41,116 - WARNING - 404 image detected | offer_id=31008 | image_url=https://images.cdn-cian.ru/images/2661969946-1.jpg
+2026-01-14 13:56:41,274 - INFO - checked=2500, 404=3, deleted=0, deactivated=0, speed=341.4/s
+2026-01-14 13:56:41,274 - INFO - Batch #6, last_id=31182
+2026-01-14 13:56:41,680 - INFO - checked=3000, 404=3, deleted=0, deactivated=0, speed=388.1/s
+2026-01-14 13:56:41,680 - INFO - Batch #7, last_id=31690
+2026-01-14 13:56:42,165 - INFO - checked=3500, 404=3, deleted=0, deactivated=0, speed=426.1/s
+2026-01-14 13:56:42,165 - INFO - Batch #8, last_id=32202
+2026-01-14 13:56:42,613 - INFO - checked=4000, 404=3, deleted=0, deactivated=0, speed=461.7/s
+2026-01-14 13:56:42,613 - INFO - Batch #9, last_id=32703
+2026-01-14 13:56:44,046 - INFO - checked=4500, 404=3, deleted=0, deactivated=0, speed=445.7/s
+2026-01-14 13:56:44,046 - INFO - Batch #10, last_id=33206
+2026-01-14 13:56:44,400 - INFO - checked=5000, 404=3, deleted=0, deactivated=0, speed=478.5/s
+2026-01-14 13:56:44,401 - INFO - Batch #11, last_id=33721
+2026-01-14 13:56:44,796 - INFO - checked=5500, 404=3, deleted=0, deactivated=0, speed=507.1/s
+2026-01-14 13:56:44,796 - INFO - Batch #12, last_id=34253
+2026-01-14 13:56:45,234 - INFO - checked=6000, 404=3, deleted=0, deactivated=0, speed=531.7/s
+2026-01-14 13:56:45,234 - INFO - Batch #13, last_id=34792
+2026-01-14 13:56:45,490 - WARNING - 404 image detected | offer_id=35192 | image_url=https://images.cdn-cian.ru/images/kvartira-moskva-bulvar-marshala-rokossovskogo-2674639291-1.jpg
+2026-01-14 13:56:45,644 - INFO - checked=6500, 404=4, deleted=0, deactivated=0, speed=555.9/s
+2026-01-14 13:56:45,644 - INFO - Batch #14, last_id=35332
+2026-01-14 13:56:47,083 - INFO - checked=7000, 404=4, deleted=0, deactivated=0, speed=533.0/s
+2026-01-14 13:56:47,083 - INFO - Batch #15, last_id=35861
+2026-01-14 13:56:47,506 - INFO - checked=7500, 404=4, deleted=0, deactivated=0, speed=553.3/s
+2026-01-14 13:56:47,506 - INFO - Batch #16, last_id=36395
+2026-01-14 13:56:47,670 - WARNING - 404 image detected | offer_id=36637 | image_url=https://images.cdn-cian.ru/images/2680294002-1.jpg
+2026-01-14 13:56:47,944 - INFO - checked=8000, 404=5, deleted=0, deactivated=0, speed=571.7/s
+2026-01-14 13:56:47,944 - INFO - Batch #17, last_id=36917
+2026-01-14 13:56:48,028 - WARNING - 404 image detected | offer_id=37040 | image_url=https://images.cdn-cian.ru/images/2578090238-1.jpg

@@ -1,0 +1,39 @@
+2026-01-14 13:30:10,932 - INFO - Starting in check-only mode (concurrency=50, batch=1000)
+2026-01-14 13:30:10,933 - INFO - Processing batch #1, last_id=0
+2026-01-14 13:30:11,102 - INFO - Fetched 1000 rows from database
+2026-01-14 13:30:11,624 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/318647215/
+2026-01-14 13:30:12,237 - INFO - Batch #1 completed: checked=1000, 404_found=1, exceptions=0, total_checked=1000, total_404=1, pending_deletes=1, total_deleted=0, total_deactivated=0, avg_speed=767.1 records/sec
+2026-01-14 13:30:12,237 - INFO - Processing batch #2, last_id=29665
+2026-01-14 13:30:12,246 - INFO - Fetched 1000 rows from database
+2026-01-14 13:30:12,711 - INFO - Batch #2 completed: checked=1000, 404_found=0, exceptions=0, total_checked=2000, total_404=1, pending_deletes=1, total_deleted=0, total_deactivated=0, avg_speed=1125.2 records/sec
+2026-01-14 13:30:12,711 - INFO - Processing batch #3, last_id=30678
+2026-01-14 13:30:12,719 - INFO - Fetched 1000 rows from database
+2026-01-14 13:30:13,379 - INFO - Batch #3 completed: checked=1000, 404_found=0, exceptions=0, total_checked=3000, total_404=1, pending_deletes=1, total_deleted=0, total_deactivated=0, avg_speed=1226.7 records/sec
+2026-01-14 13:30:13,379 - INFO - Processing batch #4, last_id=31690
+2026-01-14 13:30:13,397 - INFO - Fetched 1000 rows from database
+2026-01-14 13:30:15,582 - INFO - Batch #4 completed: checked=1000, 404_found=0, exceptions=0, total_checked=4000, total_404=1, pending_deletes=1, total_deleted=0, total_deactivated=0, avg_speed=860.5 records/sec
+2026-01-14 13:30:15,582 - INFO - Processing batch #5, last_id=32703
+2026-01-14 13:30:15,590 - INFO - Fetched 1000 rows from database
+2026-01-14 13:30:16,102 - INFO - Batch #5 completed: checked=1000, 404_found=0, exceptions=0, total_checked=5000, total_404=1, pending_deletes=1, total_deleted=0, total_deactivated=0, avg_speed=967.4 records/sec
+2026-01-14 13:30:16,102 - INFO - Processing batch #6, last_id=33721
+2026-01-14 13:30:16,111 - INFO - Fetched 1000 rows from database
+2026-01-14 13:30:17,514 - INFO - Batch #6 completed: checked=1000, 404_found=0, exceptions=0, total_checked=6000, total_404=1, pending_deletes=1, total_deleted=0, total_deactivated=0, avg_speed=911.7 records/sec
+2026-01-14 13:30:17,515 - INFO - Processing batch #7, last_id=34792
+2026-01-14 13:30:17,521 - INFO - Fetched 1000 rows from database
+2026-01-14 13:30:17,607 - WARNING - 404 found: https://www.cian.ru/sale/flat/323522614/
+2026-01-14 13:30:17,988 - INFO - Batch #7 completed: checked=1000, 404_found=1, exceptions=0, total_checked=7000, total_404=2, pending_deletes=2, total_deleted=0, total_deactivated=0, avg_speed=992.2 records/sec
+2026-01-14 13:30:17,988 - INFO - Processing batch #8, last_id=35861
+2026-01-14 13:30:17,996 - INFO - Fetched 1000 rows from database
+2026-01-14 13:30:18,439 - INFO - ============================================================
+2026-01-14 13:30:18,439 - INFO - PROCESSING COMPLETED
+2026-01-14 13:30:18,439 - INFO - ============================================================
+2026-01-14 13:30:18,439 - INFO - Total batches processed: 8
+2026-01-14 13:30:18,439 - INFO - Total records checked: 7000
+2026-01-14 13:30:18,439 - INFO - Total 404 images found: 2
+2026-01-14 13:30:18,439 - INFO - Total offers deleted: 0
+2026-01-14 13:30:18,440 - INFO - Total offers deactivated: 0
+2026-01-14 13:30:18,440 - INFO - Delete mode: DRY RUN (no deletion)
+2026-01-14 13:30:18,440 - INFO - Total time: 7.51 seconds
+2026-01-14 13:30:18,440 - INFO - Average speed: 932.6 records/sec
+2026-01-14 13:30:18,440 - INFO - 404 rate: 0.03%
+2026-01-14 13:30:18,440 - INFO - Delete rate: 0.00%

@@ -1,0 +1,236 @@
+2026-01-14 14:09:13,215 - INFO - Batch #1, last_id=0
+2026-01-14 14:09:14,211 - INFO - checked=1000, 404=0, deleted=0, deactivated=0, speed=1003.6/s
+2026-01-14 14:09:14,211 - INFO - Batch #2, last_id=29666
+2026-01-14 14:09:15,574 - INFO - checked=2000, 404=0, deleted=0, deactivated=0, speed=847.5/s
+2026-01-14 14:09:15,574 - INFO - Batch #3, last_id=30679
+2026-01-14 14:09:16,202 - INFO - checked=3000, 404=0, deleted=0, deactivated=0, speed=1004.2/s
+2026-01-14 14:09:16,202 - INFO - Batch #4, last_id=31693
+2026-01-14 14:09:17,546 - INFO - checked=4000, 404=0, deleted=0, deactivated=0, speed=923.5/s
+2026-01-14 14:09:17,546 - INFO - Batch #5, last_id=32706
+2026-01-14 14:09:19,715 - INFO - checked=5000, 404=0, deleted=0, deactivated=0, speed=769.2/s
+2026-01-14 14:09:19,715 - INFO - Batch #6, last_id=33724
+2026-01-14 14:09:20,365 - INFO - checked=6000, 404=0, deleted=0, deactivated=0, speed=839.0/s
+2026-01-14 14:09:20,366 - INFO - Batch #7, last_id=34795
+2026-01-14 14:09:21,569 - INFO - checked=7000, 404=0, deleted=0, deactivated=0, speed=837.8/s
+2026-01-14 14:09:21,569 - INFO - Batch #8, last_id=35866
+2026-01-14 14:09:22,241 - INFO - checked=8000, 404=0, deleted=0, deactivated=0, speed=886.3/s
+2026-01-14 14:09:22,242 - INFO - Batch #9, last_id=36923
+2026-01-14 14:09:22,323 - WARNING - 404 image found | offer_id=37040 | offer_url=https://www.cian.ru/sale/flat/320256265/
+2026-01-14 14:09:23,104 - INFO - checked=9000, 404=1, deleted=0, deactivated=0, speed=910.0/s
+2026-01-14 14:09:23,104 - INFO - Batch #10, last_id=37982
+2026-01-14 14:09:23,757 - INFO - checked=10000, 404=1, deleted=0, deactivated=0, speed=948.5/s
+2026-01-14 14:09:23,758 - INFO - Batch #11, last_id=39034
+2026-01-14 14:09:24,295 - WARNING - 404 image found | offer_id=40028 | offer_url=https://www.cian.ru/sale/flat/323326824/
+2026-01-14 14:09:24,460 - INFO - checked=11000, 404=2, deleted=0, deactivated=0, speed=978.1/s
+2026-01-14 14:09:24,461 - INFO - Batch #12, last_id=40094
+2026-01-14 14:09:25,271 - INFO - checked=12000, 404=2, deleted=0, deactivated=0, speed=995.3/s
+2026-01-14 14:09:25,271 - INFO - Batch #13, last_id=41144
+2026-01-14 14:09:30,517 - INFO - checked=13000, 404=2, deleted=0, deactivated=0, speed=751.3/s
+2026-01-14 14:09:30,517 - INFO - Batch #14, last_id=42217
+2026-01-14 14:09:31,344 - INFO - checked=14000, 404=2, deleted=0, deactivated=0, speed=772.2/s
+2026-01-14 14:09:31,345 - INFO - Batch #15, last_id=43300
+2026-01-14 14:09:32,278 - INFO - checked=15000, 404=2, deleted=0, deactivated=0, speed=786.8/s
+2026-01-14 14:09:32,278 - INFO - Batch #16, last_id=44375
+2026-01-14 14:09:32,484 - WARNING - 404 image found | offer_id=44736 | offer_url=https://korolev.cian.ru/sale/flat/321895461/
+2026-01-14 14:09:32,908 - INFO - checked=16000, 404=3, deleted=0, deactivated=0, speed=812.5/s
+2026-01-14 14:09:32,908 - INFO - Batch #17, last_id=45431
+2026-01-14 14:09:33,114 - WARNING - 404 image found | offer_id=45775 | offer_url=https://dmitrov.cian.ru/sale/flat/322909537/
+2026-01-14 14:09:38,358 - INFO - checked=17000, 404=4, deleted=0, deactivated=0, speed=676.1/s
+2026-01-14 14:09:38,358 - INFO - Batch #18, last_id=46475
+2026-01-14 14:09:39,201 - INFO - checked=18000, 404=4, deleted=0, deactivated=0, speed=692.6/s
+2026-01-14 14:09:39,202 - INFO - Batch #19, last_id=47516
+2026-01-14 14:09:39,234 - WARNING - 404 image found | offer_id=47566 | offer_url=https://roshal.cian.ru/sale/flat/320747175/
+2026-01-14 14:09:39,582 - WARNING - 404 image found | offer_id=48319 | offer_url=https://dmitrov.cian.ru/sale/flat/323114840/
+2026-01-14 14:09:39,825 - INFO - checked=19000, 404=6, deleted=0, deactivated=0, speed=714.0/s
+2026-01-14 14:09:39,826 - INFO - Batch #20, last_id=48560
+2026-01-14 14:09:40,372 - INFO - checked=20000, 404=6, deleted=0, deactivated=0, speed=736.4/s
+2026-01-14 14:09:40,372 - INFO - Batch #21, last_id=49590
+2026-01-14 14:09:41,228 - INFO - checked=21000, 404=6, deleted=0, deactivated=0, speed=749.6/s
+2026-01-14 14:09:41,229 - INFO - Batch #22, last_id=50604
+2026-01-14 14:09:42,735 - INFO - checked=22000, 404=6, deleted=0, deactivated=0, speed=745.2/s
+2026-01-14 14:09:42,735 - INFO - Batch #23, last_id=51611
+2026-01-14 14:09:42,857 - WARNING - 404 image found | offer_id=51835 | offer_url=https://lyubertsy.cian.ru/sale/flat/316851882/
+2026-01-14 14:09:43,366 - INFO - checked=23000, 404=7, deleted=0, deactivated=0, speed=762.8/s
+2026-01-14 14:09:43,367 - INFO - Batch #24, last_id=52637
+2026-01-14 14:09:44,881 - INFO - checked=24000, 404=7, deleted=0, deactivated=0, speed=757.9/s
+2026-01-14 14:09:44,881 - INFO - Batch #25, last_id=53675
+2026-01-14 14:09:45,438 - INFO - checked=25000, 404=7, deleted=0, deactivated=0, speed=775.8/s
+2026-01-14 14:09:45,438 - INFO - Batch #26, last_id=54712
+2026-01-14 14:09:46,084 - INFO - checked=26000, 404=7, deleted=0, deactivated=0, speed=791.0/s
+2026-01-14 14:09:46,085 - INFO - Batch #27, last_id=55755
+2026-01-14 14:09:46,478 - WARNING - 404 image found | offer_id=56578 | offer_url=https://dmitrov.cian.ru/sale/flat/323634752/
+2026-01-14 14:09:47,716 - INFO - checked=27000, 404=8, deleted=0, deactivated=0, speed=782.6/s
+2026-01-14 14:09:47,717 - INFO - Batch #28, last_id=56798
+2026-01-14 14:09:48,150 - WARNING - 404 image found | offer_id=57663 | offer_url=https://mytishchi.cian.ru/sale/flat/323209296/
+2026-01-14 14:09:48,380 - INFO - checked=28000, 404=9, deleted=0, deactivated=0, speed=796.2/s
+2026-01-14 14:09:48,380 - INFO - Batch #29, last_id=57840
+2026-01-14 14:09:48,965 - INFO - checked=29000, 404=9, deleted=0, deactivated=0, speed=811.2/s
+2026-01-14 14:09:48,965 - INFO - Batch #30, last_id=58880
+2026-01-14 14:09:50,502 - INFO - checked=30000, 404=9, deleted=0, deactivated=0, speed=804.6/s
+2026-01-14 14:09:50,502 - INFO - Batch #31, last_id=59891
+2026-01-14 14:09:51,854 - INFO - checked=31000, 404=9, deleted=0, deactivated=0, speed=802.3/s
+2026-01-14 14:09:51,855 - INFO - Batch #32, last_id=60895
+2026-01-14 14:09:51,982 - WARNING - 404 image found | offer_id=61136 | offer_url=https://kolomna.cian.ru/sale/flat/323294858/
+2026-01-14 14:09:52,153 - WARNING - 404 image found | offer_id=61532 | offer_url=https://dmitrov.cian.ru/sale/flat/322323943/
+2026-01-14 14:09:52,391 - INFO - checked=32000, 404=11, deleted=0, deactivated=0, speed=816.8/s
+2026-01-14 14:09:52,392 - INFO - Batch #33, last_id=61940
+2026-01-14 14:09:52,587 - WARNING - 404 image found | offer_id=62417 | offer_url=https://dmitrov.cian.ru/sale/flat/323669948/
+2026-01-14 14:09:52,886 - INFO - checked=33000, 404=12, deleted=0, deactivated=0, speed=831.8/s
+2026-01-14 14:09:52,887 - INFO - Batch #34, last_id=62978
+2026-01-14 14:09:53,069 - WARNING - 404 image found | offer_id=63381 | offer_url=https://yakhroma.cian.ru/sale/flat/320449531/
+2026-01-14 14:09:53,807 - INFO - checked=34000, 404=13, deleted=0, deactivated=0, speed=837.6/s
+2026-01-14 14:09:53,807 - INFO - Batch #35, last_id=63997
+2026-01-14 14:09:54,533 - INFO - checked=35000, 404=13, deleted=0, deactivated=0, speed=847.1/s
+2026-01-14 14:09:54,533 - INFO - Batch #36, last_id=65038
+2026-01-14 14:09:55,018 - INFO - checked=36000, 404=13, deleted=0, deactivated=0, speed=861.2/s
+2026-01-14 14:09:55,018 - INFO - Batch #37, last_id=66069
+2026-01-14 14:09:55,527 - INFO - checked=37000, 404=13, deleted=0, deactivated=0, speed=874.4/s
+2026-01-14 14:09:55,527 - INFO - Batch #38, last_id=67097
+2026-01-14 14:09:55,922 - WARNING - 404 image found | offer_id=68001 | offer_url=https://dmitrov.cian.ru/sale/flat/323726039/
+2026-01-14 14:09:56,046 - INFO - checked=38000, 404=14, deleted=0, deactivated=0, speed=887.2/s
+2026-01-14 14:09:56,046 - INFO - Batch #39, last_id=68128
+2026-01-14 14:09:56,535 - INFO - checked=39000, 404=14, deleted=0, deactivated=0, speed=900.3/s
+2026-01-14 14:09:56,535 - INFO - Batch #40, last_id=69168
+2026-01-14 14:09:57,031 - INFO - checked=40000, 404=14, deleted=0, deactivated=0, speed=912.9/s
+2026-01-14 14:09:57,032 - INFO - Batch #41, last_id=70200
+2026-01-14 14:09:57,449 - INFO - checked=41000, 404=14, deleted=0, deactivated=0, speed=926.9/s
+2026-01-14 14:09:57,449 - INFO - Batch #42, last_id=71243
+2026-01-14 14:09:58,069 - INFO - checked=42000, 404=14, deleted=0, deactivated=0, speed=936.4/s
+2026-01-14 14:09:58,069 - INFO - Batch #43, last_id=72280
+2026-01-14 14:09:58,510 - INFO - checked=43000, 404=14, deleted=0, deactivated=0, speed=949.3/s
+2026-01-14 14:09:58,511 - INFO - Batch #44, last_id=73301
+2026-01-14 14:09:58,541 - WARNING - 404 image found | offer_id=73327 | offer_url=https://lyubertsy.cian.ru/sale/flat/323360424/
+2026-01-14 14:09:58,923 - INFO - checked=44000, 404=15, deleted=0, deactivated=0, speed=962.6/s
+2026-01-14 14:09:58,924 - INFO - Batch #45, last_id=74321
+2026-01-14 14:09:58,963 - WARNING - 404 image found | offer_id=74379 | offer_url=https://balashikha.cian.ru/sale/flat/323614377/
+2026-01-14 14:09:59,376 - INFO - checked=45000, 404=16, deleted=0, deactivated=0, speed=974.8/s
+2026-01-14 14:09:59,376 - INFO - Batch #46, last_id=75340
+2026-01-14 14:09:59,520 - WARNING - 404 image found | offer_id=75621 | offer_url=https://dolgoprudny.cian.ru/sale/flat/321991358/
+2026-01-14 14:09:59,880 - INFO - checked=46000, 404=17, deleted=0, deactivated=0, speed=985.7/s
+2026-01-14 14:09:59,881 - INFO - Batch #47, last_id=76354
+2026-01-14 14:10:00,324 - INFO - checked=47000, 404=17, deleted=0, deactivated=0, speed=997.7/s
+2026-01-14 14:10:00,325 - INFO - Batch #48, last_id=77374
+2026-01-14 14:10:05,633 - INFO - checked=48000, 404=17, deleted=0, deactivated=0, speed=915.7/s
+2026-01-14 14:10:05,634 - INFO - Batch #49, last_id=78399
+2026-01-14 14:10:06,040 - INFO - checked=49000, 404=17, deleted=0, deactivated=0, speed=927.6/s
+2026-01-14 14:10:06,040 - INFO - Batch #50, last_id=79429
+2026-01-14 14:10:07,172 - INFO - checked=50000, 404=17, deleted=0, deactivated=0, speed=926.7/s
+2026-01-14 14:10:07,172 - INFO - Batch #51, last_id=80451
+2026-01-14 14:10:07,621 - INFO - checked=51000, 404=17, deleted=0, deactivated=0, speed=937.4/s
+2026-01-14 14:10:07,621 - INFO - Batch #52, last_id=81463
+2026-01-14 14:10:08,361 - INFO - checked=52000, 404=17, deleted=0, deactivated=0, speed=942.9/s
+2026-01-14 14:10:08,361 - INFO - Batch #53, last_id=82490
+2026-01-14 14:10:08,779 - INFO - checked=53000, 404=17, deleted=0, deactivated=0, speed=953.8/s
+2026-01-14 14:10:08,779 - INFO - Batch #54, last_id=83514
+2026-01-14 14:10:10,107 - INFO - checked=54000, 404=17, deleted=0, deactivated=0, speed=949.2/s
+2026-01-14 14:10:10,107 - INFO - Batch #55, last_id=84536
+2026-01-14 14:10:11,383 - INFO - checked=55000, 404=17, deleted=0, deactivated=0, speed=945.5/s
+2026-01-14 14:10:11,383 - INFO - Batch #56, last_id=85548
+2026-01-14 14:10:13,478 - INFO - checked=56000, 404=17, deleted=0, deactivated=0, speed=929.3/s
+2026-01-14 14:10:13,478 - INFO - Batch #57, last_id=86564
+2026-01-14 14:10:14,085 - INFO - checked=57000, 404=17, deleted=0, deactivated=0, speed=936.4/s
+2026-01-14 14:10:14,086 - INFO - Batch #58, last_id=87572
+2026-01-14 14:10:14,656 - INFO - checked=58000, 404=17, deleted=0, deactivated=0, speed=944.0/s
+2026-01-14 14:10:14,656 - INFO - Batch #59, last_id=88578
+2026-01-14 14:10:15,442 - INFO - checked=59000, 404=17, deleted=0, deactivated=0, speed=948.1/s
+2026-01-14 14:10:15,442 - INFO - Batch #60, last_id=89586
+2026-01-14 14:10:15,482 - WARNING - 404 image found | offer_id=89644 | offer_url=https://vidnoye.cian.ru/sale/flat/322579306/
+2026-01-14 14:10:20,572 - INFO - checked=60000, 404=18, deleted=0, deactivated=0, speed=890.8/s
+2026-01-14 14:10:20,573 - INFO - Batch #61, last_id=90601
+2026-01-14 14:10:21,142 - INFO - checked=61000, 404=18, deleted=0, deactivated=0, speed=898.0/s
+2026-01-14 14:10:21,142 - INFO - Batch #62, last_id=91619
+2026-01-14 14:10:26,300 - INFO - checked=62000, 404=18, deleted=0, deactivated=0, speed=848.3/s
+2026-01-14 14:10:26,301 - INFO - Batch #63, last_id=92634
+2026-01-14 14:10:27,728 - INFO - checked=63000, 404=18, deleted=0, deactivated=0, speed=845.5/s
+2026-01-14 14:10:27,728 - INFO - Batch #64, last_id=93642
+2026-01-14 14:10:28,312 - INFO - checked=64000, 404=18, deleted=0, deactivated=0, speed=852.2/s
+2026-01-14 14:10:28,313 - INFO - Batch #65, last_id=94649
+2026-01-14 14:10:29,796 - INFO - checked=65000, 404=18, deleted=0, deactivated=0, speed=848.8/s
+2026-01-14 14:10:29,796 - INFO - Batch #66, last_id=95663
+2026-01-14 14:10:30,389 - INFO - checked=66000, 404=18, deleted=0, deactivated=0, speed=855.2/s
+2026-01-14 14:10:30,389 - INFO - Batch #67, last_id=96696
+2026-01-14 14:10:30,469 - WARNING - 404 image found | offer_id=96835 | offer_url=https://krasnogorsk.cian.ru/sale/flat/321060552/
+2026-01-14 14:10:31,001 - INFO - checked=67000, 404=19, deleted=0, deactivated=0, speed=861.3/s
+2026-01-14 14:10:31,001 - INFO - Batch #68, last_id=97710
+2026-01-14 14:10:32,181 - INFO - checked=68000, 404=19, deleted=0, deactivated=0, speed=861.1/s
+2026-01-14 14:10:32,181 - INFO - Batch #69, last_id=98726
+2026-01-14 14:10:32,670 - INFO - checked=69000, 404=19, deleted=0, deactivated=0, speed=868.4/s
+2026-01-14 14:10:32,670 - INFO - Batch #70, last_id=99755
+2026-01-14 14:10:33,956 - INFO - checked=70000, 404=19, deleted=0, deactivated=0, speed=867.0/s
+2026-01-14 14:10:33,956 - INFO - Batch #71, last_id=100771
+2026-01-14 14:10:34,112 - WARNING - 404 image found | offer_id=101162 | offer_url=https://www.cian.ru/sale/flat/323963944/
+2026-01-14 14:10:34,358 - INFO - checked=71000, 404=20, deleted=0, deactivated=0, speed=875.0/s
+2026-01-14 14:10:34,358 - INFO - Batch #72, last_id=101796
+2026-01-14 14:10:34,783 - INFO - checked=72000, 404=20, deleted=0, deactivated=0, speed=882.7/s
+2026-01-14 14:10:34,783 - INFO - Batch #73, last_id=102803
+2026-01-14 14:10:35,151 - INFO - checked=73000, 404=20, deleted=0, deactivated=0, speed=890.9/s
+2026-01-14 14:10:35,151 - INFO - Batch #74, last_id=103820
+2026-01-14 14:10:35,704 - INFO - checked=74000, 404=20, deleted=0, deactivated=0, speed=897.1/s
+2026-01-14 14:10:35,704 - INFO - Batch #75, last_id=104833
+2026-01-14 14:10:37,037 - INFO - checked=75000, 404=20, deleted=0, deactivated=0, speed=894.7/s
+2026-01-14 14:10:37,037 - INFO - Batch #76, last_id=105855
+2026-01-14 14:10:37,492 - INFO - checked=76000, 404=20, deleted=0, deactivated=0, speed=901.8/s
+2026-01-14 14:10:37,492 - INFO - Batch #77, last_id=106872
+2026-01-14 14:10:37,911 - INFO - checked=77000, 404=20, deleted=0, deactivated=0, speed=909.1/s
+2026-01-14 14:10:37,911 - INFO - Batch #78, last_id=107892
+2026-01-14 14:10:39,001 - INFO - checked=78000, 404=20, deleted=0, deactivated=0, speed=909.2/s
+2026-01-14 14:10:39,002 - INFO - Batch #79, last_id=108917
+2026-01-14 14:10:39,438 - INFO - checked=79000, 404=20, deleted=0, deactivated=0, speed=916.2/s
+2026-01-14 14:10:39,438 - INFO - Batch #80, last_id=109944
+2026-01-14 14:10:39,881 - INFO - checked=80000, 404=20, deleted=0, deactivated=0, speed=923.1/s
+2026-01-14 14:10:39,882 - INFO - Batch #81, last_id=110962
+2026-01-14 14:10:40,281 - INFO - checked=81000, 404=20, deleted=0, deactivated=0, speed=930.3/s
+2026-01-14 14:10:40,281 - INFO - Batch #82, last_id=111972
+2026-01-14 14:10:40,681 - INFO - checked=82000, 404=20, deleted=0, deactivated=0, speed=937.5/s
+2026-01-14 14:10:40,681 - INFO - Batch #83, last_id=112982
+2026-01-14 14:10:41,040 - INFO - checked=83000, 404=20, deleted=0, deactivated=0, speed=945.0/s
+2026-01-14 14:10:41,040 - INFO - Batch #84, last_id=113990
+2026-01-14 14:10:41,469 - INFO - checked=84000, 404=20, deleted=0, deactivated=0, speed=951.8/s
+2026-01-14 14:10:41,469 - INFO - Batch #85, last_id=115001
+2026-01-14 14:10:41,940 - INFO - checked=85000, 404=20, deleted=0, deactivated=0, speed=958.0/s
+2026-01-14 14:10:41,940 - INFO - Batch #86, last_id=116007
+2026-01-14 14:10:42,348 - INFO - checked=86000, 404=20, deleted=0, deactivated=0, speed=964.8/s
+2026-01-14 14:10:42,348 - INFO - Batch #87, last_id=117019
+2026-01-14 14:10:43,684 - INFO - checked=87000, 404=20, deleted=0, deactivated=0, speed=961.7/s
+2026-01-14 14:10:43,684 - INFO - Batch #88, last_id=118025
+2026-01-14 14:10:44,990 - INFO - checked=88000, 404=20, deleted=0, deactivated=0, speed=958.9/s
+2026-01-14 14:10:44,990 - INFO - Batch #89, last_id=119034
+2026-01-14 14:10:45,643 - INFO - checked=89000, 404=20, deleted=0, deactivated=0, speed=962.9/s
+2026-01-14 14:10:45,643 - INFO - Batch #90, last_id=120048
+2026-01-14 14:10:50,772 - INFO - checked=90000, 404=20, deleted=0, deactivated=0, speed=922.5/s
+2026-01-14 14:10:50,772 - INFO - Batch #91, last_id=121051
+2026-01-14 14:10:51,155 - INFO - checked=91000, 404=20, deleted=0, deactivated=0, speed=929.1/s
+2026-01-14 14:10:51,155 - INFO - Batch #92, last_id=122066
+2026-01-14 14:10:51,583 - INFO - checked=92000, 404=20, deleted=0, deactivated=0, speed=935.3/s
+2026-01-14 14:10:51,583 - INFO - Batch #93, last_id=123070
+2026-01-14 14:10:52,653 - INFO - checked=93000, 404=20, deleted=0, deactivated=0, speed=935.2/s
+2026-01-14 14:10:52,653 - INFO - Batch #94, last_id=124085
+2026-01-14 14:10:53,053 - INFO - checked=94000, 404=20, deleted=0, deactivated=0, speed=941.5/s
+2026-01-14 14:10:53,054 - INFO - Batch #95, last_id=125092
+2026-01-14 14:10:53,377 - WARNING - 404 image found | offer_id=125900 | offer_url=https://www.cian.ru/sale/suburban/321315177/
+2026-01-14 14:10:54,289 - INFO - checked=95000, 404=21, deleted=0, deactivated=0, speed=939.9/s
+2026-01-14 14:10:54,289 - INFO - Batch #96, last_id=126101
+2026-01-14 14:10:54,707 - INFO - checked=96000, 404=21, deleted=0, deactivated=0, speed=945.9/s
+2026-01-14 14:10:54,707 - INFO - Batch #97, last_id=127108
+2026-01-14 14:10:54,787 - WARNING - 404 image found | offer_id=127308 | offer_url=https://www.cian.ru/sale/suburban/324403673/
+2026-01-14 14:10:55,082 - INFO - checked=97000, 404=22, deleted=0, deactivated=0, speed=952.2/s
+2026-01-14 14:10:55,082 - INFO - Batch #98, last_id=128117
+2026-01-14 14:10:55,549 - INFO - checked=98000, 404=22, deleted=0, deactivated=0, speed=957.6/s
+2026-01-14 14:10:55,549 - INFO - Batch #99, last_id=129120
+2026-01-14 14:10:56,288 - INFO - checked=99000, 404=22, deleted=0, deactivated=0, speed=960.5/s
+2026-01-14 14:10:56,288 - INFO - Batch #100, last_id=130127
+2026-01-14 14:10:56,695 - INFO - checked=100000, 404=22, deleted=0, deactivated=0, speed=966.4/s
+2026-01-14 14:10:56,695 - INFO - Batch #101, last_id=131143
+2026-01-14 14:10:58,022 - INFO - checked=101000, 404=22, deleted=0, deactivated=0, speed=963.7/s
+2026-01-14 14:10:58,022 - INFO - Batch #102, last_id=132164
+2026-01-14 14:10:58,599 - INFO - checked=102000, 404=22, deleted=0, deactivated=0, speed=967.9/s
+2026-01-14 14:10:58,599 - INFO - Batch #103, last_id=133767
+2026-01-14 14:10:58,686 - INFO - checked=102113, 404=22, deleted=0, deactivated=0, speed=968.2/s
+2026-01-14 14:10:58,686 - INFO - Batch #104, last_id=133880
+2026-01-14 14:10:58,699 - INFO - ============================================================
+2026-01-14 14:10:58,699 - INFO - PROCESSING COMPLETED
+2026-01-14 14:10:58,699 - INFO - Checked: 102113
+2026-01-14 14:10:58,700 - INFO - 404 found: 22
+2026-01-14 14:10:58,700 - INFO - Deleted: 0
+2026-01-14 14:10:58,700 - INFO - Deactivated: 0
+2026-01-14 14:10:58,701 - INFO - Time: 105.48s

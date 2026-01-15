@@ -32,7 +32,6 @@ target_metadata = BaseModel.metadata
 
 def include_object(object, name, type_, reflected, compare_to):
     if type_ == "table":
-        # Читаем исключения из конфига
         exclude_tables = config.get_section("alembic").get("exclude_tables", "")
 
         if exclude_tables:

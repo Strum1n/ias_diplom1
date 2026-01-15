@@ -1,0 +1,597 @@
+2026-01-14 12:20:26,611 - INFO - Processing batch #1, last_id=0
+2026-01-14 12:20:26,866 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:27,337 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/309060719/
+2026-01-14 12:20:27,607 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/319010357/
+2026-01-14 12:20:27,733 - INFO - Batch #1 completed: checked=1000, 404_found=2, exceptions=0, total_checked=1000, total_404=2, pending_deletes=2, total_deleted=0, avg_speed=890.2 records/sec
+2026-01-14 12:20:27,733 - INFO - Processing batch #2, last_id=29663
+2026-01-14 12:20:27,744 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:28,245 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/323467161/
+2026-01-14 12:20:28,356 - INFO - Batch #2 completed: checked=1000, 404_found=1, exceptions=0, total_checked=2000, total_404=3, pending_deletes=3, total_deleted=0, avg_speed=1145.6 records/sec
+2026-01-14 12:20:28,356 - INFO - Processing batch #3, last_id=30674
+2026-01-14 12:20:28,364 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:28,386 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/321710445/
+2026-01-14 12:20:28,392 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/323094540/
+2026-01-14 12:20:28,559 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/323006096/
+2026-01-14 12:20:28,566 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/322768014/
+2026-01-14 12:20:28,619 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/312087865/
+2026-01-14 12:20:28,653 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/320766961/
+2026-01-14 12:20:28,664 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/312088008/
+2026-01-14 12:20:28,800 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/316924052/
+2026-01-14 12:20:28,832 - INFO - Batch #3 completed: checked=1000, 404_found=8, exceptions=0, total_checked=3000, total_404=11, pending_deletes=11, total_deleted=0, avg_speed=1350.3 records/sec
+2026-01-14 12:20:28,832 - INFO - Processing batch #4, last_id=31678
+2026-01-14 12:20:28,838 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:28,857 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/320734767/
+2026-01-14 12:20:28,899 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/312086917/
+2026-01-14 12:20:28,901 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/312087200/
+2026-01-14 12:20:28,902 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/293691034/
+2026-01-14 12:20:28,917 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/320777515/
+2026-01-14 12:20:28,922 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/322849919/
+2026-01-14 12:20:28,934 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/316269771/
+2026-01-14 12:20:28,940 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/312086937/
+2026-01-14 12:20:28,960 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/319193567/
+2026-01-14 12:20:28,983 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/316924102/
+2026-01-14 12:20:29,048 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/317916039/
+2026-01-14 12:20:29,067 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/322849917/
+2026-01-14 12:20:29,200 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/313226572/
+2026-01-14 12:20:29,771 - INFO - Batch #4 completed: checked=1000, 404_found=13, exceptions=0, total_checked=4000, total_404=24, pending_deletes=24, total_deleted=0, avg_speed=1265.3 records/sec
+2026-01-14 12:20:29,772 - INFO - Processing batch #5, last_id=32678
+2026-01-14 12:20:29,780 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:30,255 - WARNING - 404 found: https://www.cian.ru/sale/flat/323118919/
+2026-01-14 12:20:31,373 - INFO - Batch #5 completed: checked=1000, 404_found=1, exceptions=0, total_checked=5000, total_404=25, pending_deletes=25, total_deleted=0, avg_speed=1049.6 records/sec
+2026-01-14 12:20:31,374 - INFO - Processing batch #6, last_id=33694
+2026-01-14 12:20:31,384 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:31,408 - WARNING - 404 found: https://www.cian.ru/sale/flat/322570286/
+2026-01-14 12:20:31,432 - WARNING - 404 found: https://www.cian.ru/sale/flat/321904685/
+2026-01-14 12:20:31,435 - WARNING - 404 found: https://www.cian.ru/sale/flat/321853704/
+2026-01-14 12:20:31,439 - WARNING - 404 found: https://www.cian.ru/sale/flat/321774752/
+2026-01-14 12:20:31,464 - WARNING - 404 found: https://www.cian.ru/sale/flat/320549682/
+2026-01-14 12:20:31,475 - WARNING - 404 found: https://www.cian.ru/sale/flat/320019143/
+2026-01-14 12:20:31,564 - WARNING - 404 found: https://www.cian.ru/sale/flat/323416538/
+2026-01-14 12:20:31,575 - WARNING - 404 found: https://www.cian.ru/sale/flat/323391123/
+2026-01-14 12:20:31,587 - WARNING - 404 found: https://www.cian.ru/sale/flat/323311781/
+2026-01-14 12:20:31,644 - WARNING - 404 found: https://www.cian.ru/sale/flat/323018326/
+2026-01-14 12:20:31,897 - WARNING - 404 found: https://www.cian.ru/sale/flat/322140412/
+2026-01-14 12:20:31,919 - WARNING - 404 found: https://www.cian.ru/sale/flat/321885254/
+2026-01-14 12:20:32,001 - WARNING - 404 found: https://www.cian.ru/sale/flat/320631216/
+2026-01-14 12:20:32,008 - WARNING - 404 found: https://www.cian.ru/sale/flat/320779776/
+2026-01-14 12:20:32,132 - INFO - Batch #6 completed: checked=1000, 404_found=14, exceptions=0, total_checked=6000, total_404=39, pending_deletes=39, total_deleted=0, avg_speed=1086.5 records/sec
+2026-01-14 12:20:32,133 - INFO - Processing batch #7, last_id=34748
+2026-01-14 12:20:32,218 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:32,247 - WARNING - 404 found: https://www.cian.ru/sale/flat/320261805/
+2026-01-14 12:20:32,264 - WARNING - 404 found: https://www.cian.ru/sale/flat/319392918/
+2026-01-14 12:20:32,280 - WARNING - 404 found: https://www.cian.ru/sale/flat/317212907/
+2026-01-14 12:20:32,291 - WARNING - 404 found: https://www.cian.ru/sale/flat/316647908/
+2026-01-14 12:20:32,297 - WARNING - 404 found: https://www.cian.ru/sale/flat/315414861/
+2026-01-14 12:20:32,306 - WARNING - 404 found: https://www.cian.ru/sale/flat/314798951/
+2026-01-14 12:20:32,311 - WARNING - 404 found: https://www.cian.ru/sale/flat/313599231/
+2026-01-14 12:20:32,316 - WARNING - 404 found: https://www.cian.ru/sale/flat/312255321/
+2026-01-14 12:20:32,357 - WARNING - 404 found: https://www.cian.ru/sale/flat/323522614/
+2026-01-14 12:20:32,375 - WARNING - 404 found: https://www.cian.ru/sale/flat/323481431/
+2026-01-14 12:20:32,380 - WARNING - 404 found: https://www.cian.ru/sale/flat/323481412/
+2026-01-14 12:20:32,422 - WARNING - 404 found: https://www.cian.ru/sale/flat/323167904/
+2026-01-14 12:20:32,430 - WARNING - 404 found: https://www.cian.ru/sale/flat/323203512/
+2026-01-14 12:20:32,485 - WARNING - 404 found: https://www.cian.ru/sale/flat/322791416/
+2026-01-14 12:20:32,490 - WARNING - 404 found: https://www.cian.ru/sale/flat/322842366/
+2026-01-14 12:20:32,510 - WARNING - 404 found: https://www.cian.ru/sale/flat/322704958/
+2026-01-14 12:20:32,510 - WARNING - 404 found: https://www.cian.ru/sale/flat/322727415/
+2026-01-14 12:20:32,534 - WARNING - 404 found: https://www.cian.ru/sale/flat/322554559/
+2026-01-14 12:20:32,568 - WARNING - 404 found: https://www.cian.ru/sale/flat/322090527/
+2026-01-14 12:20:32,572 - WARNING - 404 found: https://www.cian.ru/sale/flat/322040718/
+2026-01-14 12:20:32,612 - WARNING - 404 found: https://www.cian.ru/sale/flat/321387098/
+2026-01-14 12:20:32,631 - WARNING - 404 found: https://www.cian.ru/sale/flat/320623004/
+2026-01-14 12:20:32,667 - WARNING - 404 found: https://www.cian.ru/sale/flat/318557253/
+2026-01-14 12:20:32,669 - WARNING - 404 found: https://www.cian.ru/sale/flat/318570280/
+2026-01-14 12:20:32,808 - INFO - Batch #7 completed: checked=1000, 404_found=24, exceptions=0, total_checked=7000, total_404=63, pending_deletes=63, total_deleted=0, avg_speed=1129.3 records/sec
+2026-01-14 12:20:32,809 - INFO - Processing batch #8, last_id=35794
+2026-01-14 12:20:32,883 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:32,921 - WARNING - 404 found: https://www.cian.ru/sale/flat/323345781/
+2026-01-14 12:20:32,983 - WARNING - 404 found: https://www.cian.ru/sale/flat/322860008/
+2026-01-14 12:20:33,050 - WARNING - 404 found: https://www.cian.ru/sale/flat/322409485/
+2026-01-14 12:20:33,058 - WARNING - 404 found: https://www.cian.ru/sale/flat/322164302/
+2026-01-14 12:20:33,068 - WARNING - 404 found: https://www.cian.ru/sale/flat/321951854/
+2026-01-14 12:20:33,075 - WARNING - 404 found: https://www.cian.ru/sale/flat/322068201/
+2026-01-14 12:20:33,081 - WARNING - 404 found: https://www.cian.ru/sale/flat/321749677/
+2026-01-14 12:20:33,105 - WARNING - 404 found: https://www.cian.ru/sale/flat/321581170/
+2026-01-14 12:20:33,141 - WARNING - 404 found: https://www.cian.ru/sale/flat/319765060/
+2026-01-14 12:20:33,166 - WARNING - 404 found: https://www.cian.ru/sale/flat/318184180/
+2026-01-14 12:20:33,219 - WARNING - 404 found: https://www.cian.ru/sale/flat/297089589/
+2026-01-14 12:20:33,238 - WARNING - 404 found: https://www.cian.ru/sale/flat/323481394/
+2026-01-14 12:20:33,259 - WARNING - 404 found: https://www.cian.ru/sale/flat/323364921/
+2026-01-14 12:20:33,284 - WARNING - 404 found: https://www.cian.ru/sale/flat/323255837/
+2026-01-14 12:20:33,573 - INFO - Batch #8 completed: checked=1000, 404_found=14, exceptions=0, total_checked=8000, total_404=77, pending_deletes=77, total_deleted=0, avg_speed=1148.9 records/sec
+2026-01-14 12:20:33,573 - INFO - Processing batch #9, last_id=36828
+2026-01-14 12:20:33,643 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:33,662 - WARNING - 404 found: https://www.cian.ru/sale/flat/322394770/
+2026-01-14 12:20:33,702 - WARNING - 404 found: https://www.cian.ru/sale/flat/321612490/
+2026-01-14 12:20:33,733 - WARNING - 404 found: https://www.cian.ru/sale/flat/320256265/
+2026-01-14 12:20:33,750 - WARNING - 404 found: https://www.cian.ru/sale/flat/319122130/
+2026-01-14 12:20:33,769 - WARNING - 404 found: https://www.cian.ru/sale/flat/315415983/
+2026-01-14 12:20:33,830 - WARNING - 404 found: https://www.cian.ru/sale/flat/323380903/
+2026-01-14 12:20:33,832 - WARNING - 404 found: https://www.cian.ru/sale/flat/323364915/
+2026-01-14 12:20:33,853 - WARNING - 404 found: https://www.cian.ru/sale/flat/323177692/
+2026-01-14 12:20:33,868 - WARNING - 404 found: https://www.cian.ru/sale/flat/323196664/
+2026-01-14 12:20:33,915 - WARNING - 404 found: https://www.cian.ru/sale/flat/322130839/
+2026-01-14 12:20:33,943 - WARNING - 404 found: https://www.cian.ru/sale/flat/321685526/
+2026-01-14 12:20:33,952 - WARNING - 404 found: https://www.cian.ru/sale/flat/320912862/
+2026-01-14 12:20:33,962 - WARNING - 404 found: https://www.cian.ru/sale/flat/321374670/
+2026-01-14 12:20:33,965 - WARNING - 404 found: https://www.cian.ru/sale/flat/320388904/
+2026-01-14 12:20:34,008 - WARNING - 404 found: https://www.cian.ru/sale/flat/311492123/
+2026-01-14 12:20:34,047 - WARNING - 404 found: https://www.cian.ru/sale/flat/323462367/
+2026-01-14 12:20:34,050 - WARNING - 404 found: https://www.cian.ru/sale/flat/323572705/
+2026-01-14 12:20:34,082 - WARNING - 404 found: https://www.cian.ru/sale/flat/323189432/
+2026-01-14 12:20:34,144 - INFO - Batch #9 completed: checked=1000, 404_found=18, exceptions=0, total_checked=9000, total_404=95, pending_deletes=95, total_deleted=0, avg_speed=1194.6 records/sec
+2026-01-14 12:20:34,144 - INFO - Processing batch #10, last_id=37865
+2026-01-14 12:20:34,199 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:34,244 - WARNING - 404 found: https://www.cian.ru/sale/flat/322626037/
+2026-01-14 12:20:34,314 - WARNING - 404 found: https://www.cian.ru/sale/flat/321185858/
+2026-01-14 12:20:34,378 - WARNING - 404 found: https://www.cian.ru/sale/flat/307628224/
+2026-01-14 12:20:34,404 - WARNING - 404 found: https://www.cian.ru/sale/flat/323364907/
+2026-01-14 12:20:34,502 - WARNING - 404 found: https://www.cian.ru/sale/flat/322346668/
+2026-01-14 12:20:34,523 - WARNING - 404 found: https://www.cian.ru/sale/flat/321791810/
+2026-01-14 12:20:34,532 - WARNING - 404 found: https://www.cian.ru/sale/flat/321519457/
+2026-01-14 12:20:34,545 - WARNING - 404 found: https://www.cian.ru/sale/flat/320560450/
+2026-01-14 12:20:34,552 - WARNING - 404 found: https://www.cian.ru/sale/flat/320159740/
+2026-01-14 12:20:34,634 - WARNING - 404 found: https://www.cian.ru/sale/flat/323282695/
+2026-01-14 12:20:34,694 - INFO - Batch #10 completed: checked=1000, 404_found=10, exceptions=0, total_checked=10000, total_404=105, pending_deletes=5, total_deleted=0, avg_speed=1237.0 records/sec
+2026-01-14 12:20:34,694 - INFO - Processing batch #11, last_id=38905
+2026-01-14 12:20:34,747 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:34,761 - WARNING - 404 found: https://www.cian.ru/sale/flat/322928130/
+2026-01-14 12:20:34,773 - WARNING - 404 found: https://www.cian.ru/sale/flat/322794801/
+2026-01-14 12:20:34,780 - WARNING - 404 found: https://www.cian.ru/sale/flat/322648229/
+2026-01-14 12:20:34,830 - WARNING - 404 found: https://www.cian.ru/sale/flat/321474366/
+2026-01-14 12:20:34,870 - WARNING - 404 found: https://www.cian.ru/sale/flat/319265419/
+2026-01-14 12:20:34,872 - WARNING - 404 found: https://www.cian.ru/sale/flat/321107480/
+2026-01-14 12:20:34,915 - WARNING - 404 found: https://www.cian.ru/sale/flat/305931249/
+2026-01-14 12:20:34,921 - WARNING - 404 found: https://www.cian.ru/sale/flat/323659415/
+2026-01-14 12:20:34,928 - WARNING - 404 found: https://www.cian.ru/sale/flat/323481399/
+2026-01-14 12:20:34,959 - WARNING - 404 found: https://www.cian.ru/sale/flat/323230010/
+2026-01-14 12:20:34,979 - WARNING - 404 found: https://www.cian.ru/sale/flat/323026689/
+2026-01-14 12:20:35,006 - WARNING - 404 found: https://www.cian.ru/sale/flat/322276382/
+2026-01-14 12:20:35,013 - WARNING - 404 found: https://www.cian.ru/sale/flat/321950275/
+2026-01-14 12:20:35,014 - WARNING - 404 found: https://www.cian.ru/sale/flat/321855455/
+2026-01-14 12:20:35,098 - WARNING - 404 found: https://www.cian.ru/sale/flat/323481425/
+2026-01-14 12:20:35,129 - WARNING - 404 found: https://www.cian.ru/sale/flat/323514009/
+2026-01-14 12:20:35,140 - WARNING - 404 found: https://www.cian.ru/sale/flat/322876039/
+2026-01-14 12:20:35,229 - WARNING - 404 found: https://www.cian.ru/sale/flat/319124829/
+2026-01-14 12:20:35,329 - INFO - Batch #11 completed: checked=1000, 404_found=18, exceptions=0, total_checked=11000, total_404=123, pending_deletes=23, total_deleted=0, avg_speed=1261.7 records/sec
+2026-01-14 12:20:35,329 - INFO - Processing batch #12, last_id=39941
+2026-01-14 12:20:35,372 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:35,404 - WARNING - 404 found: https://www.cian.ru/sale/flat/323481439/
+2026-01-14 12:20:35,421 - WARNING - 404 found: https://www.cian.ru/sale/flat/323229070/
+2026-01-14 12:20:35,459 - WARNING - 404 found: https://www.cian.ru/sale/flat/322614937/
+2026-01-14 12:20:35,463 - WARNING - 404 found: https://www.cian.ru/sale/flat/322538723/
+2026-01-14 12:20:35,579 - WARNING - 404 found: https://www.cian.ru/sale/flat/323307094/
+2026-01-14 12:20:35,755 - WARNING - 404 found: https://www.cian.ru/sale/flat/321669716/
+2026-01-14 12:20:35,791 - WARNING - 404 found: https://www.cian.ru/sale/flat/323656712/
+2026-01-14 12:20:35,816 - WARNING - 404 found: https://www.cian.ru/sale/flat/323138872/
+2026-01-14 12:20:35,889 - INFO - Batch #12 completed: checked=1000, 404_found=8, exceptions=0, total_checked=12000, total_404=131, pending_deletes=31, total_deleted=0, avg_speed=1293.2 records/sec
+2026-01-14 12:20:35,889 - INFO - Processing batch #13, last_id=40979
+2026-01-14 12:20:35,930 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:35,980 - WARNING - 404 found: https://www.cian.ru/sale/flat/323430270/
+2026-01-14 12:20:35,994 - WARNING - 404 found: https://www.cian.ru/sale/flat/322860012/
+2026-01-14 12:20:36,035 - WARNING - 404 found: https://www.cian.ru/sale/flat/323439463/
+2026-01-14 12:20:36,068 - WARNING - 404 found: https://www.cian.ru/sale/flat/322148579/
+2026-01-14 12:20:36,092 - WARNING - 404 found: https://www.cian.ru/sale/flat/322045037/
+2026-01-14 12:20:36,114 - WARNING - 404 found: https://www.cian.ru/sale/flat/323354881/
+2026-01-14 12:20:36,118 - WARNING - 404 found: https://www.cian.ru/sale/flat/323055598/
+2026-01-14 12:20:36,122 - WARNING - 404 found: https://www.cian.ru/sale/flat/322269211/
+2026-01-14 12:20:36,126 - WARNING - 404 found: https://www.cian.ru/sale/flat/322854542/
+2026-01-14 12:20:36,342 - WARNING - 404 found: https://www.cian.ru/sale/flat/315099761/
+2026-01-14 12:20:37,343 - INFO - Batch #13 completed: checked=1000, 404_found=10, exceptions=0, total_checked=13000, total_404=141, pending_deletes=41, total_deleted=0, avg_speed=1211.2 records/sec
+2026-01-14 12:20:37,343 - INFO - Processing batch #14, last_id=42040
+2026-01-14 12:20:37,389 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:37,471 - WARNING - 404 found: https://www.cian.ru/sale/flat/323481388/
+2026-01-14 12:20:37,508 - WARNING - 404 found: https://www.cian.ru/sale/flat/323464418/
+2026-01-14 12:20:37,581 - WARNING - 404 found: https://www.cian.ru/sale/flat/323457287/
+2026-01-14 12:20:37,601 - WARNING - 404 found: https://www.cian.ru/sale/flat/322733448/
+2026-01-14 12:20:37,611 - WARNING - 404 found: https://www.cian.ru/sale/flat/322617848/
+2026-01-14 12:20:37,633 - WARNING - 404 found: https://www.cian.ru/sale/flat/322248355/
+2026-01-14 12:20:37,638 - WARNING - 404 found: https://www.cian.ru/sale/flat/322208537/
+2026-01-14 12:20:37,691 - WARNING - 404 found: https://www.cian.ru/sale/flat/321026019/
+2026-01-14 12:20:37,729 - WARNING - 404 found: https://www.cian.ru/sale/flat/319669926/
+2026-01-14 12:20:37,739 - WARNING - 404 found: https://www.cian.ru/sale/flat/318684322/
+2026-01-14 12:20:37,773 - WARNING - 404 found: https://www.cian.ru/sale/flat/313751978/
+2026-01-14 12:20:37,777 - WARNING - 404 found: https://www.cian.ru/sale/flat/313919669/
+2026-01-14 12:20:37,813 - WARNING - 404 found: https://www.cian.ru/sale/flat/308425560/
+2026-01-14 12:20:37,907 - INFO - Batch #14 completed: checked=1000, 404_found=13, exceptions=0, total_checked=14000, total_404=154, pending_deletes=54, total_deleted=0, avg_speed=1239.3 records/sec
+2026-01-14 12:20:37,907 - INFO - Processing batch #15, last_id=43101
+2026-01-14 12:20:37,943 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:37,977 - WARNING - 404 found: https://www.cian.ru/sale/flat/323639793/
+2026-01-14 12:20:37,983 - WARNING - 404 found: https://www.cian.ru/sale/flat/323575760/
+2026-01-14 12:20:37,996 - WARNING - 404 found: https://www.cian.ru/sale/flat/323521230/
+2026-01-14 12:20:38,018 - WARNING - 404 found: https://www.cian.ru/sale/flat/323450134/
+2026-01-14 12:20:38,021 - WARNING - 404 found: https://www.cian.ru/sale/flat/323433999/
+2026-01-14 12:20:38,047 - WARNING - 404 found: https://www.cian.ru/sale/flat/323326830/
+2026-01-14 12:20:38,047 - WARNING - 404 found: https://www.cian.ru/sale/flat/323326853/
+2026-01-14 12:20:38,084 - WARNING - 404 found: https://www.cian.ru/sale/flat/323201642/
+2026-01-14 12:20:38,090 - WARNING - 404 found: https://www.cian.ru/sale/flat/323186023/
+2026-01-14 12:20:38,098 - WARNING - 404 found: https://www.cian.ru/sale/flat/323169728/
+2026-01-14 12:20:38,106 - WARNING - 404 found: https://www.cian.ru/sale/flat/323133506/
+2026-01-14 12:20:38,112 - WARNING - 404 found: https://www.cian.ru/sale/flat/323123467/
+2026-01-14 12:20:38,117 - WARNING - 404 found: https://www.cian.ru/sale/flat/323121816/
+2026-01-14 12:20:38,137 - WARNING - 404 found: https://www.cian.ru/sale/flat/323036803/
+2026-01-14 12:20:38,146 - WARNING - 404 found: https://www.cian.ru/sale/flat/323083017/
+2026-01-14 12:20:38,191 - WARNING - 404 found: https://www.cian.ru/sale/flat/322837845/
+2026-01-14 12:20:38,210 - WARNING - 404 found: https://www.cian.ru/sale/flat/322734030/
+2026-01-14 12:20:38,238 - WARNING - 404 found: https://www.cian.ru/sale/flat/322602034/
+2026-01-14 12:20:38,239 - WARNING - 404 found: https://www.cian.ru/sale/flat/322680441/
+2026-01-14 12:20:38,254 - WARNING - 404 found: https://www.cian.ru/sale/flat/322537064/
+2026-01-14 12:20:38,259 - WARNING - 404 found: https://www.cian.ru/sale/flat/322417510/
+2026-01-14 12:20:38,308 - WARNING - 404 found: https://www.cian.ru/sale/flat/321743198/
+2026-01-14 12:20:38,344 - WARNING - 404 found: https://www.cian.ru/sale/flat/321418150/
+2026-01-14 12:20:38,370 - WARNING - 404 found: https://www.cian.ru/sale/flat/321054654/
+2026-01-14 12:20:38,430 - INFO - Batch #15 completed: checked=1000, 404_found=24, exceptions=0, total_checked=15000, total_404=178, pending_deletes=78, total_deleted=0, avg_speed=1269.0 records/sec
+2026-01-14 12:20:38,430 - INFO - Processing batch #16, last_id=44150
+2026-01-14 12:20:38,595 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:38,611 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/323577417/
+2026-01-14 12:20:38,631 - WARNING - 404 found: https://chekhov.cian.ru/sale/flat/323540030/
+2026-01-14 12:20:38,650 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/323551357/
+2026-01-14 12:20:38,680 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323281522/
+2026-01-14 12:20:38,683 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/323277172/
+2026-01-14 12:20:38,704 - WARNING - 404 found: https://voskresensk.cian.ru/sale/flat/323148595/
+2026-01-14 12:20:38,739 - WARNING - 404 found: https://www.cian.ru/sale/flat/323011663/
+2026-01-14 12:20:38,748 - WARNING - 404 found: https://klin.cian.ru/sale/flat/322895442/
+2026-01-14 12:20:38,756 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/322853994/
+2026-01-14 12:20:38,787 - WARNING - 404 found: https://www.cian.ru/sale/flat/322730511/
+2026-01-14 12:20:38,813 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322351870/
+2026-01-14 12:20:38,854 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/321924802/
+2026-01-14 12:20:38,863 - WARNING - 404 found: https://sergiyev-posad.cian.ru/sale/flat/321810128/
+2026-01-14 12:20:38,871 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/321669521/
+2026-01-14 12:20:38,991 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/319684669/
+2026-01-14 12:20:39,017 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/319367245/
+2026-01-14 12:20:39,062 - WARNING - 404 found: https://pushkino.cian.ru/sale/flat/318584786/
+2026-01-14 12:20:39,144 - INFO - Batch #16 completed: checked=1000, 404_found=17, exceptions=0, total_checked=16000, total_404=195, pending_deletes=95, total_deleted=0, avg_speed=1276.5 records/sec
+2026-01-14 12:20:39,145 - INFO - Processing batch #17, last_id=45188
+2026-01-14 12:20:39,292 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:39,323 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/313850032/
+2026-01-14 12:20:39,418 - WARNING - 404 found: https://orekhovo-zuyevo.cian.ru/sale/flat/323540612/
+2026-01-14 12:20:39,422 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323556728/
+2026-01-14 12:20:39,424 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/323476968/
+2026-01-14 12:20:39,428 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323473630/
+2026-01-14 12:20:39,449 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323379922/
+2026-01-14 12:20:39,470 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323388319/
+2026-01-14 12:20:39,551 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/322932385/
+2026-01-14 12:20:39,558 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322735004/
+2026-01-14 12:20:39,582 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/322574914/
+2026-01-14 12:20:39,789 - INFO - Batch #17 completed: checked=1000, 404_found=10, exceptions=0, total_checked=17000, total_404=205, pending_deletes=5, total_deleted=0, avg_speed=1289.9 records/sec
+2026-01-14 12:20:39,789 - INFO - Processing batch #18, last_id=46217
+2026-01-14 12:20:39,914 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:39,960 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/320426043/
+2026-01-14 12:20:40,017 - WARNING - 404 found: https://ivanteyevka.cian.ru/sale/flat/318797695/
+2026-01-14 12:20:40,066 - WARNING - 404 found: https://pavlovsky-posad.cian.ru/sale/flat/315688885/
+2026-01-14 12:20:40,070 - WARNING - 404 found: https://zvenigorod.cian.ru/sale/flat/315765740/
+2026-01-14 12:20:40,083 - WARNING - 404 found: https://yegoryevsk.cian.ru/sale/flat/313179440/
+2026-01-14 12:20:40,172 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323653721/
+2026-01-14 12:20:40,173 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323656458/
+2026-01-14 12:20:40,179 - WARNING - 404 found: https://shchyolkovo.cian.ru/sale/flat/323616620/
+2026-01-14 12:20:40,212 - WARNING - 404 found: https://golitsyno.cian.ru/sale/flat/323391335/
+2026-01-14 12:20:40,224 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323388321/
+2026-01-14 12:20:40,336 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/322748019/
+2026-01-14 12:20:40,355 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/322804802/
+2026-01-14 12:20:40,452 - INFO - Batch #18 completed: checked=1000, 404_found=12, exceptions=0, total_checked=18000, total_404=217, pending_deletes=17, total_deleted=0, avg_speed=1300.3 records/sec
+2026-01-14 12:20:40,452 - INFO - Processing batch #19, last_id=47239
+2026-01-14 12:20:40,565 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:40,582 - WARNING - 404 found: https://zvenigorod.cian.ru/sale/flat/322636357/
+2026-01-14 12:20:40,593 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/322352197/
+2026-01-14 12:20:40,603 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322411208/
+2026-01-14 12:20:40,640 - WARNING - 404 found: https://sergiyev-posad.cian.ru/sale/flat/321837186/
+2026-01-14 12:20:40,720 - WARNING - 404 found: https://roshal.cian.ru/sale/flat/320747175/
+2026-01-14 12:20:40,789 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/318438900/
+2026-01-14 12:20:40,797 - WARNING - 404 found: https://sergiyev-posad.cian.ru/sale/flat/317859667/
+2026-01-14 12:20:40,816 - WARNING - 404 found: https://www.cian.ru/sale/flat/315854078/
+2026-01-14 12:20:40,825 - WARNING - 404 found: https://dmitrov.cian.ru/sale/flat/317473484/
+2026-01-14 12:20:40,888 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/305217594/
+2026-01-14 12:20:40,892 - WARNING - 404 found: https://www.cian.ru/sale/flat/304236443/
+2026-01-14 12:20:40,970 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323505241/
+2026-01-14 12:20:41,007 - WARNING - 404 found: https://shchyolkovo.cian.ru/sale/flat/304424157/
+2026-01-14 12:20:41,023 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/323311371/
+2026-01-14 12:20:41,051 - INFO - Batch #19 completed: checked=1000, 404_found=14, exceptions=0, total_checked=19000, total_404=231, pending_deletes=31, total_deleted=0, avg_speed=1315.7 records/sec
+2026-01-14 12:20:41,051 - INFO - Processing batch #20, last_id=48264
+2026-01-14 12:20:41,153 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:41,171 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323119194/
+2026-01-14 12:20:41,195 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/323050605/
+2026-01-14 12:20:41,277 - WARNING - 404 found: https://zvenigorod.cian.ru/sale/flat/322476755/
+2026-01-14 12:20:41,299 - WARNING - 404 found: https://voskresensk.cian.ru/sale/flat/322037139/
+2026-01-14 12:20:41,342 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/321560218/
+2026-01-14 12:20:41,384 - WARNING - 404 found: https://bronnicy.cian.ru/sale/flat/320691979/
+2026-01-14 12:20:41,572 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/323693537/
+2026-01-14 12:20:42,467 - INFO - Batch #20 completed: checked=1000, 404_found=7, exceptions=0, total_checked=20000, total_404=238, pending_deletes=38, total_deleted=0, avg_speed=1261.3 records/sec
+2026-01-14 12:20:42,467 - INFO - Processing batch #21, last_id=49293
+2026-01-14 12:20:42,546 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:42,584 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323379815/
+2026-01-14 12:20:42,612 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/323252343/
+2026-01-14 12:20:42,617 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323159342/
+2026-01-14 12:20:42,620 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323128460/
+2026-01-14 12:20:42,661 - WARNING - 404 found: https://www.cian.ru/sale/flat/322856230/
+2026-01-14 12:20:42,739 - WARNING - 404 found: https://www.cian.ru/sale/flat/322113343/
+2026-01-14 12:20:42,751 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/321955264/
+2026-01-14 12:20:42,773 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/321280542/
+2026-01-14 12:20:47,958 - INFO - Batch #21 completed: checked=1000, 404_found=8, exceptions=0, total_checked=21000, total_404=246, pending_deletes=46, total_deleted=0, avg_speed=983.7 records/sec
+2026-01-14 12:20:47,958 - INFO - Processing batch #22, last_id=50307
+2026-01-14 12:20:48,035 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:48,156 - WARNING - 404 found: https://bryansk.cian.ru/sale/suburban/322878865/
+2026-01-14 12:20:48,428 - WARNING - 404 found: https://bryansk.cian.ru/sale/suburban/318001478/
+2026-01-14 12:20:48,697 - INFO - Batch #22 completed: checked=1000, 404_found=2, exceptions=0, total_checked=22000, total_404=248, pending_deletes=48, total_deleted=0, avg_speed=996.1 records/sec
+2026-01-14 12:20:48,697 - INFO - Processing batch #23, last_id=51309
+2026-01-14 12:20:48,776 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:48,988 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/318097877/
+2026-01-14 12:20:49,006 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/316851882/
+2026-01-14 12:20:49,011 - WARNING - 404 found: https://podolsk.cian.ru/sale/flat/316748936/
+2026-01-14 12:20:49,014 - WARNING - 404 found: https://kotelniki.cian.ru/sale/flat/316025616/
+2026-01-14 12:20:49,019 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/316016857/
+2026-01-14 12:20:49,044 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/312666933/
+2026-01-14 12:20:49,182 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322789817/
+2026-01-14 12:20:53,993 - INFO - Batch #23 completed: checked=1000, 404_found=7, exceptions=0, total_checked=23000, total_404=255, pending_deletes=55, total_deleted=0, avg_speed=839.9 records/sec
+2026-01-14 12:20:53,993 - INFO - Processing batch #24, last_id=52323
+2026-01-14 12:20:54,084 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:54,319 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323314650/
+2026-01-14 12:20:54,414 - WARNING - 404 found: https://ivanteyevka.cian.ru/sale/flat/322874141/
+2026-01-14 12:20:54,508 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/316217101/
+2026-01-14 12:20:54,666 - INFO - Batch #24 completed: checked=1000, 404_found=3, exceptions=0, total_checked=24000, total_404=258, pending_deletes=58, total_deleted=0, avg_speed=855.4 records/sec
+2026-01-14 12:20:54,666 - INFO - Processing batch #25, last_id=53352
+2026-01-14 12:20:54,743 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:54,775 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/322896885/
+2026-01-14 12:20:54,819 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322142798/
+2026-01-14 12:20:54,905 - WARNING - 404 found: https://istra.cian.ru/sale/flat/315879696/
+2026-01-14 12:20:54,906 - WARNING - 404 found: https://ivanteyevka.cian.ru/sale/flat/315355148/
+2026-01-14 12:20:54,958 - WARNING - 404 found: https://domodedovo.cian.ru/sale/flat/323620048/
+2026-01-14 12:20:54,992 - WARNING - 404 found: https://podolsk.cian.ru/sale/flat/323341194/
+2026-01-14 12:20:55,007 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/323079191/
+2026-01-14 12:20:55,042 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322601151/
+2026-01-14 12:20:55,064 - WARNING - 404 found: https://istra.cian.ru/sale/flat/321791814/
+2026-01-14 12:20:55,121 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/318882010/
+2026-01-14 12:20:55,171 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323612752/
+2026-01-14 12:20:55,195 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/323469952/
+2026-01-14 12:20:55,230 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323543563/
+2026-01-14 12:20:55,320 - INFO - Batch #25 completed: checked=1000, 404_found=13, exceptions=0, total_checked=25000, total_404=271, pending_deletes=71, total_deleted=0, avg_speed=870.8 records/sec
+2026-01-14 12:20:55,320 - INFO - Processing batch #26, last_id=54375
+2026-01-14 12:20:55,386 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:55,495 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/318498754/
+2026-01-14 12:20:55,561 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323378725/
+2026-01-14 12:20:55,579 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323078615/
+2026-01-14 12:20:55,596 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/322795170/
+2026-01-14 12:20:55,605 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323169892/
+2026-01-14 12:20:55,705 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323607379/
+2026-01-14 12:20:55,708 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323668502/
+2026-01-14 12:20:55,728 - WARNING - 404 found: https://reutov.cian.ru/sale/flat/323253238/
+2026-01-14 12:20:55,732 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323224046/
+2026-01-14 12:20:55,764 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322444712/
+2026-01-14 12:20:55,778 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/322505061/
+2026-01-14 12:20:55,794 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/320734547/
+2026-01-14 12:20:55,805 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/319592467/
+2026-01-14 12:20:55,926 - INFO - Batch #26 completed: checked=1000, 404_found=13, exceptions=0, total_checked=26000, total_404=284, pending_deletes=84, total_deleted=0, avg_speed=886.9 records/sec
+2026-01-14 12:20:55,927 - INFO - Processing batch #27, last_id=55396
+2026-01-14 12:20:56,010 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:56,047 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322934833/
+2026-01-14 12:20:56,091 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322022773/
+2026-01-14 12:20:56,111 - WARNING - 404 found: https://domodedovo.cian.ru/sale/flat/320388805/
+2026-01-14 12:20:56,163 - WARNING - 404 found: https://zhukovsky.cian.ru/sale/flat/323505874/
+2026-01-14 12:20:56,236 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/321633598/
+2026-01-14 12:20:56,244 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/321265553/
+2026-01-14 12:20:56,255 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/321764973/
+2026-01-14 12:20:56,263 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/318951181/
+2026-01-14 12:20:56,290 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/314481153/
+2026-01-14 12:20:56,321 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323553885/
+2026-01-14 12:20:56,343 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323070609/
+2026-01-14 12:20:56,346 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323076907/
+2026-01-14 12:20:56,485 - WARNING - 404 found: https://dolgoprudny.cian.ru/sale/flat/322888129/
+2026-01-14 12:20:56,491 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/322615777/
+2026-01-14 12:20:56,502 - WARNING - 404 found: https://shchyolkovo.cian.ru/sale/flat/322420520/
+2026-01-14 12:20:58,519 - INFO - Batch #27 completed: checked=1000, 404_found=15, exceptions=0, total_checked=27000, total_404=299, pending_deletes=99, total_deleted=0, avg_speed=846.1 records/sec
+2026-01-14 12:20:58,520 - INFO - Processing batch #28, last_id=56424
+2026-01-14 12:20:58,575 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:58,662 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/323260991/
+2026-01-14 12:20:58,729 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/319822818/
+2026-01-14 12:20:58,734 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/319148511/
+2026-01-14 12:20:58,792 - WARNING - 404 found: https://podolsk.cian.ru/sale/flat/321276335/
+2026-01-14 12:20:58,816 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/323598124/
+2026-01-14 12:20:58,829 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323240610/
+2026-01-14 12:20:58,831 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/323202980/
+2026-01-14 12:20:58,895 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/321636344/
+2026-01-14 12:20:58,931 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/322813290/
+2026-01-14 12:20:58,976 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322305619/
+2026-01-14 12:20:59,243 - INFO - Batch #28 completed: checked=1000, 404_found=10, exceptions=0, total_checked=28000, total_404=309, pending_deletes=9, total_deleted=0, avg_speed=858.0 records/sec
+2026-01-14 12:20:59,243 - INFO - Processing batch #29, last_id=57449
+2026-01-14 12:20:59,302 - INFO - Fetched 1000 rows from database
+2026-01-14 12:20:59,384 - WARNING - 404 found: https://ozery.cian.ru/sale/flat/323388411/
+2026-01-14 12:20:59,407 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/323236729/
+2026-01-14 12:20:59,422 - WARNING - 404 found: https://www.cian.ru/sale/flat/323195913/
+2026-01-14 12:20:59,433 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323159795/
+2026-01-14 12:20:59,438 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/323162608/
+2026-01-14 12:20:59,514 - WARNING - 404 found: https://khotkovo.cian.ru/sale/flat/322769060/
+2026-01-14 12:20:59,519 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/322681292/
+2026-01-14 12:20:59,528 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322596544/
+2026-01-14 12:20:59,546 - WARNING - 404 found: https://www.cian.ru/sale/flat/322384863/
+2026-01-14 12:20:59,547 - WARNING - 404 found: https://krasnozavodsk.cian.ru/sale/flat/322366778/
+2026-01-14 12:20:59,569 - WARNING - 404 found: https://voskresensk.cian.ru/sale/flat/322223684/
+2026-01-14 12:20:59,875 - INFO - Batch #29 completed: checked=1000, 404_found=11, exceptions=0, total_checked=29000, total_404=320, pending_deletes=20, total_deleted=0, avg_speed=871.8 records/sec
+2026-01-14 12:20:59,875 - INFO - Processing batch #30, last_id=58480
+2026-01-14 12:20:59,926 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:00,016 - WARNING - 404 found: https://klin.cian.ru/sale/flat/318017578/
+2026-01-14 12:21:00,030 - WARNING - 404 found: https://www.cian.ru/sale/flat/317416696/
+2026-01-14 12:21:00,075 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/314832052/
+2026-01-14 12:21:00,130 - WARNING - 404 found: https://golitsyno.cian.ru/sale/flat/315027307/
+2026-01-14 12:21:00,178 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/323461491/
+2026-01-14 12:21:00,684 - INFO - Batch #30 completed: checked=1000, 404_found=5, exceptions=0, total_checked=30000, total_404=325, pending_deletes=25, total_deleted=0, avg_speed=880.4 records/sec
+2026-01-14 12:21:00,684 - INFO - Processing batch #31, last_id=59498
+2026-01-14 12:21:00,725 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:00,905 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/318180246/
+2026-01-14 12:21:01,055 - WARNING - 404 found: https://bryansk.cian.ru/sale/flat/312087861/
+2026-01-14 12:21:01,265 - INFO - Batch #31 completed: checked=1000, 404_found=2, exceptions=0, total_checked=31000, total_404=327, pending_deletes=27, total_deleted=0, avg_speed=894.5 records/sec
+2026-01-14 12:21:01,265 - INFO - Processing batch #32, last_id=60501
+2026-01-14 12:21:01,314 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:01,624 - WARNING - 404 found: https://kolomna.cian.ru/sale/flat/323294858/
+2026-01-14 12:21:01,660 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/323123778/
+2026-01-14 12:21:01,667 - WARNING - 404 found: https://orekhovo-zuyevo.cian.ru/sale/flat/323090424/
+2026-01-14 12:21:01,670 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/323084372/
+2026-01-14 12:21:01,700 - WARNING - 404 found: https://www.cian.ru/sale/flat/322969334/
+2026-01-14 12:21:01,834 - WARNING - 404 found: https://www.cian.ru/sale/flat/322581971/
+2026-01-14 12:21:01,874 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322481441/
+2026-01-14 12:21:02,017 - INFO - Batch #32 completed: checked=1000, 404_found=7, exceptions=0, total_checked=32000, total_404=334, pending_deletes=34, total_deleted=0, avg_speed=903.8 records/sec
+2026-01-14 12:21:02,017 - INFO - Processing batch #33, last_id=61522
+2026-01-14 12:21:02,079 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:02,099 - WARNING - 404 found: https://kotelniki.cian.ru/sale/flat/322197631/
+2026-01-14 12:21:02,123 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322032921/
+2026-01-14 12:21:02,130 - WARNING - 404 found: https://dmitrov.cian.ru/sale/flat/322208369/
+2026-01-14 12:21:02,162 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/321800417/
+2026-01-14 12:21:02,260 - WARNING - 404 found: https://www.cian.ru/sale/flat/320901368/
+2026-01-14 12:21:02,435 - WARNING - 404 found: https://serpukhov.cian.ru/sale/flat/317397060/
+2026-01-14 12:21:02,498 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323664021/
+2026-01-14 12:21:02,528 - WARNING - 404 found: https://podolsk.cian.ru/sale/flat/323553685/
+2026-01-14 12:21:02,546 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323473620/
+2026-01-14 12:21:02,554 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323474610/
+2026-01-14 12:21:02,736 - INFO - Batch #33 completed: checked=1000, 404_found=10, exceptions=0, total_checked=33000, total_404=344, pending_deletes=44, total_deleted=0, avg_speed=913.5 records/sec
+2026-01-14 12:21:02,736 - INFO - Processing batch #34, last_id=62551
+2026-01-14 12:21:02,789 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:02,812 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/323385169/
+2026-01-14 12:21:02,940 - WARNING - 404 found: https://dzerzhinsky.cian.ru/sale/flat/322621132/
+2026-01-14 12:21:03,023 - WARNING - 404 found: https://sergiyev-posad.cian.ru/sale/flat/322278026/
+2026-01-14 12:21:03,197 - WARNING - 404 found: https://www.cian.ru/sale/flat/319928176/
+2026-01-14 12:21:03,352 - INFO - Batch #34 completed: checked=1000, 404_found=4, exceptions=0, total_checked=34000, total_404=348, pending_deletes=48, total_deleted=0, avg_speed=925.4 records/sec
+2026-01-14 12:21:03,353 - INFO - Processing batch #35, last_id=63570
+2026-01-14 12:21:03,399 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:03,479 - WARNING - 404 found: https://zhukovsky.cian.ru/sale/flat/313271958/
+2026-01-14 12:21:03,577 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/323491365/
+2026-01-14 12:21:03,578 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323473627/
+2026-01-14 12:21:03,617 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/323572668/
+2026-01-14 12:21:03,766 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/322197042/
+2026-01-14 12:21:03,813 - WARNING - 404 found: https://dolgoprudny.cian.ru/sale/flat/321687273/
+2026-01-14 12:21:04,615 - INFO - Batch #35 completed: checked=1000, 404_found=6, exceptions=0, total_checked=35000, total_404=354, pending_deletes=54, total_deleted=0, avg_speed=920.9 records/sec
+2026-01-14 12:21:04,615 - INFO - Processing batch #36, last_id=64593
+2026-01-14 12:21:04,648 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:04,736 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/320029535/
+2026-01-14 12:21:04,794 - WARNING - 404 found: https://istra.cian.ru/sale/flat/318297558/
+2026-01-14 12:21:04,801 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/318164616/
+2026-01-14 12:21:04,831 - WARNING - 404 found: https://voskresensk.cian.ru/sale/flat/316067407/
+2026-01-14 12:21:05,081 - WARNING - 404 found: https://klin.cian.ru/sale/flat/323473612/
+2026-01-14 12:21:05,193 - INFO - Batch #36 completed: checked=1000, 404_found=5, exceptions=0, total_checked=36000, total_404=359, pending_deletes=59, total_deleted=0, avg_speed=933.0 records/sec
+2026-01-14 12:21:05,193 - INFO - Processing batch #37, last_id=65627
+2026-01-14 12:21:05,218 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:05,239 - WARNING - 404 found: https://kolomna.cian.ru/sale/flat/323163873/
+2026-01-14 12:21:05,251 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/323095949/
+2026-01-14 12:21:05,288 - WARNING - 404 found: https://lobnya.cian.ru/sale/flat/322927903/
+2026-01-14 12:21:05,413 - WARNING - 404 found: https://dolgoprudny.cian.ru/sale/flat/321649330/
+2026-01-14 12:21:05,530 - WARNING - 404 found: https://lytkarino.cian.ru/sale/flat/320016673/
+2026-01-14 12:21:05,544 - WARNING - 404 found: https://lobnya.cian.ru/sale/flat/318676837/
+2026-01-14 12:21:05,595 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/315718587/
+2026-01-14 12:21:05,672 - INFO - Batch #37 completed: checked=1000, 404_found=7, exceptions=0, total_checked=37000, total_404=366, pending_deletes=66, total_deleted=0, avg_speed=947.2 records/sec
+2026-01-14 12:21:05,672 - INFO - Processing batch #38, last_id=66646
+2026-01-14 12:21:05,692 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:05,774 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323612029/
+2026-01-14 12:21:05,793 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/323390773/
+2026-01-14 12:21:05,822 - WARNING - 404 found: https://shchyolkovo.cian.ru/sale/flat/322916249/
+2026-01-14 12:21:05,849 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322438438/
+2026-01-14 12:21:05,885 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/321494065/
+2026-01-14 12:21:05,886 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/321455069/
+2026-01-14 12:21:05,930 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/319090323/
+2026-01-14 12:21:05,948 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/318970122/
+2026-01-14 12:21:06,171 - INFO - Batch #38 completed: checked=1000, 404_found=8, exceptions=0, total_checked=38000, total_404=374, pending_deletes=74, total_deleted=0, avg_speed=960.5 records/sec
+2026-01-14 12:21:06,171 - INFO - Processing batch #39, last_id=67661
+2026-01-14 12:21:06,179 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:06,239 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/319639703/
+2026-01-14 12:21:06,274 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/316326078/
+2026-01-14 12:21:06,291 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/311258793/
+2026-01-14 12:21:06,392 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/322395779/
+2026-01-14 12:21:06,437 - WARNING - 404 found: https://podolsk.cian.ru/sale/flat/320920490/
+2026-01-14 12:21:06,463 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/320061926/
+2026-01-14 12:21:06,554 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/314387683/
+2026-01-14 12:21:06,575 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/323264008/
+2026-01-14 12:21:07,516 - INFO - Batch #39 completed: checked=1000, 404_found=8, exceptions=0, total_checked=39000, total_404=382, pending_deletes=82, total_deleted=0, avg_speed=953.4 records/sec
+2026-01-14 12:21:07,516 - INFO - Processing batch #40, last_id=68693
+2026-01-14 12:21:07,528 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:07,546 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322408948/
+2026-01-14 12:21:07,549 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/322509686/
+2026-01-14 12:21:07,617 - WARNING - 404 found: https://www.cian.ru/sale/flat/317783347/
+2026-01-14 12:21:07,704 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323587425/
+2026-01-14 12:21:07,722 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/323236498/
+2026-01-14 12:21:07,749 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/322949242/
+2026-01-14 12:21:07,776 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/321489533/
+2026-01-14 12:21:07,824 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/315845320/
+2026-01-14 12:21:07,976 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/318569345/
+2026-01-14 12:21:08,078 - INFO - Batch #40 completed: checked=1000, 404_found=9, exceptions=0, total_checked=40000, total_404=391, pending_deletes=91, total_deleted=0, avg_speed=964.6 records/sec
+2026-01-14 12:21:08,078 - INFO - Processing batch #41, last_id=69716
+2026-01-14 12:21:08,087 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:08,181 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/321387300/
+2026-01-14 12:21:08,266 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323304397/
+2026-01-14 12:21:08,308 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/322020455/
+2026-01-14 12:21:08,383 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/323461792/
+2026-01-14 12:21:08,419 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322126937/
+2026-01-14 12:21:08,461 - WARNING - 404 found: https://sergiyev-posad.cian.ru/sale/flat/318646436/
+2026-01-14 12:21:09,311 - INFO - Batch #41 completed: checked=1000, 404_found=6, exceptions=0, total_checked=41000, total_404=397, pending_deletes=97, total_deleted=0, avg_speed=960.2 records/sec
+2026-01-14 12:21:09,311 - INFO - Processing batch #42, last_id=70737
+2026-01-14 12:21:09,319 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:09,365 - WARNING - 404 found: https://dmitrov.cian.ru/sale/flat/322729301/
+2026-01-14 12:21:09,376 - WARNING - 404 found: https://podolsk.cian.ru/sale/flat/322657861/
+2026-01-14 12:21:09,476 - WARNING - 404 found: https://stupino.cian.ru/sale/flat/323107617/
+2026-01-14 12:21:09,482 - WARNING - 404 found: https://kotelniki.cian.ru/sale/flat/323013410/
+2026-01-14 12:21:09,555 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/307140596/
+2026-01-14 12:21:09,581 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323312834/
+2026-01-14 12:21:09,604 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/322545244/
+2026-01-14 12:21:09,767 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/323521729/
+2026-01-14 12:21:09,819 - INFO - Batch #42 completed: checked=1000, 404_found=8, exceptions=0, total_checked=42000, total_404=405, pending_deletes=5, total_deleted=0, avg_speed=972.0 records/sec
+2026-01-14 12:21:09,819 - INFO - Processing batch #43, last_id=71764
+2026-01-14 12:21:09,830 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:09,855 - WARNING - 404 found: https://korolev.cian.ru/sale/flat/323017662/
+2026-01-14 12:21:09,921 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/323091000/
+2026-01-14 12:21:09,925 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/320152552/
+2026-01-14 12:21:10,030 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323679586/
+2026-01-14 12:21:10,298 - INFO - Batch #43 completed: checked=1000, 404_found=4, exceptions=0, total_checked=43000, total_404=409, pending_deletes=9, total_deleted=0, avg_speed=984.2 records/sec
+2026-01-14 12:21:10,298 - INFO - Processing batch #44, last_id=72790
+2026-01-14 12:21:10,310 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:10,369 - WARNING - 404 found: https://domodedovo.cian.ru/sale/flat/315505907/
+2026-01-14 12:21:10,381 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/314599130/
+2026-01-14 12:21:10,398 - WARNING - 404 found: https://voskresensk.cian.ru/sale/flat/312235765/
+2026-01-14 12:21:10,609 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/323378795/
+2026-01-14 12:21:10,651 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/323049866/
+2026-01-14 12:21:10,681 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/322607654/
+2026-01-14 12:21:10,706 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/322283616/
+2026-01-14 12:21:10,720 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/322443322/
+2026-01-14 12:21:10,741 - WARNING - 404 found: https://zhukovsky.cian.ru/sale/flat/321731227/
+2026-01-14 12:21:10,795 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/320492626/
+2026-01-14 12:21:10,876 - INFO - Batch #44 completed: checked=1000, 404_found=10, exceptions=0, total_checked=44000, total_404=419, pending_deletes=19, total_deleted=0, avg_speed=994.0 records/sec
+2026-01-14 12:21:10,876 - INFO - Processing batch #45, last_id=73806
+2026-01-14 12:21:10,889 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:10,919 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/319425132/
+2026-01-14 12:21:11,315 - WARNING - 404 found: https://serpukhov.cian.ru/sale/flat/321412819/
+2026-01-14 12:21:11,420 - INFO - Batch #45 completed: checked=1000, 404_found=2, exceptions=0, total_checked=45000, total_404=421, pending_deletes=21, total_deleted=0, avg_speed=1004.2 records/sec
+2026-01-14 12:21:11,420 - INFO - Processing batch #46, last_id=74823
+2026-01-14 12:21:11,432 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:11,455 - WARNING - 404 found: https://mytishchi.cian.ru/sale/flat/320154696/
+2026-01-14 12:21:11,610 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/323945619/
+2026-01-14 12:21:11,733 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/322691400/
+2026-01-14 12:21:11,749 - WARNING - 404 found: https://orekhovo-zuyevo.cian.ru/sale/flat/322399913/
+2026-01-14 12:21:11,868 - WARNING - 404 found: https://krasnogorsk.cian.ru/sale/flat/320009873/
+2026-01-14 12:21:11,952 - INFO - Batch #46 completed: checked=1000, 404_found=5, exceptions=0, total_checked=46000, total_404=426, pending_deletes=26, total_deleted=0, avg_speed=1014.5 records/sec
+2026-01-14 12:21:11,952 - INFO - Processing batch #47, last_id=75830
+2026-01-14 12:21:11,962 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:12,079 - WARNING - 404 found: https://ivanteyevka.cian.ru/sale/flat/316795768/
+2026-01-14 12:21:12,150 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323515369/
+2026-01-14 12:21:12,177 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323319713/
+2026-01-14 12:21:12,239 - WARNING - 404 found: https://ramenskoye.cian.ru/sale/flat/322283385/
+2026-01-14 12:21:12,355 - WARNING - 404 found: https://domodedovo.cian.ru/sale/flat/316280253/
+2026-01-14 12:21:13,109 - INFO - Batch #47 completed: checked=1000, 404_found=5, exceptions=0, total_checked=47000, total_404=431, pending_deletes=31, total_deleted=0, avg_speed=1010.8 records/sec
+2026-01-14 12:21:13,109 - INFO - Processing batch #48, last_id=76841
+2026-01-14 12:21:13,121 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:13,313 - WARNING - 404 found: https://zhukovsky.cian.ru/sale/flat/322517994/
+2026-01-14 12:21:13,390 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/316936212/
+2026-01-14 12:21:13,427 - WARNING - 404 found: https://solnechnogorsk.cian.ru/sale/flat/308362694/
+2026-01-14 12:21:13,515 - WARNING - 404 found: https://ivanteyevka.cian.ru/sale/flat/323748331/
+2026-01-14 12:21:13,519 - WARNING - 404 found: https://vidnoye.cian.ru/sale/flat/323808418/
+2026-01-14 12:21:13,532 - WARNING - 404 found: https://dzerzhinsky.cian.ru/sale/flat/323794263/
+2026-01-14 12:21:13,544 - WARNING - 404 found: https://dubna.cian.ru/sale/flat/323181938/
+2026-01-14 12:21:13,639 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/316274364/
+2026-01-14 12:21:13,697 - INFO - Batch #48 completed: checked=1000, 404_found=8, exceptions=0, total_checked=48000, total_404=439, pending_deletes=39, total_deleted=0, avg_speed=1019.4 records/sec
+2026-01-14 12:21:13,698 - INFO - Processing batch #49, last_id=77855
+2026-01-14 12:21:13,708 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:14,022 - WARNING - 404 found: https://pavlovsky-posad.cian.ru/sale/flat/322872993/
+2026-01-14 12:21:14,064 - WARNING - 404 found: https://khimki.cian.ru/sale/flat/321067918/
+2026-01-14 12:21:14,118 - WARNING - 404 found: https://balashikha.cian.ru/sale/flat/320807472/
+2026-01-14 12:21:14,552 - INFO - Batch #49 completed: checked=1000, 404_found=3, exceptions=0, total_checked=49000, total_404=442, pending_deletes=42, total_deleted=0, avg_speed=1022.1 records/sec
+2026-01-14 12:21:14,552 - INFO - Processing batch #50, last_id=78871
+2026-01-14 12:21:14,567 - INFO - Fetched 1000 rows from database
+2026-01-14 12:21:14,649 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/322725693/
+2026-01-14 12:21:14,829 - WARNING - 404 found: https://odintsovo.cian.ru/sale/flat/321693824/
+2026-01-14 12:21:14,995 - WARNING - 404 found: https://lyubertsy.cian.ru/sale/flat/323593558/
+2026-01-14 12:21:15,032 - INFO - Batch #50 completed: checked=1000, 404_found=3, exceptions=0, total_checked=50000, total_404=445, pending_deletes=45, total_deleted=0, avg_speed=1032.6 records/sec
+2026-01-14 12:21:15,032 - INFO - Processing batch #51, last_id=79895
+2026-01-14 12:21:15,042 - INFO - Fetched 1000 rows from database

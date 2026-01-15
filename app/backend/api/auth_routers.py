@@ -20,8 +20,8 @@ from app.backend.auth_utils.auth import (
     get_password_hash,
     send_welcome_email,
 )
-from app.backend.database.database import get_async_session
-from app.backend.database.models import *
+from app.backend.db.config import get_async_session
+from app.backend.db.models import *
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentification"])
 

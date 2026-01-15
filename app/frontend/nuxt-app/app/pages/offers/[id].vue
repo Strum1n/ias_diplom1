@@ -350,7 +350,7 @@
 
                     <!-- card -->
                     <div class="sticky top-17">
-                        <div class="contact-card rounded-md">
+                        <div class="contact-card rounded-lg ring ring-default">
                             <div class="price-section">
 
                                 <div class="price">
@@ -1130,7 +1130,6 @@ const getCategoryColor = (category: string) => {
 
     top: 66px;
     background: white;
-    border: 2px solid #e5e7eb;
     height: max-content;
     padding: 1.5rem;
 }
