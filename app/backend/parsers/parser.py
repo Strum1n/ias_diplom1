@@ -88,23 +88,29 @@ async def parse_offers_last(source: Literal["avito", "cian"]):
             filtered_offers_count = 0
             while filtered_offers_count < config[source]["items_on_page"] * config[source]["max_available_page"]:
                 while True:
-                    await max_price_filter_el.clear_input()
-                    await page.sleep(0.25)
-                    await max_price_filter_el.clear_input_by_deleting()
-
-                    await min_price_filter_el.clear_input()
-                    await page.sleep(0.25)
-                    await min_price_filter_el.clear_input_by_deleting()
-                    await page.sleep(0.5)
+                    # await min_price_filter_el.focus()
+                    # await page.sleep(0.25)
+                    # await min_price_filter_el.clear_input()
+                    # await page.sleep(0.25)
+                    # await max_price_filter_el.focus()
+                    # await page.sleep(0.25)
+                    # await max_price_filter_el.clear_input()
+                    # await page.sleep(0.25)
                     try:
+                        await max_price_filter_el.focus()
+                        await max_price_filter_el.clear_input()
+
                         for digit in str(config[source]["max_price"]):
                             await max_price_filter_el.send_keys(digit)
 
-                        await page.sleep(1.5)
+                        await min_price_filter_el.focus()
+
+                        await min_price_filter_el.clear_input()
+
                         for digit in str(config[source]["min_price"]):
                             await min_price_filter_el.send_keys(digit)
 
-                        await page.sleep(3)
+                        await page.sleep(5)
                         filter_btn = await page.select(config[source]["filter_btn_selector"])
                         filtered_offers_count = int(re.findall(r"\d+", filter_btn.text_all.replace(" ", ""))[0])
                         if (
@@ -174,9 +180,9 @@ async def parse_offers_last(source: Literal["avito", "cian"]):
                 next_page_btn = None
                 try:
                     next_page_btn = await page.select(config[source]["next_btn_selector"], timeout=2)
-                except TimeoutError:
+                except Exception as e:
                     print(f"Спарсили последнюю страницу {config[source]['p']} c ценами {config[source]['min_price']} - {config[source]['max_price']}")
-                    return
+
                 if next_page_btn is None:
                     config[source]["p"] = 1
                     config[source]["min_price"] = config[source]["max_price"] + 1
@@ -343,9 +349,9 @@ async def parse_address(json_data: dict, url: str):
         if district_name_from_site and ("район" in district_name_from_site or "р-н" in district_name_from_site):
             address_elements["district1"] = district_name_from_site
 
-        partnership_name = address_elements.replace("allotments")
-        partnership_full_name = address_elements.replace("allotments")
-        partnership_short_name = address_elements.replace("allotments")
+        partnership_name = address_elements.get("allotments")
+        partnership_full_name = address_elements.get("allotments")
+        partnership_short_name = address_elements.get("allotments")
 
         if region := address_elements.get("state"):
             region_name = region.replace(" область", "")
@@ -458,7 +464,9 @@ async def parse_address(json_data: dict, url: str):
             )
 
         if residential_complex:
-            residential_complex_name = residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").replace("Коттеджный посёлок", "").strip()
+            residential_complex_name = (
+                residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").replace("Коттеджный посёлок", "").strip()
+            )
             if "Коттеджный посёлок" not in residential_complex:
                 residential_complex_name = residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").strip()
                 residential_complex_short_name = "ЖК " + residential_complex_name[0].lower() + residential_complex_name[1:]
@@ -547,9 +555,10 @@ async def parse_offer_info(json_data: dict):
         url = json_data_1["seo"]["canonicalUrl"]
         source = "avito" if "avito.ru" in url else None
         update_date_source = None
-        total_views_count = parse("$..totalViews").find(json_data)[0]
+
         total_views_count = json_data_2["viewStat"]["totalViews"]
         daily_views_count = json_data_2["viewStat"]["todayViews"]
+
         views_history = None
         last_ten_days_views_count = None
         creation_date_source = dateparser.parse(json_data_1["sortFormatedDate"], languages=["ru"])
@@ -583,7 +592,7 @@ async def parse_offer_info(json_data: dict):
         )
         description = json_data_1.get("description") or json_data_1.get("descriptionHtml")
         contact_phone = None
-        seller_type = json_data_2["contactBarInfo"]["publicProfileInfo"]["sellerName"].replace("Агентство", "Агентство недвижимости").replace("Пользователь", "Автор объявления")
+        seller_type = json_data_2["contactBarInfo"]["publicProfileInfo"]["sellerName"].replace("Агентство", "Агентство недвижимости")
         seller_name = json_data_2["contactBarInfo"]["publicProfileInfo"]["itemSellerName"]
         seller_foundation_date = json_data_2["contactBarInfo"]["publicProfileInfo"].get("howOldInfo")
         price = json_data_2["contactBarInfo"]["price"]
@@ -716,7 +725,9 @@ async def parse_offer_info(json_data: dict):
             )
             else None
         )
-        has_sewerage = True if sewerage_type or ("канализация" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), ""))) else None
+        has_sewerage = (
+            True if sewerage_type or ("канализация" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), ""))) else None
+        )
         has_gas = True if gas_type or ("газ" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), ""))) else None
         has_heating = True if heating_type or ("отопление" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), ""))) else None
         has_water_supply = True if water_supply_type else None
@@ -762,7 +773,7 @@ async def parse_offer_info(json_data: dict):
             "url": url,
             "source": source,
             "update_date_source": update_date_source,
-            "total_views_count": total_views_count,
+            "views_count": total_views_count,
             "daily_views_count": daily_views_count,
             "views_history": views_history,
             "last_ten_days_views_count": last_ten_days_views_count,

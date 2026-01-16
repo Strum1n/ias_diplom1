@@ -1,31 +1,31 @@
 [avito]
 domen_url = "https://www.avito.ru"
-url = "https://www.avito.ru/moskva_i_mo/doma_dachi_kottedzhi/prodam/dom-ASgBAgICAkSUA9AQ2AjOWQ?cd=1&f=ASgBAQICAkSUA9AQ2AjOWQFAjL0OJOyk0QHqpNEB&localPriority=0"
+url = "https://www.avito.ru/bryansk/kvartiry/prodam-ASgBAgICAUSSA8YQ?localPriority=0"
 price_filter_btn_selector = ""
 filter_btn_selector = "[data-marker=\"search-filters/submit-button\"]"
 next_btn_selector = "[data-marker=\"pagination-button/nextPage\"]"
 min_price_selector = "[data-marker=\"price-from/input\"]"
 max_price_selector = "[data-marker=\"price-to/input\"]"
 offer_urls_selector = "[data-marker=\"catalog-serp\"] [data-marker=\"item-photo-sliderLink\"]"
-min_price = 0
-max_price = 899000000
+min_price = 3500000
+max_price = 4000000
 price_step = 500000
-items_on_page = 2
-max_available_page = 50
-p = 4
+items_on_page = 50
+max_available_page = 100
+p = 7
 
 [cian]
 domen_url = "https://www.cian.ru"
-url = "https://bryansk.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&sort=creation_date_desc&offer_type=flat&p=1&region=4691"
+url = "https://www.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&maxprice=7000000&offer_type=flat&p=2&region=1"
 price_filter_btn_selector = "[data-testid=\"price\"]"
 next_btn_selector = "nav[data-name=\"Pagination\"] > :nth-child(3):is(a)"
 min_price_selector = "[placeholder=\"от\"]"
 max_price_selector = "[placeholder=\"до\"]"
-min_price = 8500104
+min_price = 8500155
 items_on_page = 28
 offer_urls_selector = ".x31de4314--_416c6--media"
-max_price = 89000154
-max_available_page = 1
+max_price = 9000205
+max_available_page = 54
 filter_btn_selector = "[data-name=\"SummaryHeader\"]"
 price_step = 500000
-p = 17
+p = 2

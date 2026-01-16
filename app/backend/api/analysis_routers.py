@@ -250,27 +250,27 @@ async def recalculate_fuzzy_scores(
 
             # 🧠 Формируем данные для fuzzy
             data = {
-                "metro_distance": infra.get("metro_distance", 1000),
-                "bus_distance": infra.get("bus_distance", 1000),
+                "metro_distance": infra.get("metro_distance", 9999),
+                "bus_distance": infra.get("bus_distance", 9999),
                 "parking_availability": True if offer.parking_type_id else False,
-                "hospital_distance": infra.get("hospital_distance", 3000),
-                "pharmacy_distance": infra.get("pharmacy_distance", 1000),
+                "hospital_distance": infra.get("hospital_distance", 9999),
+                "pharmacy_distance": infra.get("pharmacy_distance", 9999),
                 "floor": offer.floor or 1,
-                "elevator_availability": offer.has_elevator,
-                "school_distance": infra.get("school_distance", 1500),
-                "kindergarten_distance": infra.get("kindergarten_distance", 1500),
-                "total_area": offer.total_area or 50,
+                "elevator_availability": offer.has_elevator or False,
+                "school_distance": infra.get("school_distance", 9999),
+                "kindergarten_distance": infra.get("kindergarten_distance", 9999),
+                "total_area": offer.total_area,
                 "total_rooms": offer.rooms_count or 1,
             }
-
-            result = fuzzy.evaluate_all(data)
-
-            if not result:
-                logger.error(f"❌ Fuzzy вернул None для Offer ID={offer.id} (data={data})")
-                null_results += 1
-                continue
-
+            print(data)
             try:
+                result = fuzzy.evaluate_all(data)
+
+                if not result:
+                    logger.error(f"❌ Fuzzy вернул None для Offer ID={offer.id} (data={data})")
+                    null_results += 1
+                    continue
+
                 offer.transport_access_score = result["transport_access"]["score"]
                 offer.transport_access_category = result["transport_access"]["category"]
                 offer.elderly_score = result["elderly_friendly"]["score"]
@@ -280,11 +280,11 @@ async def recalculate_fuzzy_scores(
 
                 # Проверим, не вернулись ли None-значения
                 if offer.transport_access_score is None or offer.elderly_score is None or offer.family_score is None:
-                    logger.warning(f"⚠️ Null fuzzy score для Offer ID={offer.id} → result={result}")
+                    logger.warning(f"⚠️ Null fuzzy score для Offer ID={offer.id} → result={data}")
                     null_results += 1
 
             except Exception as e:
-                logger.exception(f"💥 Ошибка при обработке Offer ID={offer.id}: {e}")
+                logger.exception(f"💥 Ошибка при обработке Offer ID={offer.id}: {e} data={data}")
                 null_results += 1
 
         await session.commit()

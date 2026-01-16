@@ -43,29 +43,10 @@
 </template>
 
 <script setup lang="ts">
+import type { OfferResponseShort, AddressResponseShort } from '~/types/api'
 
-interface Address {
-    house_number: string | null;
-    full_address: string;
-    coordinates_list: number[];
-}
-
-interface Offer {
-    id: number | null;
-    url: string | null;
-    price: number | null;
-    total_area: number | null;
-    land_area: number | null;
-    living_area: number | null;
-    rooms_count: number | null;
-    floor: number | null;
-    title: string | null;
-    price_category: string | null;
-    address: Address | null;
-    image_url: string | null;
-    images_urls: string[] | null;
-    price_per_square_meter: number | null;
-}
+type Address = AddressResponseShort
+type Offer = OfferResponseShort
 
 interface Filters {
     [key: string]: any;

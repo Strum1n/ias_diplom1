@@ -89,18 +89,26 @@ const items = ref([
 
 </script>
 
+
+
 <style scoped>
+
+:deep a{
+    font-weight: 600;
+}
+
+
 /* HEADER */
 .header {
     position: sticky;
     top: 0;
     z-index: 50;
-
-    background: white;
+    background: rgba(255, 255, 255, 0.92); /* Белый с прозрачностью 70% */
     color: #111;
 
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(6px) saturate(180%);
+    border-bottom: 1px solid var(--ui-border)
+
 }
 
 /* контейнер с вертикальным padding */

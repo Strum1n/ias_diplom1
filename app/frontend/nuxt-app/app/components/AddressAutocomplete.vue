@@ -105,11 +105,12 @@ watch(searchQuery, (newValue) => {
 @reference "tailwindcss";
 
 .autocomplete-input {
-    @apply border border-[var(--ui-border-muted)] text-sm w-full h-full px-3 py-2 focus-visible:border-2 focus-visible:border-[#00c16a] focus:outline-0
+    @apply rounded-sm ring-1 ring-[var(--ui-border)] text-sm w-full h-full px-3 py-2 
+    focus:outline-2 focus:outline-[#00c16a] focus:outline-offset-[-1px] focus:ring-0
 }
 
 .suggestions-list {
-    @apply absolute border border-[var(--ui-border-muted)] max-h-50 left-[-1px] overflow-auto z-10 bg-white w-full mt-1 text-sm
+    @apply absolute  rounded-sm ring-1 ring-[var(--ui-border)] max-h-50  overflow-auto z-10 bg-white w-full mt-1 text-sm
 }
 
 .suggestion-item {
