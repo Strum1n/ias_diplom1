@@ -1,7 +1,7 @@
 <template>
   <div class="analytics-dashboard">
-    <div v-if="mainAnalyticsTitle" class="dashboard-title">
-      <h2>{{ mainAnalyticsTitle }}</h2>
+    <div v-if="title" class="dashboard-title">
+      <h2>{{ title }}</h2>
     </div>
 
     <!-- Общая статистика -->
@@ -379,11 +379,6 @@ const priceCategoriesChart = ref({
     chart: {
       type: "bar",
       stacked: true,
-      events: {
-        dataPointSelection: (event: any, chartContext: any, config: any) => {
-          drillDown(config.seriesIndex, config.dataPointIndex, "priceCategories");
-        },
-      },
     },
     plotOptions: {
       bar: {
@@ -1523,11 +1518,11 @@ watch(
 );
 
 const applyFilters = () => {
-  mainAnalyticsTitle.value = generateComparisonTitle(props.filters);
   loadPopularStats();
   loadSettlementsData();
   loadPriceHistoryData();
   loadViewsHistoryData();
+  console.log(totalStats.value);
 };
 
 const formatPrice = (value: number) => {
@@ -1548,107 +1543,9 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString("ru-RU");
 };
 
-const mainAnalyticsTitle = ref("Основная аналитика");
-const generateComparisonTitle = (filters: FilterState): string => {
-  const baseTitles: { [key: string]: string } = {
-    region: "Области",
-    settlement: "Населенные пункты",
-    district: "Районы",
-    microdistrict: "Микрорайоны",
-    street: "Улицы",
-  };
-
-  let title = baseTitles[filters.groupBy] || "Аналитика";
-
-  const parts: string[] = [];
-
-  if (filters.regionName && filters.groupBy !== "region") {
-    parts.push(filters.regionName);
-  }
-
-  if (filters.settlementName && ["district", "microdistrict", "street"].includes(filters.groupBy)) {
-    parts.push(filters.settlementName);
-  }
-
-  if (filters.districtName && ["microdistrict", "street"].includes(filters.groupBy)) {
-    parts.push(filters.districtName);
-  }
-
-  if (filters.microdistrictName && filters.groupBy === "street") {
-    parts.push(filters.microdistrictName);
-  }
-
-  if (parts.length > 0) {
-    title += ` - ${parts.join(" - ")}`;
-  }
-
-  if (filters.groupBy !== "region" && filters.settlementTypes.length > 0) {
-    const typeLabels: { [key: string]: string } = {
-      Город: "города",
-      Деревня: "деревни",
-      Поселок: "поселки",
-    };
-    // Проверяем, все ли типы выбраны (3 типа)
-    const allTypesSelected = filters.settlementTypes.length === 3;
-    if (!allTypesSelected) {
-      const typeText = filters.settlementTypes.map((type) => typeLabels[type] || type).join(", ");
-      title += ` (${typeText})`;
-    }
-  }
-
-  if (filters.minOffersCount > 0 || filters.maxOffersCount) {
-    const countParts = [];
-    if (filters.minOffersCount > 0) countParts.push(`от ${filters.minOffersCount}`);
-    if (filters.maxOffersCount) countParts.push(`до ${filters.maxOffersCount}`);
-    if (countParts.length > 0) {
-      title += ` [${countParts.join("-")} объявлений]`;
-    }
-  }
-
-  return title;
-};
-
 const openOffer = (offer: TopOffer) => {
   const router = useRouter();
   router.push(`/offers/${offer.id}`);
-};
-const drillDown = async (seriesIndex: number, dataPointIndex: number, chartType: string) => {
-  if (!settlementsData.value) return;
-
-  // Получаем выбранный элемент графика
-  const item = settlementsData.value[dataPointIndex];
-  console.log(item);
-  if (!item) return;
-
-  // В зависимости от уровня группировки устанавливаем новый фильтр
-  switch (props.filters.groupBy) {
-    case "region":
-      // При клике на область передаем regionName
-      props.filters.regionName = item.region?.name || "";
-      props.filters.groupBy = "settlement";
-      break;
-    case "settlement":
-      props.filters.settlementName = item.settlement?.name || "";
-      props.filters.groupBy = "district";
-      break;
-    case "district":
-      props.filters.districtName = item.district?.name || "";
-      props.filters.groupBy = "street";
-      break;
-      // case "microdistrict":
-      //   props.filters.microdistrictName = item.microdistrict?.name || "";
-      //   props.filters.groupBy = "microdistrict";
-      //   break;
-      // case "street":
-      //   props.filters.streetName = item.street?.name || "";
-      //   props.filters.groupBy = "street";
-      break;
-    default:
-      return;
-  }
-
-  // Применяем фильтры и перезагружаем данные
-  await applyFilters();
 };
 
 onMounted(() => {

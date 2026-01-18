@@ -16,7 +16,9 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 
 export const AddressAutocomplete: typeof import("../app/components/AddressAutocomplete.vue").default
 export const AnalyticsDashboard: typeof import("../app/components/AnalyticsDashboard.vue").default
+export const Dashboardik: typeof import("../app/components/Dashboardik.vue").default
 export const FiltersSidebar: typeof import("../app/components/FiltersSidebar.vue").default
+export const KekChild: typeof import("../app/components/kek_child.vue").default
 export const YaMap: typeof import("../app/components/yaMap.vue").default
 export const ProseA: typeof import("../node_modules/@nuxt/ui/dist/runtime/components/prose/A.vue").default
 export const ProseAccordion: typeof import("../node_modules/@nuxt/ui/dist/runtime/components/prose/Accordion.vue").default
@@ -206,6 +208,12 @@ export const MDC: typeof import("../node_modules/@nuxtjs/mdc/dist/runtime/compon
 export const MDCCached: typeof import("../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCCached.vue").default
 export const MDCRenderer: typeof import("../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCRenderer.vue").default
 export const MDCSlot: typeof import("../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCSlot.vue").default
+export const VChart: typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChart").default
+export const VChartServer: typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartServer.vue").default
+export const VChartLight: typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartLight.vue").default
+export const VChartIsland: IslandComponent<typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartIsland.server.vue").default>
+export const VChartFull: typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartClient").default
+export const VChartFull: typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartServer.vue").default
 export const NuxtPage: typeof import("../node_modules/nuxt/dist/pages/runtime/page").default
 export const NoScript: typeof import("../node_modules/nuxt/dist/head/runtime/components").NoScript
 export const Link: typeof import("../node_modules/nuxt/dist/head/runtime/components").Link
@@ -219,7 +227,9 @@ export const Body: typeof import("../node_modules/nuxt/dist/head/runtime/compone
 export const NuxtIsland: typeof import("../node_modules/nuxt/dist/app/components/nuxt-island").default
 export const LazyAddressAutocomplete: LazyComponent<typeof import("../app/components/AddressAutocomplete.vue").default>
 export const LazyAnalyticsDashboard: LazyComponent<typeof import("../app/components/AnalyticsDashboard.vue").default>
+export const LazyDashboardik: LazyComponent<typeof import("../app/components/Dashboardik.vue").default>
 export const LazyFiltersSidebar: LazyComponent<typeof import("../app/components/FiltersSidebar.vue").default>
+export const LazyKekChild: LazyComponent<typeof import("../app/components/kek_child.vue").default>
 export const LazyYaMap: LazyComponent<typeof import("../app/components/yaMap.vue").default>
 export const LazyProseA: LazyComponent<typeof import("../node_modules/@nuxt/ui/dist/runtime/components/prose/A.vue").default>
 export const LazyProseAccordion: LazyComponent<typeof import("../node_modules/@nuxt/ui/dist/runtime/components/prose/Accordion.vue").default>
@@ -409,6 +419,12 @@ export const LazyMDC: LazyComponent<typeof import("../node_modules/@nuxtjs/mdc/d
 export const LazyMDCCached: LazyComponent<typeof import("../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCCached.vue").default>
 export const LazyMDCRenderer: LazyComponent<typeof import("../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCRenderer.vue").default>
 export const LazyMDCSlot: LazyComponent<typeof import("../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCSlot.vue").default>
+export const LazyVChart: LazyComponent<typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChart").default>
+export const LazyVChartServer: LazyComponent<typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartServer.vue").default>
+export const LazyVChartLight: LazyComponent<typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartLight.vue").default>
+export const LazyVChartIsland: LazyComponent<IslandComponent<typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartIsland.server.vue").default>>
+export const LazyVChartFull: LazyComponent<typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartClient").default>
+export const LazyVChartFull: LazyComponent<typeof import("../node_modules/nuxt-echarts/dist/runtime/components/VChartServer.vue").default>
 export const LazyNuxtPage: LazyComponent<typeof import("../node_modules/nuxt/dist/pages/runtime/page").default>
 export const LazyNoScript: LazyComponent<typeof import("../node_modules/nuxt/dist/head/runtime/components").NoScript>
 export const LazyLink: LazyComponent<typeof import("../node_modules/nuxt/dist/head/runtime/components").Link>

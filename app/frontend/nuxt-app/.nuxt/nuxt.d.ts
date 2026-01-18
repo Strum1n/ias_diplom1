@@ -1,7 +1,8 @@
+/// <reference types="nuxt-auth-utils" />
 /// <reference types="@nuxt/ui" />
 /// <reference types="@nuxtjs/mdc" />
+/// <reference types="nuxt-echarts" />
 /// <reference types="@nuxt/telemetry" />
-/// <reference types="nuxt-auth-utils" />
 /// <reference types="@nuxt/devtools" />
 /// <reference types="vue-yandex-maps" />
 /// <reference path="types/builder-env.d.ts" />
@@ -13,6 +14,7 @@
 /// <reference types="G:/My Programs/ias_diplom1/app/frontend/nuxt-app/node_modules/@nuxt/nitro-server/dist/index.mjs" />
 /// <reference path="types/ui.d.ts" />
 /// <reference path="../node_modules/@nuxt/ui/dist/runtime/types/app.config.d.ts" />
+/// <reference path="types/nuxt-echarts.d.ts" />
 /// <reference types="vue-router" />
 /// <reference path="types/middleware.d.ts" />
 /// <reference path="types/nitro-middleware.d.ts" />

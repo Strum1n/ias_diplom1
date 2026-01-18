@@ -1,1 +1,0 @@
-import{O as a,al as c,Q as u,D as m}from"./BFpNsVDb.js";import{u as p}from"./C68CC8AM.js";function i(o){const e=a(),s=e?.type.emits,t={};return s?.length||console.warn(`No emitted event found. Please check component: ${e?.type.__name}`),s?.forEach(r=>{t[c(u(r))]=(...n)=>o(r,...n)}),t}function f(o,e){const s=p(o),t=e?i(e):{};return m(()=>({...s.value,...t}))}export{f as u};

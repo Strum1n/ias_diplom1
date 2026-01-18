@@ -16,7 +16,9 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 interface _GlobalComponents {
   'AddressAutocomplete': typeof import("../../app/components/AddressAutocomplete.vue").default
   'AnalyticsDashboard': typeof import("../../app/components/AnalyticsDashboard.vue").default
+  'Dashboardik': typeof import("../../app/components/Dashboardik.vue").default
   'FiltersSidebar': typeof import("../../app/components/FiltersSidebar.vue").default
+  'KekChild': typeof import("../../app/components/kek_child.vue").default
   'YaMap': typeof import("../../app/components/yaMap.vue").default
   'ProseA': typeof import("../../node_modules/@nuxt/ui/dist/runtime/components/prose/A.vue").default
   'ProseAccordion': typeof import("../../node_modules/@nuxt/ui/dist/runtime/components/prose/Accordion.vue").default
@@ -206,6 +208,12 @@ interface _GlobalComponents {
   'MDCCached': typeof import("../../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCCached.vue").default
   'MDCRenderer': typeof import("../../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCRenderer.vue").default
   'MDCSlot': typeof import("../../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCSlot.vue").default
+  'VChart': typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChart").default
+  'VChartServer': typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartServer.vue").default
+  'VChartLight': typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartLight.vue").default
+  'VChartIsland': IslandComponent<typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartIsland.server.vue").default>
+  'VChartFull': typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartClient").default
+  'VChartFull': typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartServer.vue").default
   'NuxtPage': typeof import("../../node_modules/nuxt/dist/pages/runtime/page").default
   'NoScript': typeof import("../../node_modules/nuxt/dist/head/runtime/components").NoScript
   'Link': typeof import("../../node_modules/nuxt/dist/head/runtime/components").Link
@@ -219,7 +227,9 @@ interface _GlobalComponents {
   'NuxtIsland': typeof import("../../node_modules/nuxt/dist/app/components/nuxt-island").default
   'LazyAddressAutocomplete': LazyComponent<typeof import("../../app/components/AddressAutocomplete.vue").default>
   'LazyAnalyticsDashboard': LazyComponent<typeof import("../../app/components/AnalyticsDashboard.vue").default>
+  'LazyDashboardik': LazyComponent<typeof import("../../app/components/Dashboardik.vue").default>
   'LazyFiltersSidebar': LazyComponent<typeof import("../../app/components/FiltersSidebar.vue").default>
+  'LazyKekChild': LazyComponent<typeof import("../../app/components/kek_child.vue").default>
   'LazyYaMap': LazyComponent<typeof import("../../app/components/yaMap.vue").default>
   'LazyProseA': LazyComponent<typeof import("../../node_modules/@nuxt/ui/dist/runtime/components/prose/A.vue").default>
   'LazyProseAccordion': LazyComponent<typeof import("../../node_modules/@nuxt/ui/dist/runtime/components/prose/Accordion.vue").default>
@@ -409,6 +419,12 @@ interface _GlobalComponents {
   'LazyMDCCached': LazyComponent<typeof import("../../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCCached.vue").default>
   'LazyMDCRenderer': LazyComponent<typeof import("../../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCRenderer.vue").default>
   'LazyMDCSlot': LazyComponent<typeof import("../../node_modules/@nuxtjs/mdc/dist/runtime/components/MDCSlot.vue").default>
+  'LazyVChart': LazyComponent<typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChart").default>
+  'LazyVChartServer': LazyComponent<typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartServer.vue").default>
+  'LazyVChartLight': LazyComponent<typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartLight.vue").default>
+  'LazyVChartIsland': LazyComponent<IslandComponent<typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartIsland.server.vue").default>>
+  'LazyVChartFull': LazyComponent<typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartClient").default>
+  'LazyVChartFull': LazyComponent<typeof import("../../node_modules/nuxt-echarts/dist/runtime/components/VChartServer.vue").default>
   'LazyNuxtPage': LazyComponent<typeof import("../../node_modules/nuxt/dist/pages/runtime/page").default>
   'LazyNoScript': LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components").NoScript>
   'LazyLink': LazyComponent<typeof import("../../node_modules/nuxt/dist/head/runtime/components").Link>

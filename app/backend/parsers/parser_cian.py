@@ -146,10 +146,10 @@ async def parse_offer_to_db(browser: zendriver.Browser, url: str) -> Offer | Non
     start_time = time.time()
     offer_id = re.findall(r"\d+", url)
     max_retries = 3
-    urls = [
-        f"https://www-cian-ru.translate.goog/sale/flat/{offer_id[0]}/?_x_tr_sl=en&_x_tr_tl=ru&_x_tr_hl=ru&_x_tr_pto=wapp",
-        url,
-    ]
+    # urls = [
+    #     f"https://www-cian-ru.translate.goog/sale/flat/{offer_id[0]}/?_x_tr_sl=en&_x_tr_tl=ru&_x_tr_hl=ru&_x_tr_pto=wapp",
+    #     url,
+    # ]
     urls = [url]
     for attempt in range(max_retries):
         try:
@@ -164,6 +164,7 @@ async def parse_offer_to_db(browser: zendriver.Browser, url: str) -> Offer | Non
             offerId = offer_json["offerData"]["offer"].get("id")
             await property_page.get(f"https://api.cian.ru/offer-card/v1/get-offer-card-statistic/?offerCreationDate={creation_date[0:10]}&offerId={offerId}")
             views_stats_text = await property_page.get_content()
+            await property_page.close()
             views_stats_json = json.loads(re.findall(r"{\".+}", views_stats_text)[0])
             offer_json = offer_json["offerData"]
             offer_json["dailyViews"] = views_stats_json.get("daily", {}).get("dailyViews", {})
@@ -203,7 +204,7 @@ async def parse_offer_to_db(browser: zendriver.Browser, url: str) -> Offer | Non
             address_id = await add_offer_to_db(new_offer, async_session_maker)
             if infrastructure_info:
                 await add_address_infrastructure_link(async_session_maker, address_id, infrastructure_info)
-            await property_page.close()
+            # await property_page.close() if property_page else None
             # async with async_session_maker() as session:
             #     await update_price_categories_in_db(session)
             end_time = time.time()
@@ -218,14 +219,15 @@ async def parse_offer_to_db(browser: zendriver.Browser, url: str) -> Offer | Non
             await property_page.close() if property_page else None
             await asyncio.sleep(5 * (attempt))
         except Exception as e:
-            logging.error(f"Произошла ошибка: {e} в {url}", exc_info=True)
+            if "Уже есть в БД" in str(e):
+                raise Exception("Уже есть в БД")
+            print(f"Ошибка: {e} на странице: {url},  попытка {attempt + 1} из {max_retries}")
             await property_page.close() if property_page else None
-            return
-    else:
-        print(f"НЕУДАЧА {url}")
-        print("АНТИБОТ ЗАРАБОТАЛ")
-        await property_page.close() if property_page else None
-        return
+            await asyncio.sleep(5 * (attempt))
+    print(f"НЕУДАЧА {url}")
+    print("АНТИБОТ ЗАРАБОТАЛ")
+    await property_page.close() if property_page else None
+    return
 
 
 async def parse_offer_info(
@@ -248,9 +250,11 @@ async def parse_offer_info(
 
         new_offer = {
             "url": offer_info_json.get("url"),
-            "sourse": "cian",
+            "source": "cian",
             "update_date_source": offer.get("editDate"),
-            "views_count": int(re.findall(r"(\d+)", offer_info_json.get("stats", {}).get("totalViewsFormattedString"))[0]),
+            "views_count": int(re.findall(r"(\d+)", offer_info_json.get("stats", {}).get("totalViewsFormattedString"))[0])
+            if re.findall(r"(\d+)", offer_info_json.get("stats", {}).get("totalViewsFormattedString"))
+            else 0,
             "daily_views_count": re.findall(r" (\d+) за", offer_info_json.get("stats", {}).get("totalViewsFormattedString", ""))[0]
             if re.findall(r" (\d+) за", offer_info_json.get("stats", {}).get("totalViewsFormattedString", ""))
             else 0,
@@ -290,7 +294,7 @@ async def parse_offer_info(
                 if seller.get("name")
                 else "Автор объявления"
             ),
-            "seller_name": seller.get("companyName") or seller.get("name") or str(seller.get("id")),
+            "seller_name": seller.get("name") if seller.get("companyName") == "Частный маклер" else seller.get("companyName") or seller.get("name") or str(seller.get("id")),
             "seller_foundation_date": (
                 offer_info_json.get("company", {}).get("yearFoundation")
                 if seller.get("userType") == "developer"
@@ -358,7 +362,8 @@ async def parse_offer_info(
             "has_water_supply": False
             if (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение")) == "Нет"
             else True
-            if (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение")) and (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение")) != "Нет информации"
+            if (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение"))
+            and (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение")) != "Нет информации"
             else None,
             "has_garage": offer.get("hasGarage"),
             "has_pool": offer.get("hasPool"),

@@ -142,6 +142,7 @@
     "../node_modules/vue-yandex-maps/node_modules",
     "../node_modules/@nuxtjs/mdc/node_modules",
     "../node_modules/nuxt-auth-utils/node_modules",
+    "../node_modules/nuxt-echarts/node_modules",
     "../node_modules/@nuxt/devtools/node_modules",
     "../node_modules/@nuxt/telemetry/node_modules",
     "../dist"

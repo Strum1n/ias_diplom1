@@ -263,19 +263,20 @@ const generateComparisonTitle = (filters: FilterState): string => {
     title += ` - ${parts.join(" - ")}`;
   }
 
-  if (filters.groupBy !== "region" && filters.settlementTypes.length > 0) {
-    const typeLabels: { [key: string]: string } = {
-      Город: "города",
-      Деревня: "деревни",
-      Поселок: "поселки",
-    };
-    // Проверяем, все ли типы выбраны (3 типа)
-    const allTypesSelected = filters.settlementTypes.length === 3;
-    if (!allTypesSelected) {
-      const typeText = filters.settlementTypes.map((type) => typeLabels[type] || type).join(", ");
-      title += ` (${typeText})`;
-    }
-  }
+  // Показываем типы населенных пунктов только если есть выбранные типы и это не регион
+  // if (filters.groupBy !== 'region' && filters.settlementTypes.length > 0) {
+  //     const typeLabels: { [key: string]: string } = {
+  //         'Город': 'города',
+  //         'Деревня': 'деревни',
+  //         'Поселок': 'поселки'
+  //     };
+  //     // Проверяем, все ли типы выбраны (3 типа)
+  //     const allTypesSelected = filters.settlementTypes.length === 3;
+  //     if (!allTypesSelected) {
+  //         const typeText = filters.settlementTypes.map(type => typeLabels[type] || type).join(', ');
+  //         title += ` (${typeText})`;
+  //     }
+  // }
 
   if (filters.minOffersCount > 0 || filters.maxOffersCount) {
     const countParts = [];
@@ -381,7 +382,7 @@ const resetFilters = () => {
     microdistrictName: "",
     streetName: "",
     settlementTypes: [],
-    minOffersCount: null,
+    minOffersCount: 100,
     maxOffersCount: null,
   };
   mainAnalyticsTitle.value = "Основная аналитика";

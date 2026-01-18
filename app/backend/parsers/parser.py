@@ -101,6 +101,7 @@ async def parse_offers_last(source: Literal["avito", "cian"]):
                         await max_price_filter_el.clear_input()
 
                         for digit in str(config[source]["max_price"]):
+                            await page.sleep(1)
                             await max_price_filter_el.send_keys(digit)
 
                         await min_price_filter_el.focus()
@@ -108,6 +109,7 @@ async def parse_offers_last(source: Literal["avito", "cian"]):
                         await min_price_filter_el.clear_input()
 
                         for digit in str(config[source]["min_price"]):
+                            await page.sleep(1)
                             await min_price_filter_el.send_keys(digit)
 
                         await page.sleep(5)
@@ -154,7 +156,10 @@ async def parse_offers_last(source: Literal["avito", "cian"]):
                     elif source == "cian":
                         task = asyncio.create_task(parse_offer_to_db(browser, url))
                     tasks.append(task)
-                    await asyncio.sleep(random.uniform(1, 1.3))
+                    if source == "avito":
+                        await asyncio.sleep(random.uniform(1, 1.3))
+                    if source == "cian":
+                        await asyncio.sleep(random.uniform(0.5, 0.7))
                 results = await asyncio.gather(*tasks, return_exceptions=True)
                 successful_page_tasks = 0
                 duplicates = 0
@@ -185,8 +190,8 @@ async def parse_offers_last(source: Literal["avito", "cian"]):
 
                 if next_page_btn is None:
                     config[source]["p"] = 1
-                    config[source]["min_price"] = config[source]["max_price"] + 1
-                    config[source]["max_price"] += config[source]["price_step"] + 51
+                    config[source]["min_price"] = config[source]["max_price"]
+                    config[source]["max_price"] += config[source]["price_step"]
                     # if source == "cian":
                     #     config[source]["max_price"] = int(str(config[source]["max_price"]) + "0")
 

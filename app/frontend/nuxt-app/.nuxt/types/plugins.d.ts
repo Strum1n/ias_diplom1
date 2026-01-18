@@ -20,6 +20,7 @@ type NuxtAppInjections =
   InjectionType<typeof import("../../node_modules/nuxt/dist/pages/runtime/plugins/check-if-page-unused.js")> &
   InjectionType<typeof import("../../node_modules/@nuxt/devtools/dist/runtime/plugins/devtools.server.js")> &
   InjectionType<typeof import("../../node_modules/@nuxt/devtools/dist/runtime/plugins/devtools.client.js")> &
+  InjectionType<typeof import("../../node_modules/nuxt-echarts/dist/runtime/server-plugin.js")> &
   InjectionType<typeof import("../../node_modules/nuxt-auth-utils/dist/runtime/app/plugins/session.client.js")> &
   InjectionType<typeof import("../../node_modules/vue-yandex-maps/dist/plugins/nuxt3-plugin.js")> &
   InjectionType<typeof import("../../node_modules/@nuxt/ui/dist/runtime/plugins/colors.js")> &
@@ -29,7 +30,8 @@ type NuxtAppInjections =
   InjectionType<typeof import("../../node_modules/nuxt/dist/app/plugins/warn.dev.server.js")> &
   InjectionType<typeof import("../../node_modules/nuxt/dist/app/plugins/check-if-layout-used.js")> &
   InjectionType<typeof import("../../app/plugins/apexcharts.client")> &
-  InjectionType<typeof import("../../app/plugins/api")>
+  InjectionType<typeof import("../../app/plugins/api")> &
+  InjectionType<typeof import("../../app/plugins/click-outside")>
 
 declare module '#app' {
   interface NuxtApp extends NuxtAppInjections { }

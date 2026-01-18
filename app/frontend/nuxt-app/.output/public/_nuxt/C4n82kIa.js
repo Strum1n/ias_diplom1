@@ -1,0 +1,1 @@
+import{t as s}from"./DLc5o1p8.js";import{a7 as c,j as n,c as p,o as l,i as m,ae as i}from"./CpBFx3mL.js";const u={base:""},g={__name:"ProseEm",props:{class:{type:String,required:!1}},setup(e){const a=e,o=c(),t=n(()=>s({extend:s(u),...o.ui?.prose?.em||{}}));return(r,f)=>(l(),p("em",{class:i(t.value({class:a.class}))},[m(r.$slots,"default")],2))}};export{g as default};

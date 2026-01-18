@@ -280,7 +280,7 @@ class Address(BaseModel, table=True):
 
     region_id: int | None = Field(foreign_key="region.id", index=True)
     municipality_id: int | None = Field(foreign_key="municipality.id", index=True, ondelete="SET NULL")
-    settlement_id: int | None = Field(foreign_key="settlement.id", ondelete="CASCADE", index=True)
+    settlement_id: int | None = Field(foreign_key="settlement.id", ondelete="SET NULL", index=True)
     partnership_id: int | None = Field(foreign_key="partnership.id", index=True)
     district_id: int | None = Field(foreign_key="district.id", index=True)
     microdistrict_id: int | None = Field(foreign_key="microdistrict.id", index=True)

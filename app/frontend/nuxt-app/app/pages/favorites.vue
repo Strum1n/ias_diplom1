@@ -14,7 +14,7 @@
       <div class="filter-group">
         <label>Тип недвижимости:</label>
         <USelect
-          v-model="filters.propertyType"
+          v-model="propertyType"
           :items="propertyTypesItems"
           class="w-48"
           value-key="value"
@@ -484,9 +484,7 @@ const criteriaWeights = ref<{ [key: string]: number }>({});
 const criteriaDirections = ref<{ [key: string]: "min" | "max" }>({});
 
 // Фильтры и сортировка (остаются без изменений)
-const filters = reactive({
-  propertyType: "Все типы",
-});
+const propertyType = ref(propertyTypesItems.value[0].value);
 
 // Параметры ELECTRE (остаются без изменений)
 const electreParams = ref<ElectreParams>({
@@ -504,10 +502,10 @@ const topsisRanking = ref<Array<{ offerId: number; score: number; rank: number }
 // Вычисляемые свойства с проверкой на undefined
 const filteredOffers = computed(() => {
   if (!favoriteOffers.value) return [];
-  if (!filters.propertyType || filters.propertyType == "Все типы") {
+  if (!propertyType.value || propertyType.value == "Все типы") {
     return favoriteOffers.value;
   }
-  return favoriteOffers.value.filter((offer) => offer.property_type.name === filters.propertyType);
+  return favoriteOffers.value.filter((offer) => offer.property_type.name === propertyType.value);
 });
 
 const sortedOffers = computed(() => {

@@ -6,8 +6,20 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     'vue-yandex-maps/nuxt',
     '@nuxtjs/mdc',
-    'nuxt-auth-utils'
+    'nuxt-auth-utils',
+    'nuxt-echarts'
   ],
+  echarts: {
+    charts: ["BarChart", "BoxplotChart", "LineChart"],
+    components: [
+      "TitleComponent",
+      "GridComponent",
+      "TooltipComponent",
+      "LegendComponent",
+      "DataZoomComponent"
+    ],
+    renderer: "canvas",
+  },
   devServer: {
     host: '127.0.0.1',
     port: 3000

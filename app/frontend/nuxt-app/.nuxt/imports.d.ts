@@ -53,4 +53,5 @@ export { flatUnwrap as unwrapSlot } from '../node_modules/@nuxtjs/mdc/dist/runti
 export { parseMarkdown } from '../node_modules/@nuxtjs/mdc/dist/runtime/parser';
 export { stringifyMarkdown } from '../node_modules/@nuxtjs/mdc/dist/runtime/stringify';
 export { useUserSession } from '../node_modules/nuxt-auth-utils/dist/runtime/app/composables/session';
+export { THEME_KEY, INIT_OPTIONS_KEY, UPDATE_OPTIONS_KEY, LOADING_OPTIONS_KEY } from 'vue-echarts';
 export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

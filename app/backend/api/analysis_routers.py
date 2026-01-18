@@ -1,15 +1,15 @@
 import json
 import logging
 from datetime import date, timedelta
-from typing import Dict
+from typing import Dict, Literal
 
 import numpy as np
 from fastapi import APIRouter, Depends, Form, HTTPException, Query
 from fastapi.params import Body
 from pydantic import confloat
-from sqlalchemy import case
+from sqlalchemy import Integer, case, column, table
 from sqlalchemy.orm import joinedload
-from sqlmodel import and_, case, func, or_, select, text
+from sqlmodel import Numeric, and_, case, cast, func, or_, select, text, true
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.backend.db.config import get_async_session
@@ -368,6 +368,418 @@ def topsis_endpoint(
     return {"scores": scores.tolist(), "ranked_indices": ranked_indices.tolist()}
 
 
+@analysis_router.get("/stats")
+async def get_offers_by_location(
+    region_name: Optional[str] = Query(None, description="Название области"),
+    settlement_name: Optional[str] = Query(None, description="Название поселения"),
+    district_name: Optional[str] = Query(None, description="Название района"),
+    microdistrict_name: Optional[str] = Query(None, description="Название микрорайона"),
+    street_name: Optional[str] = Query(None, description="Название улицы"),
+    limit: int = Query(50, ge=1, le=500000, description="Максимальное количество результатов"),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """
+    Возвращает офферы по заданным параметрам месторасположения.
+    Можно указать любую комбинацию: область, поселение, район, микрорайон.
+    """
+    filters = []
+
+    # Формируем фильтры по названиям
+    if region_name:
+        filters.append(Region.short_name == region_name)
+    if settlement_name:
+        filters.append(Settlement.short_name == settlement_name)
+    if district_name:
+        filters.append(District.short_name == district_name)
+    if microdistrict_name:
+        filters.append(Microdistrict.short_name == microdistrict_name)
+    if street_name:
+        filters.append(Street.short_name == street_name)
+
+    # Базовый запрос для подсчета
+    stmt = (
+        select(Offer.id)
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+    )
+
+    if filters:
+        stmt = stmt.where(and_(*filters))
+
+    # Получаем общее количество результатов
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    total_count = await session.scalar(count_stmt)
+
+    # 📊 Подсчёт статистики по категориям
+    base_filters = []
+    if region_name:
+        base_filters.append(Region.short_name == region_name)
+    if settlement_name:
+        base_filters.append(Settlement.short_name == settlement_name)
+    if district_name:
+        base_filters.append(District.short_name == district_name)
+    if microdistrict_name:
+        base_filters.append(Microdistrict.short_name == microdistrict_name)
+    if street_name:
+        base_filters.append(Street.short_name == street_name)
+
+    stats_stmt = (
+        select(
+            Offer.price_category,
+            func.count(Offer.id).label("count"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+    )
+
+    if base_filters:
+        stats_stmt = stats_stmt.where(and_(*base_filters))
+
+    stats_stmt = stats_stmt.group_by(Offer.price_category)
+    stats_result = await session.exec(stats_stmt)
+    stats_rows = stats_result.all()
+
+    price_categories = {
+        "cheap": 0,
+        "normal": 0,
+        "expensive": 0,
+    }
+    for row in stats_rows:
+        if row.price_category in price_categories:
+            price_categories[row.price_category] = row.count
+
+    # 📊 Подсчёт статистики по типам недвижимости
+    property_type_stmt = (
+        select(
+            PropertyType.name.label("property_type_name"),
+            func.count(Offer.id).label("count"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+    )
+
+    if base_filters:
+        property_type_stmt = property_type_stmt.where(and_(*base_filters))
+
+    property_type_stmt = property_type_stmt.group_by(PropertyType.name)
+    property_type_result = await session.exec(property_type_stmt)
+    property_type_rows = property_type_result.all()
+
+    property_types = {}
+    for row in property_type_rows:
+        property_types[row.property_type_name] = row.count
+
+    # 📊 Подсчёт квартир по количеству комнат
+    rooms_stmt = (
+        select(
+            Offer.rooms_count,
+            func.count(Offer.id).label("count"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+        .where(PropertyType.name.in_(["Квартира", "Аппартаменты"]))
+    )
+
+    if base_filters:
+        rooms_stmt = rooms_stmt.where(and_(*base_filters))
+
+    rooms_stmt = rooms_stmt.group_by(Offer.rooms_count).order_by(Offer.rooms_count)
+    rooms_result = await session.exec(rooms_stmt)
+    rooms_rows = rooms_result.all()
+
+    rooms_by_count = {}
+    for row in rooms_rows:
+        if row.rooms_count is not None:
+            room_label = f"{row.rooms_count}_rooms" if 0 < row.rooms_count < 10 else "studio" if row.rooms_count == 0 else "open_plan"
+            rooms_by_count[room_label] = row.count
+
+    # 📊 Подсчёт новостроек и вторички для квартир
+    new_secondary_stmt = (
+        select(
+            Offer.is_new_house,
+            func.count(Offer.id).label("count"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+        .where(PropertyType.name.in_(["Квартира", "Аппартаменты"]))
+    )
+
+    if base_filters:
+        new_secondary_stmt = new_secondary_stmt.where(and_(*base_filters))
+
+    new_secondary_stmt = new_secondary_stmt.group_by(Offer.is_new_house)
+    new_secondary_result = await session.exec(new_secondary_stmt)
+    new_secondary_rows = new_secondary_result.all()
+
+    apartments_by_house_type = {
+        "new_houses": 0,
+        "secondary": 0,
+    }
+    for row in new_secondary_rows:
+        if row.is_new_house is True:
+            apartments_by_house_type["new_houses"] = row.count
+        elif row.is_new_house is False:
+            apartments_by_house_type["secondary"] = row.count
+
+    # 📊 Подсчёт средних значений
+    averages_stmt = (
+        select(
+            func.round(func.avg(Offer.price)).label("avg_price"),
+            func.round(func.avg(Offer.price_per_square_meter)).label("avg_price_per_sqm"),
+            func.round(func.avg(Offer.total_area)).label("avg_area"),
+            func.round(func.avg(Offer.daily_views_count)).label("avg_views_count"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+    )
+
+    if base_filters:
+        averages_stmt = averages_stmt.where(and_(*base_filters))
+
+    averages_result = await session.exec(averages_stmt)
+    averages_row = averages_result.one_or_none()
+
+    averages = {
+        "average_price": int(averages_row.avg_price) if averages_row and averages_row.avg_price else None,
+        "average_price_per_square_meter": float(averages_row.avg_price_per_sqm) if averages_row and averages_row.avg_price_per_sqm else None,
+        "average_area": float(averages_row.avg_area) if averages_row and averages_row.avg_area else None,
+        "average_views_count": float(averages_row.avg_views_count) if averages_row and averages_row.avg_views_count else None,
+    }
+
+    # 📊 Подсчёт boxplot для площади
+    area_boxplot_stmt = (
+        select(
+            func.round(cast(func.min(Offer.total_area), Numeric(10, 1)), 1).label("min_area"),
+            func.round(cast(func.percentile_cont(0.25).within_group(Offer.total_area), Numeric(10, 1)), 1).label("q1_area"),
+            func.round(cast(func.percentile_cont(0.50).within_group(Offer.total_area), Numeric(10, 1)), 1).label("median_area"),
+            func.round(cast(func.percentile_cont(0.75).within_group(Offer.total_area), Numeric(10, 1)), 1).label("q3_area"),
+            func.round(cast(func.max(Offer.total_area), Numeric(10, 1)), 1).label("max_area"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+    )
+
+    if base_filters:
+        area_boxplot_stmt = area_boxplot_stmt.where(and_(*base_filters))
+
+    area_boxplot_result = await session.exec(area_boxplot_stmt)
+    area_boxplot_row = area_boxplot_result.one_or_none()
+
+    area_boxplot = {
+        "min": float(area_boxplot_row.min_area) if area_boxplot_row and area_boxplot_row.min_area is not None else None,
+        "q1": float(area_boxplot_row.q1_area) if area_boxplot_row and area_boxplot_row.q1_area is not None else None,
+        "median": float(area_boxplot_row.median_area) if area_boxplot_row and area_boxplot_row.median_area is not None else None,
+        "q3": float(area_boxplot_row.q3_area) if area_boxplot_row and area_boxplot_row.q3_area is not None else None,
+        "max": float(area_boxplot_row.max_area) if area_boxplot_row and area_boxplot_row.max_area is not None else None,
+    }
+
+    # 📊 Подсчёт boxplot для цены
+    price_boxplot_stmt = (
+        select(
+            func.round(cast(func.min(Offer.price), Numeric(12, 1)), 1).label("min_price"),
+            func.round(cast(func.percentile_cont(0.25).within_group(Offer.price), Numeric(12, 1)), 1).label("q1_price"),
+            func.round(cast(func.percentile_cont(0.50).within_group(Offer.price), Numeric(12, 1)), 1).label("median_price"),
+            func.round(cast(func.percentile_cont(0.75).within_group(Offer.price), Numeric(12, 1)), 1).label("q3_price"),
+            func.round(cast(func.max(Offer.price), Numeric(12, 1)), 1).label("max_price"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+    )
+
+    if base_filters:
+        price_boxplot_stmt = price_boxplot_stmt.where(and_(*base_filters))
+
+    price_boxplot_result = await session.exec(price_boxplot_stmt)
+    price_boxplot_row = price_boxplot_result.one_or_none()
+
+    price_boxplot = {
+        "min": float(price_boxplot_row.min_price) if price_boxplot_row and price_boxplot_row.min_price is not None else None,
+        "q1": float(price_boxplot_row.q1_price) if price_boxplot_row and price_boxplot_row.q1_price is not None else None,
+        "median": float(price_boxplot_row.median_price) if price_boxplot_row and price_boxplot_row.median_price is not None else None,
+        "q3": float(price_boxplot_row.q3_price) if price_boxplot_row and price_boxplot_row.q3_price is not None else None,
+        "max": float(price_boxplot_row.max_price) if price_boxplot_row and price_boxplot_row.max_price is not None else None,
+    }
+
+    return {
+        "total_count": total_count,
+        "statistics": {
+            "averages": averages,
+            "area_boxplot": area_boxplot,
+            "price_boxplot": price_boxplot,
+            "price_categories": price_categories,
+            "property_types": property_types,
+            "apartments_by_rooms": {
+                "rooms": rooms_by_count,
+                "flat_type": apartments_by_house_type,
+            },
+        },
+    }
+
+
+@analysis_router.get("/group-stats")
+async def get_grouped_stats(
+    group_by: Literal["region", "settlement", "district", "microdistrict", "street"] = Query(...),
+    region_name: Optional[str] = Query(None),
+    settlement_name: Optional[str] = Query(None),
+    district_name: Optional[str] = Query(None),
+    microdistrict_name: Optional[str] = Query(None),
+    street_name: Optional[str] = Query(None),
+    settlement_type_names: Optional[List[str]] = Query(None),  # ✅ список типов
+    session: AsyncSession = Depends(get_async_session),
+):
+    group_map = {
+        "region": Region.short_name,
+        "settlement": Settlement.short_name,
+        "district": District.short_name,
+        "microdistrict": Microdistrict.short_name,
+        "street": Street.short_name,
+    }
+
+    if group_by not in group_map:
+        raise HTTPException(400, "Invalid group_by")
+
+    group_col = group_map[group_by]
+
+    filters = []
+    if region_name:
+        filters.append(Region.short_name == region_name)
+    if settlement_name:
+        filters.append(Settlement.short_name == settlement_name)
+    if district_name:
+        filters.append(District.short_name == district_name)
+    if microdistrict_name:
+        filters.append(Microdistrict.short_name == microdistrict_name)
+    if street_name:
+        filters.append(Street.short_name == street_name)
+    if settlement_type_names:
+        filters.append(SettlementType.name.in_(settlement_type_names))  # ✅ фильтр по списку
+
+    offers_count_col = func.count(Offer.id).label("offers_count")
+
+    stmt = (
+        select(
+            group_col.label(group_by),
+            offers_count_col,
+            func.round(func.avg(Offer.price)).label("average_price"),
+            func.round(func.avg(Offer.price_per_square_meter)).label("average_price_per_square_meter"),
+            func.round(func.avg(Offer.total_area)).label("average_area"),
+            func.round(func.avg(Offer.daily_views_count)).label("average_views_count"),
+            func.count().filter(Offer.price_category == "cheap").label("cheap"),
+            func.count().filter(Offer.price_category == "normal").label("normal"),
+            func.count().filter(Offer.price_category == "expensive").label("expensive"),
+            func.min(Offer.total_area).label("area_min"),
+            func.percentile_cont(0.25).within_group(Offer.total_area).label("area_q1"),
+            func.percentile_cont(0.5).within_group(Offer.total_area).label("area_median"),
+            func.percentile_cont(0.75).within_group(Offer.total_area).label("area_q3"),
+            func.max(Offer.total_area).label("area_max"),
+            func.min(Offer.price).label("price_min"),
+            func.percentile_cont(0.25).within_group(Offer.price).label("price_q1"),
+            func.percentile_cont(0.5).within_group(Offer.price).label("price_median"),
+            func.percentile_cont(0.75).within_group(Offer.price).label("price_q3"),
+            func.max(Offer.price).label("price_max"),
+        )
+        .select_from(Offer)
+        .join(Address, Offer.address_id == Address.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(SettlementType, Settlement.settlement_type_id == SettlementType.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+        .group_by(group_col)
+        .order_by(offers_count_col.desc())  # ✅ сортировка
+    )
+    null_guard = {
+        "region": Region.id,
+        "settlement": Settlement.id,
+        "district": District.id,
+        "microdistrict": Microdistrict.id,
+        "street": Street.id,
+    }
+
+    stmt = stmt.where(null_guard[group_by].isnot(None))
+    if filters:
+        stmt = stmt.where(and_(*filters))
+
+    result = await session.exec(stmt)
+    rows = result.all()
+
+    return {
+        "results": [
+            {
+                group_by: getattr(row, group_by),
+                "offers_count": row.offers_count,
+                "averages": {
+                    "average_price": row.average_price,
+                    "average_price_per_square_meter": row.average_price_per_square_meter,
+                    "average_area": row.average_area,
+                    "average_views_count": row.average_views_count,
+                },
+                "price_categories": {
+                    "cheap": row.cheap,
+                    "normal": row.normal,
+                    "expensive": row.expensive,
+                },
+                "area_boxplot": {
+                    "min": row.area_min,
+                    "q1": row.area_q1,
+                    "median": row.area_median,
+                    "q3": row.area_q3,
+                    "max": row.area_max,
+                },
+                "price_boxplot": {
+                    "min": row.price_min,
+                    "q1": row.price_q1,
+                    "median": row.price_median,
+                    "q3": row.price_q3,
+                    "max": row.price_max,
+                },
+            }
+            for row in rows
+        ],
+    }
+
+
 @analysis_router.get("/offers_count_by_property_type")
 async def offers_count_by_property_type(
     group_by: str = Query(..., description="Уровень группировки: region | settlement | district | street | microdistrict"),
@@ -425,14 +837,28 @@ async def offers_count_by_property_type(
     filters = []
     if region_id:
         filters.append(Address.region_id == region_id)
+    elif group_by == "region":  # Добавляем фильтр для исключения NULL для региона
+        filters.append(Address.region_id.isnot(None))
+
     if settlement_id:
         filters.append(Address.settlement_id == settlement_id)
+    elif group_by == "settlement":  # Добавляем фильтр для исключения NULL для населённого пункта
+        filters.append(Address.settlement_id.isnot(None))
+
     if district_id:
         filters.append(Address.district_id == district_id)
+    elif group_by == "district":  # Добавляем фильтр для исключения NULL для района
+        filters.append(Address.district_id.isnot(None))
+
     if street_id:
         filters.append(Address.street_id == street_id)
+    elif group_by == "street":  # Добавляем фильтр для исключения NULL для улицы
+        filters.append(Address.street_id.isnot(None))
+
     if microdistrict_id:
         filters.append(Address.microdistrict_id == microdistrict_id)
+    elif group_by == "microdistrict":  # Добавляем фильтр для исключения NULL для микрорайона
+        filters.append(Address.microdistrict_id.isnot(None))
 
     if settlement_type_names:
         filters.append(SettlementType.name.in_(settlement_type_names))
@@ -505,11 +931,11 @@ async def offers_count_by_property_type(
         select(
             id_col.label(f"{group_by}_id"),
             name_col.label(f"{group_by}_name"),
-            func.min(Offer.total_area).label("min_area"),
-            func.percentile_cont(0.25).within_group(Offer.total_area).label("q1_area"),
-            func.percentile_cont(0.50).within_group(Offer.total_area).label("median_area"),
-            func.percentile_cont(0.75).within_group(Offer.total_area).label("q3_area"),
-            func.max(Offer.total_area).label("max_area"),
+            func.round(cast(func.min(Offer.total_area), Numeric(10, 1)), 1).label("min_area"),
+            func.round(cast(func.percentile_cont(0.25).within_group(Offer.total_area), Numeric(10, 1)), 1).label("q1_area"),
+            func.round(cast(func.percentile_cont(0.50).within_group(Offer.total_area), Numeric(10, 1)), 1).label("median_area"),
+            func.round(cast(func.percentile_cont(0.75).within_group(Offer.total_area), Numeric(10, 1)), 1).label("q3_area"),
+            func.round(cast(func.max(Offer.total_area), Numeric(10, 1)), 1).label("max_area"),
         )
         .join(Address, Offer.address_id == Address.id)
         .join(GroupModel, join_col == id_col, isouter=True)
@@ -541,11 +967,11 @@ async def offers_count_by_property_type(
         select(
             id_col.label(f"{group_by}_id"),
             name_col.label(f"{group_by}_name"),
-            func.min(Offer.price).label("min_price"),
-            func.percentile_cont(0.25).within_group(Offer.price).label("q1_price"),
-            func.percentile_cont(0.50).within_group(Offer.price).label("median_price"),
-            func.percentile_cont(0.75).within_group(Offer.price).label("q3_price"),
-            func.max(Offer.price).label("max_price"),
+            func.round(cast(func.min(Offer.price), Numeric(12, 1)), 1).label("min_price"),
+            func.round(cast(func.percentile_cont(0.25).within_group(Offer.price), Numeric(12, 1)), 1).label("q1_price"),
+            func.round(cast(func.percentile_cont(0.50).within_group(Offer.price), Numeric(12, 1)), 1).label("median_price"),
+            func.round(cast(func.percentile_cont(0.75).within_group(Offer.price), Numeric(12, 1)), 1).label("q3_price"),
+            func.round(cast(func.max(Offer.price), Numeric(12, 1)), 1).label("max_price"),
         )
         .join(Address, Offer.address_id == Address.id)
         .join(GroupModel, join_col == id_col, isouter=True)
@@ -576,7 +1002,7 @@ async def offers_count_by_property_type(
     avg_price_stmt = (
         select(
             id_col.label(f"{group_by}_id"),
-            func.avg(Offer.price_per_square_meter).label("avg_price_per_sqm"),
+            func.round(cast(func.avg(Offer.price_per_square_meter), Numeric(10, 1)), 1).label("avg_price_per_sqm"),
         )
         .join(Address, Offer.address_id == Address.id)
         .join(GroupModel, join_col == id_col, isouter=True)
@@ -592,9 +1018,7 @@ async def offers_count_by_property_type(
         avg_price_stmt = avg_price_stmt.where(and_(*filters))
 
     avg_price_stmt = avg_price_stmt.group_by(id_col)
-    avg_price_rows = {
-        r[f"{group_by}_id"]: round(float(r["avg_price_per_sqm"]), 2) if r["avg_price_per_sqm"] else None for r in (await session.exec(avg_price_stmt)).mappings().all()
-    }
+    avg_price_rows = {r[f"{group_by}_id"]: float(r["avg_price_per_sqm"]) if r["avg_price_per_sqm"] else None for r in (await session.exec(avg_price_stmt)).mappings().all()}
 
     # --- 7️⃣ Сборка результата ---
     grouped = {}
@@ -767,7 +1191,7 @@ async def get_popular_stats(
     }
 
 
-@analysis_router.get("/offers/views_last_10_days")
+@analysis_router.get("/last-10-days-views-history")
 async def get_views_last_10_days(
     session: AsyncSession = Depends(get_async_session),
     region_name: Optional[str] = Query(None),
@@ -777,19 +1201,8 @@ async def get_views_last_10_days(
     street_name: Optional[str] = Query(None),
     settlement_type_names: Optional[List[str]] = Query(None, description="Типы населённых пунктов"),
 ):
-    # --- Динамически формируем JOIN-ы и WHERE ---
-    joins = [
-        "JOIN address a ON o.address_id = a.id",
-        "LEFT JOIN region r ON a.region_id = r.id",
-        "LEFT JOIN settlement s ON a.settlement_id = s.id",
-        "LEFT JOIN settlement_type stt ON s.settlement_type_id = stt.id",
-        "LEFT JOIN district d ON a.district_id = d.id",
-        "LEFT JOIN street st ON a.street_id = st.id",
-        "LEFT JOIN microdistrict md ON a.microdistrict_id = md.id",
-    ]
-
-    conditions = []
-    params: Dict[str, Any] = {}
+    conditions = ["o.views_history IS NOT NULL", "jsonb_typeof(o.views_history) = 'array'"]
+    params = {}
 
     if region_name:
         conditions.append("r.short_name = :region_name")
@@ -800,32 +1213,32 @@ async def get_views_last_10_days(
     if district_name:
         conditions.append("d.short_name = :district_name")
         params["district_name"] = district_name
-    if street_name:
-        conditions.append("st.short_name = :street_name")
-        params["street_name"] = street_name
     if microdistrict_name:
         conditions.append("md.short_name = :microdistrict_name")
         params["microdistrict_name"] = microdistrict_name
-
-    # Исправляем условие для settlement_type_names
+    if street_name:
+        conditions.append("st.short_name = :street_name")
+        params["street_name"] = street_name
     if settlement_type_names:
-        # Создаем строку с плейсхолдерами
-        placeholders = ", ".join([f":settlement_type_{i}" for i in range(len(settlement_type_names))])
-        conditions.append(f"stt.name IN ({placeholders})")
-        # Добавляем параметры по одному
-        for i, st_name in enumerate(settlement_type_names):
-            params[f"settlement_type_{i}"] = st_name
+        conditions.append("stt.name = ANY(:settlement_type_names)")
+        params["settlement_type_names"] = settlement_type_names
 
-    where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    where_clause = " AND ".join(conditions)
 
     query = text(f"""
         SELECT 
             elem->>'date' AS date,
             SUM((elem->>'views')::int) AS views
         FROM offer o
-        {" ".join(joins)}
+        JOIN address a ON o.address_id = a.id
+        LEFT JOIN region r ON a.region_id = r.id
+        LEFT JOIN settlement s ON a.settlement_id = s.id
+        LEFT JOIN settlement_type stt ON s.settlement_type_id = stt.id
+        LEFT JOIN district d ON a.district_id = d.id
+        LEFT JOIN street st ON a.street_id = st.id
+        LEFT JOIN microdistrict md ON a.microdistrict_id = md.id
         CROSS JOIN LATERAL jsonb_array_elements(o.views_history) AS elem
-        {where_clause}
+        WHERE {where_clause}
         GROUP BY elem->>'date'
         ORDER BY elem->>'date'
     """)

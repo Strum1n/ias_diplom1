@@ -1,4 +1,4 @@
-import { x as isEqual } from '../_/nitro.mjs';
+import { I as isEqual } from '../_/nitro.mjs';
 
 function omit(data, keys) {
   const result = { ...data };

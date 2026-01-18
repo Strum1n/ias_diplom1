@@ -23,6 +23,7 @@
   "devDependencies": {
     "@nuxt/ui": "^4.1.0",
     "@nuxtjs/mdc": "^0.19.1",
-    "nuxt-auth-utils": "^0.5.25"
+    "nuxt-auth-utils": "^0.5.25",
+    "nuxt-echarts": "^1.0.1"
   }
 }
