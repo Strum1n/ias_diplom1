@@ -375,8 +375,8 @@ async def get_offers_by_location(
     district_name: Optional[str] = Query(None, description="Название района"),
     microdistrict_name: Optional[str] = Query(None, description="Название микрорайона"),
     street_name: Optional[str] = Query(None, description="Название улицы"),
-    limit: int = Query(50, ge=1, le=500000, description="Максимальное количество результатов"),
     session: AsyncSession = Depends(get_async_session),
+    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
     """
     Возвращает офферы по заданным параметрам месторасположения.
@@ -395,6 +395,8 @@ async def get_offers_by_location(
         filters.append(Microdistrict.short_name == microdistrict_name)
     if street_name:
         filters.append(Street.short_name == street_name)
+    if is_new_house is not None:
+        filters.append(Offer.is_new_house == is_new_house)
 
     # Базовый запрос для подсчета
     stmt = (
@@ -414,6 +416,24 @@ async def get_offers_by_location(
     # Получаем общее количество результатов
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total_count = await session.scalar(count_stmt)
+    today = date.today()
+
+    today_stmt = (
+        select(func.count(Offer.id))
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .join(Region, Address.region_id == Region.id, isouter=True)
+        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(District, Address.district_id == District.id, isouter=True)
+        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+        .join(Street, Address.street_id == Street.id, isouter=True)
+        .where(func.date(func.timezone("Europe/Moscow", Offer.creation_date_source)) == today)
+    )
+
+    if filters:
+        today_stmt = today_stmt.where(and_(*filters))
+
+    offers_today = await session.scalar(today_stmt)
 
     # 📊 Подсчёт статистики по категориям
     base_filters = []
@@ -427,6 +447,8 @@ async def get_offers_by_location(
         base_filters.append(Microdistrict.short_name == microdistrict_name)
     if street_name:
         base_filters.append(Street.short_name == street_name)
+    if is_new_house is not None:
+        base_filters.append(Offer.is_new_house == is_new_house)
 
     stats_stmt = (
         select(
@@ -457,6 +479,59 @@ async def get_offers_by_location(
     for row in stats_rows:
         if row.price_category in price_categories:
             price_categories[row.price_category] = row.count
+
+        top_offers_stmt = (
+            select(
+                Offer.id,
+                Offer.title,
+                Offer.price,
+                Offer.price_per_square_meter,
+                Offer.images_urls,
+                Offer.is_new_house,
+                Offer.creation_date_source,
+                Offer.total_area,
+                Offer.land_area,
+                Offer.rooms_count,
+                Offer.floor,
+                Offer.house_floors_count,
+                Offer.house_built_year,
+                Offer.has_water_supply,
+                Offer.has_electricity,
+                Offer.has_furniture,
+                Offer.has_elevator,
+                Offer.has_garbage_chute,
+                Offer.is_build_complete,
+                Offer.views_count,
+                Offer.family_category,
+                Offer.family_score,
+                Offer.elderly_category,
+                Offer.elderly_score,
+                Offer.transport_access_category,
+                Offer.transport_access_score,
+                Offer.price_category,
+                Address.full_address.label("full_address"),
+                RenovationType.name.label("renovation_type_name"),
+            )
+            .join(Address, Offer.address_id == Address.id)
+            .join(PropertyType, Offer.property_type_id == PropertyType.id)
+            .join(Region, Address.region_id == Region.id, isouter=True)
+            .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+            .join(District, Address.district_id == District.id, isouter=True)
+            .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
+            .join(Street, Address.street_id == Street.id, isouter=True)
+            .join(RenovationType, Offer.renovation_type_id == RenovationType.id, isouter=True)
+        )
+
+    if base_filters:
+        top_offers_stmt = top_offers_stmt.where(and_(*base_filters))
+
+    top_offers_stmt = top_offers_stmt.order_by(
+        Offer.creation_date_source.desc(),  # Сначала сортируем по дате создания (от новых к старым)
+        Offer.daily_views_count.desc(),  # Затем по количеству просмотров (по убыванию)
+    ).limit(5)
+
+    top_offers_result = await session.exec(top_offers_stmt)
+    top_offers = top_offers_result.all()
 
     # 📊 Подсчёт статистики по типам недвижимости
     property_type_stmt = (
@@ -642,6 +717,7 @@ async def get_offers_by_location(
 
     return {
         "total_count": total_count,
+        "offers_today": offers_today,
         "statistics": {
             "averages": averages,
             "area_boxplot": area_boxplot,
@@ -653,6 +729,46 @@ async def get_offers_by_location(
                 "flat_type": apartments_by_house_type,
             },
         },
+        "top_offers_by_views": [
+            {
+                "id": offer.id,
+                "title": offer.title,
+                "price": offer.price,
+                "price_per_square_meter": offer.price_per_square_meter,
+                "images_urls": offer.images_urls,
+                "is_new_house": offer.is_new_house,
+                "creation_date_source": offer.creation_date_source,
+                "total_area": offer.total_area,
+                "land_area": offer.land_area,
+                "rooms_count": offer.rooms_count,
+                "floor": offer.floor,
+                "house_floors_count": offer.house_floors_count,
+                "house_built_year": offer.house_built_year,
+                "has_water_supply": offer.has_water_supply,
+                "has_electricity": offer.has_electricity,
+                "has_furniture": offer.has_furniture,
+                "has_elevator": offer.has_elevator,
+                "has_garbage_chute": offer.has_garbage_chute,
+                "is_build_complete": offer.is_build_complete,
+                "views_count": offer.views_count,
+                "family_category": offer.family_category,
+                "family_score": offer.family_score,
+                "elderly_category": offer.elderly_category,
+                "elderly_score": offer.elderly_score,
+                "transport_access_category": offer.transport_access_category,
+                "transport_access_score": offer.transport_access_score,
+                "price_category": offer.price_category,
+                "address": {
+                    "full_address": offer.full_address,
+                },
+                "renovation_type": {
+                    "name": offer.renovation_type_name,
+                }
+                if offer.renovation_type_name
+                else None,
+            }
+            for offer in top_offers
+        ],
     }
 
 
@@ -665,6 +781,7 @@ async def get_grouped_stats(
     microdistrict_name: Optional[str] = Query(None),
     street_name: Optional[str] = Query(None),
     settlement_type_names: Optional[List[str]] = Query(None),  # ✅ список типов
+    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
     session: AsyncSession = Depends(get_async_session),
 ):
     group_map = {
@@ -693,6 +810,8 @@ async def get_grouped_stats(
         filters.append(Street.short_name == street_name)
     if settlement_type_names:
         filters.append(SettlementType.name.in_(settlement_type_names))  # ✅ фильтр по списку
+    if is_new_house is not None:
+        filters.append(Offer.is_new_house == is_new_house)
 
     offers_count_col = func.count(Offer.id).label("offers_count")
 
@@ -1090,6 +1209,7 @@ async def get_popular_stats(
     street_name: Optional[str] = Query(None),
     microdistrict_name: Optional[str] = Query(None),
     settlement_type_names: Optional[List[str]] = Query(None, description="Типы населённых пунктов"),
+    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
     today = datetime.utcnow().date()
 
@@ -1118,6 +1238,9 @@ async def get_popular_stats(
         join_models.add(SettlementType)
         # Используем IN с кортежем
         filters.append(SettlementType.name.in_(settlement_type_names))
+
+    if is_new_house is not None:
+        filters.append(Offer.is_new_house == is_new_house)
 
     # 1️⃣ Общая статистика по выбранной области
     total_stmt = select(
@@ -1200,6 +1323,7 @@ async def get_views_last_10_days(
     microdistrict_name: Optional[str] = Query(None),
     street_name: Optional[str] = Query(None),
     settlement_type_names: Optional[List[str]] = Query(None, description="Типы населённых пунктов"),
+    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
     conditions = ["o.views_history IS NOT NULL", "jsonb_typeof(o.views_history) = 'array'"]
     params = {}
@@ -1222,6 +1346,9 @@ async def get_views_last_10_days(
     if settlement_type_names:
         conditions.append("stt.name = ANY(:settlement_type_names)")
         params["settlement_type_names"] = settlement_type_names
+    if is_new_house is not None:
+        conditions.append("o.is_new_house = :is_new_house")
+        params["is_new_house"] = is_new_house
 
     where_clause = " AND ".join(conditions)
 
@@ -1258,9 +1385,10 @@ async def get_average_prices_history(
     street_name: Optional[str] = Query(None),
     settlement_type_names: Optional[List[str]] = Query(None, description="Типы населённых пунктов"),
     session: AsyncSession = Depends(get_async_session),
+    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
     # Проверяем, были ли переданы параметры
-    if not any([region_name, settlement_name, district_name, street_name, microdistrict_name, settlement_type_names]):
+    if not any([region_name, settlement_name, district_name, street_name, microdistrict_name, settlement_type_names, is_new_house]):
         # Если параметры не переданы, используем материализованное представление
         query = text("""
         SELECT 
@@ -1291,6 +1419,9 @@ async def get_average_prices_history(
         if street_name is not None:
             filters.append("st.short_name = :street_name")
             params["street_name"] = street_name
+        if is_new_house is not None:
+            filters.append("o.is_new_house = :is_new_house")
+            params["is_new_house"] = is_new_house
 
         # Исправляем условие для settlement_type_names
         if settlement_type_names is not None and len(settlement_type_names) > 0:

@@ -478,7 +478,7 @@ async def get_types_for_filter(session: AsyncSession = Depends(get_async_session
 
 @offer_router.get("/autocomplete-filters")
 async def autocomplete(
-    query: str = Query(..., min_length=1),
+    query: str = Query(..., min_length=2),
     type: Literal["region", "settlement", "street", "district", "microdistrict"] = Query(...),
     session: AsyncSession = Depends(get_async_session),
 ):

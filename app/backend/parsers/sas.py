@@ -5,6 +5,15 @@ import dateparser
 from geopy.geocoders import Nominatim
 
 
+sas = ["попа", "какашка", "лол"]
+sos = ["попа"]
+print(
+    next(
+        (item for item in sas if item in sos),
+        None,
+    )
+)
+
 kek = "22-го Съезда КПСС"
 sas = "пер. 22-го съезда КПСС"
 lol = kek.lower() in sas.lower()
@@ -21,7 +30,7 @@ for key, value in kek.items():
     print(value)
 geolocator = Nominatim(user_agent="strumin@mail")
 location = geolocator.geocode(
-    "Московская обл., г.о. Мытищи, пос. Нагорное, жилой комплекс Датский квартал, ул. Полковника Романова, 5",
+    "ул. Флотская, р-н Бежицкий,",
     addressdetails=True,
     language="ru",
     country_codes="ru",  # Ограничиваем поиск Россией

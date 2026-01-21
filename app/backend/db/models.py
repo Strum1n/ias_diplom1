@@ -28,13 +28,12 @@ class Offer(BaseModel, table=True):
     is_active: bool = Field(
         default=True,
         sa_column_kwargs={"server_default": text("true")},
-        index=True,
     )
 
     # 4. Цена
-    price: int | None = Field(index=True)
-    price_per_square_meter: int | None = Field(index=True)
-    price_category: str | None = Field(index=True)
+    price: int | None
+    price_per_square_meter: int | None
+    price_category: str | None
     price_history: List[dict] | None = Field(sa_column=Column(JSONB))
 
     # 5. Площади
@@ -80,7 +79,7 @@ class Offer(BaseModel, table=True):
     title: str | None
     description: str | None
     images_urls: List[str] | None = Field(sa_column=Column(ARRAY(String(500))))
-    url: str | None = Field(max_length=500, index=True)
+    url: str | None = Field(max_length=500)
     identical_urls: List[str] | None = Field(sa_column=Column(ARRAY(String(500))))
     source: str | None
 
@@ -261,8 +260,8 @@ class SewerageType(BaseModel, table=True):
 
 
 class AddressInfrastructureLink(BaseModel, table=True):
-    infrastructure_id: int = Field(foreign_key="infrastructure.id", primary_key=True, ondelete="CASCADE", index=True)
-    address_id: int = Field(foreign_key="address.id", primary_key=True, ondelete="CASCADE", index=True)
+    infrastructure_id: int = Field(foreign_key="infrastructure.id", primary_key=True, ondelete="CASCADE")
+    address_id: int = Field(foreign_key="address.id", primary_key=True, ondelete="CASCADE")
     distance: int | None
 
     address: "Address" = Relationship(back_populates="infrastructures_links")
@@ -274,21 +273,23 @@ class Address(BaseModel, table=True):
 
     id: int | None = Field(primary_key=True)
     house_number: str | None
-    full_address: str | None = Field(index=True)
+    full_address: str | None
     search_vector: Any | None = Field(sa_column=Column(TSVECTOR), description="Полнотекстовый индекс (tsvector)")
     coordinates: Any = Field(sa_column=Column(Geography(geometry_type="POINT", srid=4326), unique=True))
 
-    region_id: int | None = Field(foreign_key="region.id", index=True)
-    municipality_id: int | None = Field(foreign_key="municipality.id", index=True, ondelete="SET NULL")
-    settlement_id: int | None = Field(foreign_key="settlement.id", ondelete="SET NULL", index=True)
-    partnership_id: int | None = Field(foreign_key="partnership.id", index=True)
-    district_id: int | None = Field(foreign_key="district.id", index=True)
-    microdistrict_id: int | None = Field(foreign_key="microdistrict.id", index=True)
-    street_id: int | None = Field(foreign_key="street.id", index=True)
+    region_id: int | None = Field(foreign_key="region.id")
+    municipality_id: int | None = Field(foreign_key="municipality.id")
+    super_municipality_id: int | None = Field(foreign_key="super_municipality.id")
+    settlement_id: int | None = Field(foreign_key="settlement.id")
+    partnership_id: int | None = Field(foreign_key="partnership.id")
+    district_id: int | None = Field(foreign_key="district.id")
+    microdistrict_id: int | None = Field(foreign_key="microdistrict.id")
+    street_id: int | None = Field(foreign_key="street.id")
     residential_complex_id: int | None = Field(foreign_key="residential_complex.id")
 
     region: Optional["Region"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     municipality: Optional["Municipality"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    super_municipality: Optional["SuperMunicipality"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     settlement: Optional["Settlement"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     partnership: Optional["Partnership"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     district: Optional["District"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
@@ -319,7 +320,7 @@ class Region(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
-    short_name: str | None = Field(index=True)
+    short_name: str | None
 
     addresses: List["Address"] = Relationship(back_populates="region")
 
@@ -341,6 +342,25 @@ class MunicipalityType(BaseModel, table=True):
     name: str | None
 
     municipalities: List["Municipality"] = Relationship(back_populates="municipality_type")
+
+
+class SuperMunicipality(BaseModel, table=True):
+    id: int | None = Field(primary_key=True)
+    name: str | None = Field(unique=True)
+    full_name: str | None
+    short_name: str | None
+
+    super_municipality_type_id: int | None = Field(foreign_key="super_municipality_type.id")
+
+    super_municipality_type: Optional["SuperMunicipalityType"] = Relationship(back_populates="super_municipalities")
+    addresses: List["Address"] = Relationship(back_populates="super_municipality")
+
+
+class SuperMunicipalityType(BaseModel, table=True):
+    id: int | None = Field(primary_key=True)
+    name: str | None
+
+    super_municipalities: List["SuperMunicipality"] = Relationship(back_populates="super_municipality_type")
 
 
 class Partnership(BaseModel, table=True):
@@ -366,7 +386,7 @@ class Settlement(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
     full_name: str | None = Field(unique=True)
-    short_name: str | None = Field(index=True)
+    short_name: str | None
 
     settlement_type_id: int | None = Field(foreign_key="settlement_type.id")
 
@@ -385,7 +405,7 @@ class District(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
-    short_name: str | None = Field(index=True)
+    short_name: str | None
 
     addresses: List["Address"] = Relationship(back_populates="district")
 
@@ -403,7 +423,7 @@ class Street(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
-    short_name: str | None = Field(index=True)
+    short_name: str | None
 
     street_type_id: int | None = Field(foreign_key="street_type.id")
 
@@ -422,7 +442,7 @@ class ResidentialComplex(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
-    short_name: str | None = Field(index=True)
+    short_name: str | None
     is_suburban: bool | None
 
     addresses: List["Address"] = Relationship(back_populates="residential_complex")

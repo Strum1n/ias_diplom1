@@ -132,6 +132,39 @@ async def check_identical_offers(
         return offers
 
 
+async def captcha_solver_v2(page: zendriver.Tab) -> bool:
+    is_captcha_solved = False
+    while is_captcha_solved is False:
+        geetest_footer = None
+        try:
+            geetest_footer = await page.select_all(".geetest_footer", 2)
+        except TimeoutError:
+            pass
+        if geetest_footer is None:
+            button = await page.select(".button")
+            await button.click()
+        background_el = await page.wait_for(".geetest_bg")
+        await background_el.save_screenshot("background_with_puzzle.png")
+        slice_el = await page.select(".geetest_slice")
+        await page.evaluate("document.querySelector('.geetest_slice').style.display = 'none';")
+
+        await background_el.save_screenshot("background.png")
+        await page.evaluate("document.querySelector('.geetest_slice').style.display = '';")
+
+        distance = get_simple_distance("background_with_puzzle.png", "background.png")
+        await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(30, 40))
+        await page.sleep(5)
+        background_el = None
+        try:
+            background_el = await page.wait_for(".geetest_bg", timeout=2)
+        except TimeoutError:
+            pass
+        if background_el is None:
+            print("Капча успешно решена")
+            is_captcha_solved = True
+            return is_captcha_solved
+
+
 async def captcha_solver(page: zendriver.Tab):
     print("Пробуем пройти капчу")
 
@@ -194,6 +227,9 @@ async def add_offer_to_db(new_offer: Offer, session_factory) -> int | None:
                 elif "uq_municipality_name" in str(e):
                     new_offer.address.municipality = await get_existing(session, Municipality, new_offer.address.municipality.name)
 
+                elif "uq_super_municipality_name" in str(e):
+                    new_offer.address.super_municipality = await get_existing(session, SuperMunicipality, new_offer.address.super_municipality.name)
+
                 elif "uq_region_name" in str(e):
                     new_offer.address.region = await get_existing(session, Region, new_offer.address.region.name)
 
@@ -239,18 +275,34 @@ async def find_types(session_factory, address: dict, new_offer_types: dict) -> d
                 PartnershipType.name
                 == (
                     re.findall(
-                        r"\b(?:[а-я/]{2,}(?:\s+[а-я]{2,})*)\b|\b[А-Я]{2,}\b",
+                        r"\b(?:[а-яё/]{2,}(?:\s+[а-яё]{2,})*)\b|\b[А-ЯЁ]{2,}\b",
                         address.get("partnership_full_name") or "",
                     )
                     or [None]
                 )[0]
             )
             settlement_stmt = select(SettlementType.id).where(SettlementType.name.in_((address.get("settlement_full_name") or "").split()))
+            print(
+                re.findall(
+                    r"\b(?:[а-яё/]{2,}(?:\s+[а-яё]{2,})*)\b|\b[А-ЯЁ]{2,}\b",
+                    address.get("super_municipality_full_name") or "",
+                )
+            )
+            super_municipality_stmt = select(SuperMunicipalityType.id).where(
+                SuperMunicipalityType.name
+                == (
+                    re.findall(
+                        r"\b(?:[а-яё/]{2,}(?:\s+[а-яё]{2,})*)\b|\b[А-ЯЁ]{2,}\b",
+                        address.get("super_municipality_full_name") or "",
+                    )
+                    or [None]
+                )[0]
+            )
             municipality_stmt = select(MunicipalityType.id).where(
                 MunicipalityType.name
                 == (
                     re.findall(
-                        r"\b(?:[а-я/]{2,}(?:\s+[а-я]{2,})*)\b|\b[А-Я]{2,}\b",
+                        r"\b(?:[а-яё/]{2,}(?:\s+[а-яё]{2,})*)\b|\b[А-ЯЁ]{2,}\b",
                         address.get("municipality_full_name") or "",
                     )
                     or [None]
@@ -260,7 +312,7 @@ async def find_types(session_factory, address: dict, new_offer_types: dict) -> d
                 StreetType.name
                 == (
                     re.findall(
-                        r"\b(?:[а-я/]{2,}(?:\s+[а-я]{2,})*)\b|\b[А-Я]{2,}\b",
+                        r"\b(?:[а-яё/]{2,}(?:\s+[а-яё]{2,})*)\b|\b[А-ЯЁ]{2,}\b",
                         address.get("street_full_name") or "",
                     )
                     or [None]
@@ -280,6 +332,7 @@ async def find_types(session_factory, address: dict, new_offer_types: dict) -> d
             offer_stmt = select(OfferType.id).where(OfferType.name == new_offer_types["offer_type"])
             land_stmt = select(LandType.id).where(LandType.name == new_offer_types["land_type"])
             water_stmt = select(WaterSupplyType.id).where(WaterSupplyType.name == new_offer_types["water_supply_type"])
+
             results = []
             for stmt in [
                 partnership_stmt,
@@ -299,6 +352,7 @@ async def find_types(session_factory, address: dict, new_offer_types: dict) -> d
                 offer_stmt,
                 land_stmt,
                 water_stmt,
+                super_municipality_stmt,
             ]:
                 res = await session.exec(stmt)
                 results.append(res.first())
@@ -321,6 +375,7 @@ async def find_types(session_factory, address: dict, new_offer_types: dict) -> d
                 "offer_type_id": results[14],
                 "land_type_id": results[15],
                 "water_supply_type_id": results[16],
+                "super_municipality_type_id": results[17],
             }
         return type_ids
     except Exception as e:
@@ -379,6 +434,7 @@ def create_offer_from_data(new_offer_info, address_info, type_ids):
             srid=4326,
         ),
         region=_create_region(address_info, type_ids),
+        super_municipality=_create_super_municipality(address_info, type_ids),
         municipality=_create_municipality(address_info, type_ids),
         settlement=_create_settlement(address_info, type_ids),
         partnership=_create_partnership(address_info, type_ids),
@@ -469,6 +525,18 @@ def _create_region(address_info, type_ids):
             name=address_info.get("region_name"),
             full_name=address_info.get("region_full_name"),
             short_name=address_info.get("region_short_name"),
+        )
+    return None
+
+
+def _create_super_municipality(address_info, type_ids):
+    """Создает объект SuperMunicipality при наличии данных"""
+    if address_info.get("super_municipality_name"):
+        return SuperMunicipality(
+            name=address_info.get("super_municipality_name"),
+            full_name=address_info.get("super_municipality_full_name"),
+            short_name=address_info.get("super_municipality_short_name"),
+            municipality_type_id=type_ids.get("super_municipality_type_id"),
         )
     return None
 

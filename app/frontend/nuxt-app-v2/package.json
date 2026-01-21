@@ -1,0 +1,23 @@
+{
+  "name": "nuxt-app-v2",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxt/ui": "^4.3.0",
+    "jwt-decode": "^4.0.0",
+    "nuxt": "^4.2.2",
+    "nuxt-auth-utils": "^0.5.27",
+    "nuxt-echarts": "^1.0.1",
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4",
+    "vue-yandex-maps": "^3.0.0",
+    "vue3-apexcharts": "^1.10.0"
+  }
+}

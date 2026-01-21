@@ -535,12 +535,31 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
         if city:
             city["shortName"] = f"город {city['name']}"
             city["fullName"] = f"г. {city['name']}"
+        # TODO ДОБАВИТЬ СУПЕРМУНИЦИПАЛИТИ
+
+        if super_municipality_match := next(
+            (item for item in address_info if item["locationTypeId"] in [141, -1] and item["type"] == "okrug"),
+            None,
+        ):
+            address["super_municipality_full_name"] = super_municipality_match["fullName"]
+            address["super_municipality_full_name"] = (
+                address["super_municipality_full_name"][0] + " " + address["super_municipality_full_name"][1:]
+                if len(address["super_municipality_full_name"]) == 3
+                else address["super_municipality_full_name"][0] + " " + address["super_municipality_full_name"][1] + " " + address["super_municipality_full_name"][2:]
+                if len(address["super_municipality_full_name"]) == 4
+                else address["super_municipality_full_name"]
+            )
+            address["super_municipality_name"] = super_municipality_match["name"]
+            address["super_municipality_short_name"] = super_municipality_match["shortName"]
 
         if municipality_match := next(
             (
                 item
                 for item in address_info
-                if item["locationTypeId"] in [210, 197, 219, 282, 325, -1, 197] and item["type"] not in ["raion", "street", "house", "mikroraion"] or item["type"] == "okrug"
+                if item["locationTypeId"] in [210, 197, 219, 282, 325, -1, 197]
+                and item["type"] not in ["raion", "street", "house", "mikroraion"]
+                and address.get("super_municipality_full_name") is None
+                or (item["type"] == "okrug" and address.get("super_municipality_full_name") is None)
             ),
             None,
         ):
@@ -564,12 +583,6 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
                 address["settlement_name"] = settlement_matches[1]["name"]
                 address["settlement_short_name"] = settlement_matches[1]["fullName"]
 
-        sas = next(
-            (item for item in address_info if "с/пос" in item["fullName"] or "с/пос" in item["shortName"]),
-            None,
-        )
-        if sas:
-            kek = 4
         if partnership_match := next(
             (item for item in address_info if item["locationTypeId"] in [415, 373, 249, 260, 325, 142, 199]),
             None,
