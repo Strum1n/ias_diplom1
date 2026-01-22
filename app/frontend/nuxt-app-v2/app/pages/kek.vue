@@ -169,7 +169,7 @@
             @click="openOffer(offer)">
             <div class="flex h-fit">
               <div class="relative">
-                <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-60 h-33" />
+                <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-60 h-31" />
                 <div v-else class="h-33 w-51 flex items-center justify-center">
                   <UIcon name="i-heroicons-photo" class="size-10 text-gray-400 text-2xl" />
                 </div>
@@ -233,10 +233,10 @@
         </div>
       </div>
       <div class="flex grow flex-col gap-4">
-        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize style="height: 400px" />
+        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize style="height: 404px" />
 
-        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize style="height: 400px" />
-        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize style="height: 400px" />
+        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize style="height: 404px" />
+        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize style="height: 404px" />
       </div>
     </div>
   </div>

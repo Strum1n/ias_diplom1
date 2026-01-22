@@ -150,8 +150,10 @@ async def captcha_solver_v2(page: zendriver.Tab) -> bool:
 
         await background_el.save_screenshot("background.png")
         await page.evaluate("document.querySelector('.geetest_slice').style.display = '';")
-
-        distance = get_simple_distance("background_with_puzzle.png", "background.png")
+        try:
+            distance = get_simple_distance("background_with_puzzle.png", "background.png")
+        except TypeError:
+            distance = 0
         await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(30, 40))
         await page.sleep(5)
         background_el = None
