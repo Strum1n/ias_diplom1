@@ -538,7 +538,7 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
         # TODO ДОБАВИТЬ СУПЕРМУНИЦИПАЛИТИ
 
         if super_municipality_match := next(
-            (item for item in address_info if item["locationTypeId"] in [141, -1] and item["type"] == "okrug"),
+            (item for item in address_info if item["locationTypeId"] in [141, -1] and item["type"] == "location"),
             None,
         ):
             address["super_municipality_full_name"] = super_municipality_match["fullName"]

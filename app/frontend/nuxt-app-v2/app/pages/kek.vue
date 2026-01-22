@@ -13,7 +13,7 @@
         placeholder="Группировка"
         class="w-30 h-8" />
       <div v-if="visibleInputs.includes('region')" class="relative">
-        <UInput :model-value="draftFilters.region" placeholder="Область" @update:model-value="(v) => handleInputChange('region', v)" />
+        <UInput v-model="draftFilters.region" placeholder="Область" @update:model-value="(v) => handleInputChange('region', v)" />
         <ul
           v-click-outside="handleClickOutside"
           v-if="autocompleteResults.region.length > 0 && autocompleteResults.region[0] != draftFilters.region"
@@ -25,7 +25,7 @@
       </div>
 
       <div v-if="visibleInputs.includes('settlement')" class="relative">
-        <UInput :model-value="draftFilters.settlement" placeholder="Населённый пункт" @update:model-value="(v) => handleInputChange('settlement', v)" />
+        <UInput v-model="draftFilters.settlement" placeholder="Населённый пункт" @update:model-value="(v) => handleInputChange('settlement', v)" />
         <ul
           v-click-outside="handleClickOutside"
           v-if="autocompleteResults.settlement.length > 0 && autocompleteResults.settlement[0] != draftFilters.settlement"
@@ -41,7 +41,7 @@
       </div>
 
       <div v-if="visibleInputs.includes('district')" class="relative">
-        <UInput :model-value="draftFilters.district" placeholder="Район" @update:model-value="(v) => handleInputChange('district', v)" />
+        <UInput v-model="draftFilters.district" placeholder="Район" @update:model-value="(v) => handleInputChange('district', v)" />
         <ul
           v-click-outside="handleClickOutside"
           v-if="autocompleteResults.district.length > 0 && autocompleteResults.district[0] != draftFilters.district"
@@ -53,7 +53,7 @@
       </div>
 
       <div v-if="visibleInputs.includes('microdistrict')" class="relative">
-        <UInput :model-value="draftFilters.microdistrict" placeholder="Микрорайон" @update:model-value="(v) => handleInputChange('microdistrict', v)" />
+        <UInput v-model="draftFilters.microdistrict" placeholder="Микрорайон" @update:model-value="(v) => handleInputChange('microdistrict', v)" />
         <ul
           v-click-outside="handleClickOutside"
           v-if="autocompleteResults.microdistrict.length > 0 && autocompleteResults.microdistrict[0] != draftFilters.microdistrict"
@@ -68,7 +68,7 @@
         </ul>
       </div>
       <UCheckboxGroup
-        v-model="appliedFilters.settlementTypes"
+        v-model="draftFilters.settlementTypes"
         :items="[
           { label: 'Город', value: 'город' },
           { label: 'Деревня', value: 'деревня' },
@@ -77,13 +77,15 @@
         ]"
         class="mb-4" />
       <URadioGroup
-        v-model="appliedFilters.is_new_house"
+        v-model="draftFilters.is_new_house"
         :items="[
           { label: 'Вся', value: undefined },
           { label: 'Новостройки', value: true },
           { label: 'Вторичка', value: false },
         ]" />
       <UButton color="primary" variant="solid" class="h-10" @click="applyFilters"> Применить фильтры </UButton>
+      <UButton color="primary" variant="soft" @click="addComparison"> ➕ Добавить к сравнению </UButton>
+      <UButton color="warning" variant="soft" @click="comparisons = []"> Очистить сравнение </UButton>
     </div>
 
     <div class="flex py-5 gap-4.5 justify-between">
@@ -122,12 +124,22 @@
 
     <div class="flex gap-4">
       <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
-        <VChart v-if="!loadingPriceHistory && priceHistoryDataReady" :option="priceHistoryChartOption" autoresize style="height: 400px; width: 100%" />
+        <VChart
+          v-if="!loadingPriceHistory && priceHistoryDataReady"
+          :option="priceHistoryChartOption"
+          :update-options="{ notMerge: true }"
+          autoresize
+          style="height: 400px; width: 100%" />
         <div v-else class="text-gray-500 text-center py-20">Загрузка истории цен...</div>
       </div>
 
       <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
-        <VChart v-if="!loadingViewsHistory && viewsHistoryDataReady" :option="viewsHistoryChartOption" autoresize style="height: 400px; width: 100%" />
+        <VChart
+          v-if="!loadingViewsHistory && viewsHistoryDataReady"
+          :option="viewsHistoryChartOption"
+          :update-options="{ notMerge: true }"
+          autoresize
+          style="height: 400px; width: 100%" />
 
         <div v-else class="text-gray-500 text-center py-20">Загрузка истории просмотров...</div>
       </div>
@@ -355,12 +367,67 @@ interface PriceHistory {
 
 type AutocompleteField = "region" | "settlement" | "district" | "microdistrict";
 
+interface ComparisonItem {
+  id: number;
+  label: string;
+  filters: typeof appliedFilters;
+  priceHistory: PriceHistory[];
+  viewsHistory: ViewsHistoryData[];
+}
+const comparisons = ref<ComparisonItem[]>([]);
+let comparisonId = 0;
+
+async function addComparison() {
+  const filtersSnapshot = JSON.parse(JSON.stringify(draftFilters));
+
+  // Берём данные для нового comparison
+  const [priceHistory, viewsHistory, settlements] = await Promise.all([
+    $api("/analysis/average-prices-history", { params: buildParams(filtersSnapshot) }),
+    $api("/analysis/last-10-days-views-history", { params: buildParams(filtersSnapshot) }),
+    $api("/analysis/group-stats", { params: { ...buildParams(filtersSnapshot), group_by: appliedFilters.groupBy } }),
+  ]);
+
+  comparisons.value.push({
+    id: ++comparisonId,
+    label: buildLabel(filtersSnapshot),
+    filters: filtersSnapshot,
+    priceHistory,
+    viewsHistory,
+    settlementsData: settlements.results, // 👈 сохраняем snapshot
+  });
+}
+
+function buildParams(filters: typeof appliedFilters) {
+  return {
+    settlement_type_names: filters.settlementTypes.length ? filters.settlementTypes : undefined,
+    region_name: filters.region || undefined,
+    settlement_name: filters.settlement || undefined,
+    district_name: filters.district || undefined,
+    microdistrict_name: filters.microdistrict || undefined,
+    is_new_house: filters.is_new_house,
+  };
+}
+
+function buildLabel(filters: typeof appliedFilters) {
+  return [
+    filters.region,
+    filters.settlement,
+    filters.district,
+    filters.microdistrict,
+    filters.is_new_house === true ? "Новостройки" : filters.is_new_house === false ? "Вторичка" : "Вся ",
+  ]
+    .filter(Boolean)
+    .join(" / ");
+}
+
 const draftFilters = reactive<Record<AutocompleteField, string>>({
   groupBy: "region",
   region: "",
   settlement: "",
   district: "",
   microdistrict: "",
+  settlementTypes: [] as string[],
+  is_new_house: undefined,
 });
 
 const appliedFilters = reactive({
@@ -538,6 +605,10 @@ function getLevelLabel(level: (typeof drillLevels)[number]) {
   }
 }
 
+function getCategoryLabelData(item: SettlementData, groupBy: keyof SettlementData): string {
+  return item[groupBy] ?? "—";
+}
+
 const breadcrumbs = computed(() => {
   const currentIndex = drillLevels.indexOf(appliedFilters.groupBy as (typeof drillLevels)[number]);
 
@@ -706,92 +777,82 @@ const {
     // ],
   },
 );
+const basePriceSeries = computed(() => ({
+  id: "base",
+  name: (() => {
+    const label = buildLabel(appliedFilters);
+    return `${label} (текущий выбор)`;
+  })(),
+  type: "line",
+  smooth: true,
+  data: priceHistoryData.value?.map((i) => i.avg_price) ?? [],
+  lineStyle: { width: 3 },
+  itemStyle: { color: colorPalette[0] },
+}));
+
+const baseViewsSeries = computed(() => ({
+  id: "base-views",
+  name: (() => {
+    const label = buildLabel(appliedFilters);
+    return `${label} (текущий выбор)`;
+  })(),
+  type: "line",
+  smooth: true,
+  data: viewsHistoryData.value?.map((i) => i.views) ?? [],
+  itemStyle: { color: colorPalette[0] },
+}));
 
 const viewsHistoryDataReady = computed(() => viewsHistoryData.value?.length && viewsHistoryData.value?.length > 0);
 
-const viewsHistoryChartOption = computed(() => ({
-  title: {
-    text: "История просмотров за последние 10 дней",
-    left: "center",
-  },
-  tooltip: {
-    trigger: "axis",
-  },
-  xAxis: {
-    type: "category",
-    data: viewsHistoryData.value?.map((item) => item.date) ?? [],
-  },
-  yAxis: {
-    type: "value",
-    name: "Просмотры",
-  },
-  series: [
-    {
-      name: "Просмотры",
-      type: "line",
-      data: viewsHistoryData.value?.map((item) => item.views) ?? [],
-      smooth: true,
+const viewsHistoryChartOption = computed(() => {
+  const comparisonSeries = comparisons.value.map((c, index) => ({
+    id: `cmp-${c.id}`,
+    name: c.label,
+    type: "line",
+    smooth: true,
+    data: c.viewsHistory.map((i) => i.views),
+    itemStyle: {
+      color: colorPalette[(index + 1) % colorPalette.length],
     },
-  ],
-  grid: {
-    left: 40,
-    right: 20,
-    bottom: 60,
-  },
-  dataZoom: [
-    {
-      type: "inside",
-      start: 0,
-      end: 100,
+  }));
+
+  return {
+    title: { text: "История просмотров", left: "center" },
+    tooltip: { trigger: "axis" },
+    xAxis: {
+      type: "category",
+      data: viewsHistoryData.value?.map((i) => i.date) ?? comparisons.value[0]?.viewsHistory.map((i) => i.date) ?? [],
     },
-  ],
-}));
+    yAxis: { type: "value" },
+    series: [baseViewsSeries.value, ...comparisonSeries],
+  };
+});
 
 const priceHistoryDataReady = computed(() => !!priceHistoryData.value?.length);
 
-const priceHistoryChartOption = computed(() => ({
-  title: {
-    text: "История цен за последние 10 дней",
-    left: "center",
-  },
-  tooltip: {
-    trigger: "axis",
-  },
-  xAxis: {
-    type: "category",
-    data: priceHistoryData.value?.map((item) => item.date) ?? [],
-  },
-  yAxis: {
-    type: "value",
-    name: "Средняя цена",
-  },
-  series: [
-    {
-      name: "Средняя цена",
-      type: "line",
-      data: priceHistoryData.value?.map((item) => item.avg_price) ?? [],
-      smooth: true,
-      itemStyle: {
-        color: "#FF5733",
-      },
-      lineStyle: {
-        width: 3,
-      },
+const priceHistoryChartOption = computed(() => {
+  const comparisonSeries = comparisons.value.map((c, index) => ({
+    id: `cmp-${c.id}`,
+    name: c.label,
+    type: "line",
+    smooth: true,
+    data: c.priceHistory.map((i) => i.avg_price),
+    itemStyle: {
+      color: colorPalette[(index + 1) % colorPalette.length],
     },
-  ],
-  grid: {
-    left: 40,
-    right: 20,
-    bottom: 60,
-  },
-  dataZoom: [
-    {
-      type: "inside",
-      start: 0,
-      end: 100,
+  }));
+
+  return {
+    title: { text: "История цен", left: "center" },
+    tooltip: { trigger: "axis" },
+    xAxis: {
+      type: "category",
+      data: priceHistoryData.value?.map((i) => i.date) ?? comparisons.value[0]?.priceHistory.map((i) => i.date) ?? [],
     },
-  ],
-}));
+    yAxis: { type: "value" },
+    series: [basePriceSeries.value, ...comparisonSeries],
+  };
+});
 
 const propertyTypesPieOption = computed(() => {
   const data = OneObjectData.value?.statistics.property_types ?? {};
@@ -891,41 +952,176 @@ const flatTypePieOption = computed(() => {
   };
 });
 
-const chartOption = computed(() => ({
-  title: {
-    text: titleText.value,
-    left: "center",
-  },
-  graphic: breadcrumbsGraphic.value,
-  tooltip: {
-    trigger: "axis",
-  },
-  legend: {
-    top: 30,
-  },
-  grid: { left: 40, right: 20, bottom: 60, top: 70 },
-  xAxis: {
+function buildSeriesForFilters(filtersSnapshot: typeof appliedFilters, settlements: SettlementData[], stackId: string): any[] {
+  switch (filtersSnapshot.chartType) {
+    case "priceCategories":
+      return [
+        {
+          name: "Дешёвые",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.price_categories.cheap),
+          itemStyle: { color: "#00e396" },
+        },
+        {
+          name: "Средние",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.price_categories.normal),
+          itemStyle: { color: "#008ffb" },
+        },
+        {
+          name: "Дорогие",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.price_categories.expensive),
+          itemStyle: { color: "#ff4560" },
+        },
+      ];
+    case "avgPricePerMeter":
+      return [
+        {
+          name: "Средняя цена за м²",
+          type: "bar",
+          data: settlements.map((i) => i.averages.average_price_per_square_meter),
+        },
+      ];
+    case "avgDailyViewsCount":
+      return [
+        {
+          name: "Среднее число просмотров",
+          type: "bar",
+          data: settlements.map((i) => i.averages.average_views_count),
+        },
+      ];
+    case "areaBoxplot":
+      return [
+        {
+          name: "Площадь (м²)",
+          type: "boxplot",
+          data: settlements.map((i) => [i.area_boxplot?.min ?? 0, i.area_boxplot?.q1 ?? 0, i.area_boxplot?.median ?? 0, i.area_boxplot?.q3 ?? 0, i.area_boxplot?.max ?? 0]),
+        },
+      ];
+    case "priceBoxplot":
+      return [
+        {
+          name: "Цена",
+          type: "boxplot",
+          data: settlements.map((i) => [
+            i.price_boxplot?.min ?? 0,
+            i.price_boxplot?.q1 ?? 0,
+            i.price_boxplot?.median ?? 0,
+            i.price_boxplot?.q3 ?? 0,
+            i.price_boxplot?.max ?? 0,
+          ]),
+        },
+      ];
+    default:
+      return [
+        {
+          name: "Количество объектов",
+          type: "bar",
+          data: settlements.map((i) => i.offers_count),
+        },
+      ];
+  }
+}
+
+const chartOption = computed(() => {
+  const grids = [];
+  const xAxes = [];
+  const yAxes = [];
+  const series = [];
+
+  let gridIndex = 0;
+
+  // ===== ОСНОВНОЙ ГРИД =====
+  grids.push({
+    top: 40,
+    left: 60,
+    right: 40,
+    height: 220,
+  });
+
+  xAxes.push({
     type: "category",
-    data: categories.value,
-    axisLabel: {
-      rotate: 30,
-    },
-  },
-  yAxis: {
+    gridIndex,
+    data: settlementsData.value.map((i) => getCategoryLabelData(i, appliedFilters.groupBy)),
+    axisLabel: { rotate: 30 },
+  });
+
+  yAxes.push({
     type: "value",
-  },
-  series: series.value,
-  dataZoom: [
-    {
-      type: "inside",
-      show: true,
-      xAxisIndex: [0],
-      start: 0,
-      end: 100,
-      handleSize: "8%",
+    gridIndex,
+  });
+
+  series.push(
+    ...buildSeriesForFilters(
+      appliedFilters,
+      settlementsData.value,
+      "price-main", // 👈 уникальный stack
+    ).map((s) => ({
+      ...s,
+      xAxisIndex: gridIndex,
+      yAxisIndex: gridIndex,
+    })),
+  );
+
+  gridIndex++;
+
+  // ===== COMPARISON ГРИДЫ =====
+  comparisons.value.forEach((c) => {
+    grids.push({
+      top: 40 + gridIndex * 260,
+      left: 60,
+      right: 40,
+      height: 220,
+    });
+
+    xAxes.push({
+      type: "category",
+      gridIndex,
+      data: c.settlementsData.map((i) => getCategoryLabelData(i, c.filters.groupBy)),
+      axisLabel: { rotate: 30 },
+    });
+
+    yAxes.push({
+      type: "value",
+      gridIndex,
+    });
+
+    series.push(
+      ...buildSeriesForFilters(
+        { ...c.filters, chartType: appliedFilters.chartType },
+        c.settlementsData,
+        `price-${c.id}`, // 👈 УНИКАЛЬНЫЙ stack на grid
+      ).map((s) => ({
+        ...s,
+        name: `${s.name} — ${c.label}`,
+        xAxisIndex: gridIndex,
+        yAxisIndex: gridIndex,
+      })),
+    );
+
+    gridIndex++;
+  });
+
+  return {
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
     },
-  ],
-}));
+
+    legend: {
+      top: 0,
+    },
+
+    grid: grids,
+    xAxis: xAxes,
+    yAxis: yAxes,
+    series,
+  };
+});
 
 const titleText = computed(() => {
   switch (appliedFilters.chartType) {
@@ -962,15 +1158,24 @@ const { data: autocompleteData, refresh: refreshAutocomplete } = useAsyncData(
 );
 
 function applyFilters() {
+  // groupBy обновляем сразу
   appliedFilters.groupBy = draftFilters.groupBy;
-  appliedFilters.region = draftFilters.region || "";
-  appliedFilters.settlement = draftFilters.settlement || "";
-  appliedFilters.district = draftFilters.district || "";
-  appliedFilters.microdistrict = draftFilters.microdistrict || "";
+
+  // Остальные поля применяем только при нажатии
+  appliedFilters.region = draftFilters.region;
+  appliedFilters.settlement = draftFilters.settlement;
+  appliedFilters.district = draftFilters.district;
+  appliedFilters.microdistrict = draftFilters.microdistrict;
+  appliedFilters.settlementTypes = [...draftFilters.settlementTypes];
+  appliedFilters.is_new_house = draftFilters.is_new_house;
+
+  // Обновляем данные
   refreshSettlementsData();
   refreshOneObjectData();
   refreshPriceHistoryData();
   refreshViewsHistoryData();
+
+  // Очищаем автокомплит
   Object.values(autocompleteResults).forEach((arr) => arr.splice(0));
 }
 
@@ -1024,18 +1229,17 @@ const visibleInputs = computed(() => {
 
 watch(
   () => draftFilters.groupBy,
-  () => {
-    const allowed = new Set(visibleInputs.value);
+  (newGroupBy) => {
+    const visible = visibleInputs.value;
 
-    (["region", "settlement", "district", "microdistrict"] as AutocompleteField[]).forEach((field) => {
-      if (!allowed.has(field)) {
-        draftFilters[field] = "";
-        appliedFilters[field] = "";
-        autocompleteResults[field] = [];
+    // Перебираем все уровни фильтров
+    ["region", "settlement", "district", "microdistrict"].forEach((level) => {
+      // Если уровень скрыт — очищаем его
+      if (!visible.includes(level)) {
+        draftFilters[level] = "";
       }
     });
   },
-  { immediate: true },
 );
 
 function handleClickOutside() {
@@ -1047,9 +1251,6 @@ function handleClickOutside() {
 
 function selectResult(type: AutocompleteField, item: string) {
   draftFilters[type] = item;
-
-  appliedFilters[type] = item; // 🔥 вот тут график обновится
-
   Object.values(autocompleteResults).forEach((arr) => arr.splice(0));
 }
 

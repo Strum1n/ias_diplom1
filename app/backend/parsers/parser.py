@@ -137,7 +137,7 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
                 task = asyncio.create_task(parse_offer_to_db(browser, url))
             tasks.append(task)
             if source == "avito":
-                await asyncio.sleep(random.uniform(2, 4))
+                await asyncio.sleep(random.uniform(1, 2))
             if source == "cian":
                 await asyncio.sleep(random.uniform(0.5, 0.7))
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -350,6 +350,7 @@ async def parse_offer_to_db_avito_v2(browser: driver.Browser, url: str):
         if is_geetest_captcha:
             STOP_CREATE_NEW_PAGE = True
             await captcha_solver_v2(property_page)
+            STOP_CREATE_NEW_PAGE = False
         close_btn = None
         offer_info_el = await property_page.find("window.__preloadedState__ = ", timeout=3)
         offer_info_raw_text_encoded = await offer_info_el.get_html()
@@ -371,7 +372,7 @@ async def parse_offer_to_db_avito_v2(browser: driver.Browser, url: str):
                 continue
             except Exception as e:
                 print(e)
-                logging.warning(f"Ошибка {e} на сранице: {url}, попытка {attempt}", exc_info=True)
+                logging.warning(f"Ошибка {e} на сранице: {url}, попытка {attempt}")
                 continue
         matches = re.findall(r"(\d{1,2}\s+[а-яё]+\s+\d{4})\s+(\d+)\s*₽(?:\s+\d+\s*₽)?", price_h.text_all.replace("\u2009", ""))
         price_history_result = []
@@ -576,7 +577,7 @@ async def parse_address(json_data: dict, url: str):
         # await asyncio.to_thread(api.query, overpass_query)
         coord_string = f"{coordinates[0]},{coordinates[1]}"
         # location = geolocator.reverse(f"{coordinates[0]},{coordinates[1]}")
-        location = await asyncio.to_thread(geolocator.reverse, coord_string)
+        location = geolocator.reverse(coord_string)
         address_elements = location.raw["address"]
         overpass_query = f"""
         [out:json];
@@ -847,7 +848,7 @@ async def parse_offer_info(json_data: dict):
         )
         images_urls = [img["1280x960"] for img in json_data_1["imageUrls"]]
         offer_type = "Продажа"
-        title = json_data_2["galleryInfo"]["imageAlt"]
+        title = None
 
         property_type = json_data_2["ga"][1].get("status") or json_data_2["ga"][1].get("type")
 
@@ -1200,7 +1201,7 @@ async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1
 
 
 async def main():
-    await offers_urls_bypass("cian")
+    await offers_urls_bypass("avito")
 
 
 if __name__ == "__main__":

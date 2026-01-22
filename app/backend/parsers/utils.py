@@ -156,6 +156,7 @@ async def captcha_solver_v2(page: zendriver.Tab) -> bool:
             distance = 0
         await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(30, 40))
         await page.sleep(5)
+        await page.reload()
         background_el = None
         try:
             background_el = await page.wait_for(".geetest_bg", timeout=2)
@@ -284,12 +285,7 @@ async def find_types(session_factory, address: dict, new_offer_types: dict) -> d
                 )[0]
             )
             settlement_stmt = select(SettlementType.id).where(SettlementType.name.in_((address.get("settlement_full_name") or "").split()))
-            print(
-                re.findall(
-                    r"\b(?:[а-яё/]{2,}(?:\s+[а-яё]{2,})*)\b|\b[А-ЯЁ]{2,}\b",
-                    address.get("super_municipality_full_name") or "",
-                )
-            )
+
             super_municipality_stmt = select(SuperMunicipalityType.id).where(
                 SuperMunicipalityType.name
                 == (
