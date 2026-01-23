@@ -1,43 +1,30 @@
 <template>
   <UContainer class="px-5!">
-    <div v-if="pending" class="flex justify-center items-center h-96">
-      <UIcon class="size-10" name="codex:loader" />
-    </div>
+    <div class="mt-5">
+      <span
+        >Опубликовано:
+        {{
+          new Date(offer.creation_date_source).toLocaleString("ru-RU", {
+            timeZone: "Europe/Moscow",
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        }}
+      </span>
 
-    <div v-else-if="error" class="text-red-500">Произошла ошибка при загрузке данных: {{ error.message }}</div>
-
-    <div v-else-if="!offer" class="text-gray-500">Объявление не найдено</div>
-
-    <div v-else class="offer-content">
-      <div>
-        <span
-          >Опубликовано:
-          {{
-            new Date(offer.creation_date_source).toLocaleString("ru-RU", {
-              timeZone: "Europe/Moscow",
-              year: "numeric",
-              month: "numeric",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          }}</span
-        >
-      </div>
-
-      <!-- Заголовок и цена -->
-      <div class="flex gap-12 mb-15">
+      <div class="flex gap-12">
         <div class="max-w-200">
           <div>
-            <h1 class="text-4xl font-bold my-3 text-black">{{ offer.title }}</h1>
+            <h1 class="text-4xl font-bold my-2 text-black">{{ offer.title }}</h1>
           </div>
           <div class="text-muted my-4">
             {{ offer.address.full_address }}
-            <a class="map-link" @click="showOnMap(offer)">На карте</a>
+            <ULink class="text-primary cursor-pointer" @click="showOnMap(offer)">На карте</ULink>
           </div>
-          <!-- Галерея изображений -->
-
-          <div class="gallery-section">
+          <div class="mb-6">
             <div class="flex-1 w-full">
               <UCarousel
                 ref="carousel"
@@ -54,7 +41,7 @@
                 <img :src="item" width="2000" height="480" class="rounded-lg" />
               </UCarousel>
 
-              <div ref="thumbsContainer" class="scrlbrwdthnn flex gap-3 max-w-200 overflow-x-auto whitespace-nowrap pt-4 mx-auto">
+              <div ref="thumbsContainer" class="no-scroll flex gap-3 max-w-200 overflow-x-auto whitespace-nowrap pt-4 mx-auto">
                 <div
                   v-for="(item, index) in offer.images_urls"
                   :key="index"
@@ -69,7 +56,7 @@
 
           <div class="info-card">
             <h3 class="!mt-0">Оценки</h3>
-            <div class="categories-grid">
+            <div class="flex justify-between">
               <div class="category-item">
                 <span class="category-label">Для пожилых:</span>
                 <UBadge size="lg" :color="getCategoryColor(offer.elderly_category)">
@@ -90,7 +77,7 @@
               </div>
             </div>
 
-            <h3 class="!mb-0">Описание</h3>
+            <h3 class="mb-0!">Описание</h3>
 
             <UAccordion
               type="multiple"
@@ -190,7 +177,7 @@
                 </div>
               </div>
             </div>
-            <div v-else>
+            <div class="mt-0.5" v-else>
               <div class="flex gap-10">
                 <div class="flex-1">
                   <h3 class="!mt-0">О доме</h3>
@@ -375,7 +362,7 @@
                 <div v-else>Временный номер, проверьте в источнике</div>
 
                 <div class="seller-info">
-                  <div class="seller-type">{{ offer.seller.seller_type.name }}</div>
+                  <div class="seller-type">{{ offer.seller.seller_type?.name }}</div>
                   <div class="seller-name">{{ offer.seller.name }}</div>
                 </div>
                 <div class="original-link">
@@ -386,10 +373,11 @@
             </div>
             <div v-if="offer.price_history.length > 1" class="price-history-section">
               <h3>История цен</h3>
-              <div v-if="priceChartOptions && priceChartSeries">
-                <apexchart type="line" height="328" :options="priceChartOptions" :series="priceChartSeries" />
-              </div>
-              <div v-else class="no-data">Нет данных по истории цен</div>
+
+              <VChart v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
+              <!-- <div v-else class="no-data">Нет данных по истории цен</div> -->
+
+              <!-- <div v-else class="no-data">Нет данных по истории цен</div> -->
             </div>
             <div class="views-section">
               <h3>Статистика просмотров</h3>
@@ -408,10 +396,8 @@
                 </div>
               </div>
             </div>
-            <div v-if="viewsChartOptions && viewsChartSeries" class="chart-container">
-              <apexchart type="line" height="328" :options="viewsChartOptions" :series="viewsChartSeries" />
-            </div>
-            <div v-else class="no-data">Нет данных по истории просмотров</div>
+
+            <VChart v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
           </div>
         </div>
       </div>
@@ -454,8 +440,6 @@ interface ViewsHistory {
 }
 
 type Offer = OfferResponseFull;
-type Address = AddressResponseFull;
-type Infrastructure = InfrastructureResponseFull;
 type InfrastructureLink = AddressInfrastructureLinkResponseFull;
 
 const carousel = useTemplateRef("carousel");
@@ -553,20 +537,16 @@ const toggleFavorite = async (offer: Offer) => {
     if (wasFavorite) {
       $api(`offers/favorites/${offerId}`, { method: "DELETE" });
 
-      // Локально удаляем из favoritesData
       if (favoritesData.value) {
         favoritesData.value = favoritesData.value.filter((item) => item.id !== offerId);
       }
     } else {
       $api(`offers/favorites/${offerId}`, { method: "POST" });
 
-      // Локально добавляем в favoritesData
       if (favoritesData.value) {
         favoritesData.value = [...favoritesData.value, offer];
       }
     }
-
-    // favoriteOffers автоматически обновится через computed!
   } catch (error) {
     console.error("Ошибка при обновлении избранного:", error);
   }
@@ -604,167 +584,97 @@ watch(
   { immediate: true },
 );
 
-// График истории цен
-const priceChartOptions = computed(() => {
+const priceChartOption = computed(() => {
   if (!offer.value?.price_history?.length) return null;
+
+  const data = [...offer.value.price_history].sort((a, b) => +new Date(a.changeTime) - +new Date(b.changeTime)).map((item) => [item.changeTime, item.priceData.price]);
 
   return {
-    chart: {
-      type: "line",
-      height: 328,
-      zoom: {
-        enabled: false,
-      },
-      toolbar: {
-        show: true,
-        tools: {
-          download: true,
-          selection: false,
-          zoom: false,
-          zoomin: false,
-          zoomout: false,
-          pan: false,
-          reset: false,
-        },
-      },
-    },
-    colors: ["#059669"],
-    stroke: {
-      width: 3,
-      curve: "smooth",
-    },
-    markers: {
-      size: 5,
-      hover: {
-        size: 7,
-      },
-    },
-    xaxis: {
-      type: "datetime",
-      labels: {
-        datetimeFormatter: {
-          year: "yyyy",
-          month: "MMM 'yy",
-          day: "dd MMM",
-        },
-      },
-    },
-    yaxis: {
-      labels: {
-        formatter: (value: number) => formatPrice(value),
-      },
-      title: {
-        text: "Цена, ₽",
-      },
-    },
     tooltip: {
-      x: {
-        format: "dd MMM yyyy",
-      },
-      y: {
-        formatter: (value: number) => formatPrice(value) + " ₽",
-      },
+      trigger: "axis",
+      valueFormatter: (v: number) => `${formatPrice(v)} ₽`,
     },
-    title: {},
+    xAxis: {
+      type: "time",
+      boundaryGap: false,
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: {
+        formatter: (v: number) => formatPrice(v),
+      },
+      name: "Цена, ₽",
+    },
     grid: {
-      borderColor: "#e7e7e7",
-      row: {
-        colors: ["#f3f3f3", "transparent"],
-        opacity: 0.5,
+      left: 40,
+      right: 20,
+      top: 30,
+      bottom: 30,
+    },
+    series: [
+      {
+        type: "line",
+        data,
+        smooth: true,
+        symbolSize: 6,
+        lineStyle: {
+          width: 3,
+          color: "#059669",
+        },
+        itemStyle: {
+          color: "#059669",
+        },
+        areaStyle: {
+          color: "rgba(5,150,105,0.1)",
+        },
       },
-    },
+    ],
   };
-});
-
-const priceChartSeries = computed(() => {
-  if (!offer.value?.price_history?.length) return null;
-
-  const sortedHistory = [...offer.value.price_history].sort((a, b) => new Date(a.changeTime).getTime() - new Date(b.changeTime).getTime());
-
-  return [
-    {
-      name: "Цена",
-      data: sortedHistory.map((item) => ({
-        x: new Date(item.changeTime).getTime(),
-        y: item.priceData.price,
-      })),
-    },
-  ];
 });
 
 // График истории просмотров
-const viewsChartOptions = computed(() => {
+const viewsChartOption = computed(() => {
   if (!offer.value?.views_history?.length) return null;
 
+  const data = [...offer.value.views_history].sort((a, b) => +new Date(a.date) - +new Date(b.date)).map((item) => [item.date, item.views]);
+
   return {
-    chart: {
-      type: "line",
-      height: 328,
-      zoom: {
-        enabled: false,
-      },
-      toolbar: {
-        show: false,
-        tools: {
-          download: true,
-          selection: false,
-          zoom: false,
-          zoomin: false,
-          zoomout: false,
-          pan: false,
-          reset: false,
-        },
-      },
-    },
-    colors: ["#3b82f6"],
-    stroke: {
-      width: 3,
-      curve: "smooth",
-    },
-    markers: {
-      size: 5,
-      hover: {
-        size: 7,
-      },
-    },
-    xaxis: {
-      type: "datetime",
-      labels: {
-        datetimeFormatter: {
-          year: "yyyy",
-          month: "MMM 'yy",
-          day: "dd MMM",
-        },
-      },
-    },
-    yaxis: {
-      title: {
-        text: "Количество",
-      },
-      min: 0,
-    },
     tooltip: {
-      x: {
-        format: "dd MMM yyyy",
-      },
+      trigger: "axis",
     },
-    title: {
-      // text: 'Динамика просмотров',
-      // align: 'left',
-      // style: {
-      //     fontSize: '18px',
-      //     fontWeight: 'bold'
-      // }
+    xAxis: {
+      type: "time",
+      boundaryGap: false,
+    },
+    yAxis: {
+      type: "value",
+      min: 0,
+      name: "Просмотры",
     },
     grid: {
-      borderColor: "#f8fafc",
-      row: {
-        colors: ["#f8fafc", "transparent"],
-        opacity: 0.5,
-      },
+      left: 40,
+      right: 20,
+      top: 30,
+      bottom: 30,
     },
+    series: [
+      {
+        type: "line",
+        data,
+        smooth: true,
+        symbolSize: 6,
+        lineStyle: {
+          width: 3,
+          color: "#3b82f6",
+        },
+        itemStyle: {
+          color: "#3b82f6",
+        },
+      },
+    ],
   };
 });
+
 const items = computed<AccordionItem[]>(() => {
   const lines =
     offer.value?.description
@@ -862,17 +772,35 @@ const getCategoryColor = (category: string) => {
 </script>
 
 <style scoped>
-:deep(.info-card) p:first-child {
-  margin: 0 !important;
-}
-
-:deep(.info-card) p:last-child {
-  margin-bottom: 0 !important;
-}
+@reference "tailwindcss";
 
 :deep(.info-card) span.iconify {
-  cursor: pointer;
+  @apply cursor-pointer;
 }
+
+.info-card {
+  @apply ring ring-[var(--ui-border)] rounded-lg h-max p-7;
+}
+
+.info-card h3,
+.contact-card h3 {
+  @apply text-2xl font-semibold my-4;
+}
+
+.stat-item,
+.category-item {
+  @apply flex gap-4 items-center bg-[#f8fafc] p-4 rounded-lg;
+}
+
+/* .stat-item,
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+} */
 
 .house-marker {
   width: 50px;
@@ -1018,26 +946,11 @@ const getCategoryColor = (category: string) => {
   margin-bottom: 2rem;
 }
 
-.info-card {
-  background: white;
-  border: 2px solid #e5e7eb;
-  height: max-content;
-  padding: 1.5rem;
-}
-
 .contact-card {
   top: 66px;
   background: white;
   height: max-content;
   padding: 1.5rem;
-}
-
-.info-card h3,
-.contact-card h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 1rem 0;
 }
 
 .info-grid {
@@ -1270,16 +1183,6 @@ const getCategoryColor = (category: string) => {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
-}
-
-.stat-item,
-.category-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
-  background: #f8fafc;
-  border-radius: 0.5rem;
 }
 
 .stat-label,

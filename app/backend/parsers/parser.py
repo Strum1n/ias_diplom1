@@ -53,7 +53,7 @@ async def offers_urls_bypass(source: Literal["avito", "cian"]):
     config = use_config(PATH_TO_AVITO_CONFIG, "r")
     max_retries = 5
 
-    browser = await driver.start(headless=False)
+    browser = await driver.start(headless=False, browser="brave")
     page = await browser.get(config[source]["url"])
     try:
         await page.wait_for_ready_state("complete", timeout=3)
@@ -129,17 +129,17 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
             while STOP_CREATE_NEW_PAGE == True:
                 await asyncio.sleep(5)
             active_tasks = [t for t in tasks if not t.done()]
-            if len(active_tasks) > 4:
-                await asyncio.sleep(5)
             if source == "avito":
-                task = asyncio.create_task(parse_offer_to_db_avito_v2(browser, url))
+                if len(active_tasks) > 4:
+                    await asyncio.sleep(5)
+                task = asyncio.create_task(parse_offer_to_db_avito(browser, url))
             elif source == "cian":
                 task = asyncio.create_task(parse_offer_to_db(browser, url))
             tasks.append(task)
             if source == "avito":
                 await asyncio.sleep(random.uniform(1, 2))
             if source == "cian":
-                await asyncio.sleep(random.uniform(0.5, 0.7))
+                await asyncio.sleep(random.uniform(0.5, 0.65))
         results = await asyncio.gather(*tasks, return_exceptions=True)
         successful_page_tasks = 0
         duplicates = 0
@@ -166,7 +166,10 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
         try:
             next_page_btn = await page.select(config[source]["next_btn_selector"], timeout=2)
         except Exception as e:
-            print(f"Спарсили последнюю страницу {config[source]['p']} c ценами {config[source]['min_price']} - {config[source]['max_price']}")
+            if source == "cian" and "suburban" in page.url:
+                next_page_btn = "kek"
+            else:
+                print(f"Спарсили последнюю страницу {config[source]['p']} c ценами {config[source]['min_price']} - {config[source]['max_price']}")
         if next_page_btn is None:
             config[source]["p"] = 1
             config[source]["min_price"] = config[source]["max_price"]
@@ -274,9 +277,9 @@ async def parse_offers_last(source: Literal["avito", "cian"]):
                     while STOP_CREATE_NEW_PAGE == True:
                         await asyncio.sleep(5)
                     active_tasks = [t for t in tasks if not t.done()]
-                    if len(active_tasks) > 4:
-                        await asyncio.sleep(5)
                     if source == "avito":
+                        if len(active_tasks) > 4:
+                            await asyncio.sleep(5)
                         task = asyncio.create_task(parse_offer_to_db_avito(browser, url))
                     elif source == "cian":
                         task = asyncio.create_task(parse_offer_to_db(browser, url))
@@ -1201,7 +1204,7 @@ async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1
 
 
 async def main():
-    await offers_urls_bypass("avito")
+    await offers_urls_bypass("cian")
 
 
 if __name__ == "__main__":

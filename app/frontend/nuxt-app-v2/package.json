@@ -19,5 +19,8 @@
     "vue-router": "^4.6.4",
     "vue-yandex-maps": "^3.0.0",
     "vue3-apexcharts": "^1.10.0"
+  },
+  "devDependencies": {
+    "@nuxtjs/mdc": "^0.20.0"
   }
 }

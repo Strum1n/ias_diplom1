@@ -3,13 +3,8 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr:true,
-  modules: [
-    '@nuxt/ui',
-    // '@nuxtjs/mdc',
-    'vue-yandex-maps/nuxt',
-    'nuxt-auth-utils',
-    'nuxt-echarts'
-  ],
+  modules: ['@nuxt/ui', // '@nuxtjs/mdc',
+  'vue-yandex-maps/nuxt', 'nuxt-auth-utils', 'nuxt-echarts', '@nuxtjs/mdc'],
   fonts: {
     provider: 'bunny'
   },

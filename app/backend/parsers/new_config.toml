@@ -16,16 +16,16 @@ p = 11
 
 [cian]
 domen_url = "https://www.cian.ru"
-url = "https://spb.cian.ru/kupit-kvartiru-leningradskaya-oblast/"
+url = "https://spb.cian.ru/cat.php?currency=2&deal_type=sale&engine_version=2&maxprice=3500000&offer_type=flat&p=2&region=4588"
 price_filter_btn_selector = "[data-testid=\"price\"]"
 next_btn_selector = "nav[data-name=\"Pagination\"] > :nth-child(3):is(a)"
 min_price_selector = "[placeholder=\"от\"]"
 max_price_selector = "[placeholder=\"до\"]"
-min_price = 7400000
+min_price = 8000000
 items_on_page = 28
-offer_urls_selector = ".x31de4314--_416c6--media"
-max_price = 7500000
+offer_urls_selector = ".x31de4314--_416c6--media, .x09f03c75--e726a9--content__title > a"
+max_price = 8600000
 max_available_page = 54
-filter_btn_selector = "[data-name=\"SummaryHeader\"]"
+filter_btn_selector = "[data-name=\"SummaryHeader\"], [data-testid=\"listing.offers-count\"]"
 price_step = 100000
-p = 8
+p = 2

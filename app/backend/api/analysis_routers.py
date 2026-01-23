@@ -527,7 +527,7 @@ async def get_offers_by_location(
 
     top_offers_stmt = top_offers_stmt.order_by(
         Offer.creation_date_source.desc(),  # Сначала сортируем по дате создания (от новых к старым)
-        Offer.daily_views_count.desc(),  # Затем по количеству просмотров (по убыванию)
+        Offer.views_count.desc(),  # Затем по количеству просмотров (по убыванию)
     ).limit(5)
 
     top_offers_result = await session.exec(top_offers_stmt)

@@ -11,7 +11,7 @@
           { label: 'Улицы', value: 'street' },
         ]"
         placeholder="Группировка"
-        class="w-30 h-8" />
+        class="w-40 h-8" />
       <div v-if="visibleInputs.includes('region')" class="relative">
         <UInput v-model="draftFilters.region" placeholder="Область" @update:model-value="(v) => handleInputChange('region', v)" />
         <ul
@@ -67,25 +67,32 @@
           </li>
         </ul>
       </div>
-      <UCheckboxGroup
-        v-model="draftFilters.settlementTypes"
-        :items="[
-          { label: 'Город', value: 'город' },
-          { label: 'Деревня', value: 'деревня' },
-          { label: 'Посёлок', value: 'поселок' },
-          { label: 'Село', value: 'село' },
-        ]"
-        class="mb-4" />
-      <URadioGroup
-        v-model="draftFilters.is_new_house"
-        :items="[
-          { label: 'Вся', value: undefined },
-          { label: 'Новостройки', value: true },
-          { label: 'Вторичка', value: false },
-        ]" />
+      <div>
+        <span class="font-[550]">Тип населенного пункта</span>
+        <UCheckboxGroup
+          v-model="draftFilters.settlementTypes"
+          :items="[
+            { label: 'Город', value: 'город' },
+            { label: 'Деревня', value: 'деревня' },
+            { label: 'Посёлок', value: 'поселок' },
+            { label: 'Село', value: 'село' },
+          ]"
+          class="mb-4 mt-2" />
+      </div>
+      <div>
+        <span class="font-[550]">Тип квартиры</span>
+        <URadioGroup
+          class="mt-2"
+          v-model="draftFilters.is_new_house"
+          :items="[
+            { label: 'Все', value: undefined },
+            { label: 'Новостройки', value: true },
+            { label: 'Вторичка', value: false },
+          ]" />
+      </div>
       <UButton color="primary" variant="solid" class="h-10" @click="applyFilters"> Применить фильтры </UButton>
-      <UButton color="primary" variant="soft" @click="addComparison"> ➕ Добавить к сравнению </UButton>
-      <UButton color="warning" variant="soft" @click="comparisons = []"> Очистить сравнение </UButton>
+      <UButton color="info" icon="i-material-symbols:add-ad-rounded" variant="soft" class="h-10" @click="addComparison"> Добавить к сравнению </UButton>
+      <UButton color="error" variant="soft" icon="i-f7:clear-fill" class="h-10" @click="comparisons = []"> Очистить сравнение </UButton>
     </div>
 
     <div class="flex py-5 gap-4.5 justify-between">
@@ -95,7 +102,7 @@
           <USkeleton class="h-20 w-150" />
         </div>
         <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="iconify i-ic:round-maps-home-work logo-icon"> </UIcon> <span>{{ OneObjectData?.total_count }}</span>
+          <UIcon class="size-8" name=""> </UIcon> <span>{{ OneObjectData?.total_count }}</span>
         </div>
       </div>
       <div class="stat-card">
@@ -124,24 +131,14 @@
 
     <div class="flex gap-4">
       <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
-        <VChart
-          v-if="!loadingPriceHistory && priceHistoryDataReady"
-          :option="priceHistoryChartOption"
-          :update-options="{ notMerge: true }"
-          autoresize
-          style="height: 400px; width: 100%" />
-        <div v-else class="text-gray-500 text-center py-20">Загрузка истории цен...</div>
+        <VChartFull :option="priceHistoryChartOption" :init-options="{ height: 400 }" autoresize />
+        <!-- <div v-else class="text-gray-500 text-center py-20">Загрузка истории цен...</div> -->
       </div>
 
       <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
-        <VChart
-          v-if="!loadingViewsHistory && viewsHistoryDataReady"
-          :option="viewsHistoryChartOption"
-          :update-options="{ notMerge: true }"
-          autoresize
-          style="height: 400px; width: 100%" />
-
-        <div v-else class="text-gray-500 text-center py-20">Загрузка истории просмотров...</div>
+        <VChartFull :option="viewsHistoryChartOption" autoresize :init-options="{ height: 400 }" />
+        <!-- 
+        <div v-else class="text-gray-500 text-center py-20">Загрузка истории просмотров...</div> -->
       </div>
     </div>
 
@@ -159,13 +156,15 @@
               { label: 'Boxplot по цене', value: 'priceBoxplot' },
             ]"
             placeholder="Тип графика"
-            class="w-64" />
-
-          <!-- <p>{{ settlementsData }}</p> -->
+            class="w-fit" />
           <div class="relative mt-4">
-            <UButton v-if="canDrillUp" icon="i-heroicons-arrow-left" color="neutral" variant="soft" @click="drillUp"> Назад </UButton>
-            <VChart v-if="!loadingSettlements" :option="chartOption" autoresize style="height: 400px" @click="handleChartClick" />
+            {{ chartContainerHeight }}
 
+            {{ loadingSettlements }}
+            <UButton v-if="canDrillUp" icon="i-heroicons-arrow-left" color="neutral" variant="soft" @click="drillUp"> Назад </UButton>
+
+            <VChartFull :option="chartOption" autoresize :init-options="{ height: 500 }" @click="handleChartClick" />
+            <!-- <div v-else-if="loadingSettlements">Загрузка...</div> -->
             <div v-if="!loadingSettlements && settlementsData?.length === 0" class="text-center top-50 left-144 absolute text-gray-400 mt-2">
               Нет данных для выбранного уровня
             </div>
@@ -190,23 +189,6 @@
               <div class="pl-4 flex justify-between w-full">
                 <div class="relative py-3">
                   <div class="flex flex-col gap-1">
-                    <!-- <div class="flex gap-2">
-                      <UBadge v-if="offer.family_category" :color="getCategoryColor(offer.family_category)" variant="solid" class="category-badge">
-                        Семья: {{ getCategoryLabel(offer.family_category) }}
-                        <span v-if="offer.family_score !== null && offer.family_score !== undefined"> ({{ offer.family_score.toFixed(2) }}) </span>
-                      </UBadge>
-                      <UBadge v-if="offer.elderly_category" :color="getCategoryColor(offer.elderly_category)" variant="solid" class="category-badge">
-                        Пожилые: {{ getCategoryLabel(offer.elderly_category) }}
-                        <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined"> ({{ offer.elderly_score.toFixed(2) }}) </span>
-                      </UBadge>
-                      <UBadge v-if="offer.transport_access_category" :color="getCategoryColor(offer.transport_access_category)" variant="solid" class="category-badge">
-                        Транспорт:
-                        {{ getCategoryLabel(offer.transport_access_category) }}
-                        <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined">
-                          ({{ offer.transport_access_score.toFixed(2) }})
-                        </span>
-                      </UBadge>
-                    </div> -->
                     <h3 class="font-bold text-base">
                       {{ offer.title || "Без названия" }}
                     </h3>
@@ -245,10 +227,10 @@
         </div>
       </div>
       <div class="flex grow flex-col gap-4">
-        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize style="height: 404px" />
+        <VChartFull class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize :init-options="{ height: 400 }" />
 
-        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize style="height: 404px" />
-        <VChart class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize style="height: 404px" />
+        <VChartFull class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize :init-options="{ height: 400 }" />
+        <VChartFull class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize :init-options="{ height: 400 }" />
       </div>
     </div>
   </div>
@@ -259,6 +241,10 @@ const { getCategoryColor } = useCategoryColor();
 const { getCategoryLabel } = useCategoryLabel();
 const { formatPrice } = usePriceFormat();
 
+const chartContainerHeight = computed(() => {
+  const totalGraphs = 1 + comparisons.value.length;
+  return Math.max(400, chartTopOffset + totalGraphs * (chartGridHeight + chartGap));
+});
 interface SettlementData {
   region?: string;
   settlement?: string;
@@ -373,6 +359,8 @@ interface ComparisonItem {
   filters: typeof appliedFilters;
   priceHistory: PriceHistory[];
   viewsHistory: ViewsHistoryData[];
+  settlementsData: SettlementData[];
+  stats: OneObjectStats;
 }
 const comparisons = ref<ComparisonItem[]>([]);
 let comparisonId = 0;
@@ -380,12 +368,16 @@ let comparisonId = 0;
 async function addComparison() {
   const filtersSnapshot = JSON.parse(JSON.stringify(draftFilters));
 
-  // Берём данные для нового comparison
-  const [priceHistory, viewsHistory, settlements] = await Promise.all([
+  const [priceHistory, viewsHistory, settlements, one_stats] = await Promise.all([
     $api("/analysis/average-prices-history", { params: buildParams(filtersSnapshot) }),
     $api("/analysis/last-10-days-views-history", { params: buildParams(filtersSnapshot) }),
     $api("/analysis/group-stats", { params: { ...buildParams(filtersSnapshot), group_by: appliedFilters.groupBy } }),
+    $api("/analysis/stats", { params: buildParams(filtersSnapshot) }),
   ]);
+  draftFilters.region = "";
+  draftFilters.settlement = "";
+  draftFilters.region = "";
+  draftFilters.microdistrict = "";
 
   comparisons.value.push({
     id: ++comparisonId,
@@ -393,9 +385,106 @@ async function addComparison() {
     filters: filtersSnapshot,
     priceHistory,
     viewsHistory,
-    settlementsData: settlements.results, // 👈 сохраняем snapshot
+    settlementsData: settlements.results,
+    stats: one_stats,
   });
 }
+
+const priceHistoryChartOption = computed(() => {
+  const series = [
+    {
+      name: "Текущий выбор",
+      type: "line",
+      smooth: true,
+      showSymbol: false,
+      data: priceHistoryData.value?.map((i) => i.avg_price),
+    },
+    ...comparisons.value.map((c) => ({
+      name: c.label,
+      type: "line",
+      smooth: true,
+      showSymbol: false,
+      data: c.priceHistory.map((i) => i.avg_price),
+    })),
+  ];
+
+  const xAxisData = priceHistoryData.value?.map((i) => new Date(i.date).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })) ?? [];
+
+  return {
+    title: {
+      text: "История средней цены",
+      left: "center",
+    },
+    tooltip: {
+      trigger: "axis",
+      valueFormatter: (v: number) => (v ? `${v.toLocaleString()} ₽` : "—"),
+    },
+    legend: {},
+    grid: {
+      left: 0,
+      right: 0,
+      bottom: 0,
+      top: 0,
+    },
+    xAxis: {
+      type: "category",
+      data: xAxisData,
+    },
+    yAxis: {
+      type: "value",
+      axisLabel: {
+        formatter: (v: number) => `${v / 1000}k`,
+      },
+    },
+    series,
+  };
+});
+
+const viewsHistoryChartOption = computed(() => {
+  const series = [
+    {
+      name: "Текущий выбор",
+      type: "line",
+      smooth: true,
+      showSymbol: false,
+      data: viewsHistoryData.value?.map((i) => i.views),
+    },
+    ...comparisons.value.map((c) => ({
+      name: c.label,
+      type: "line",
+      smooth: true,
+      showSymbol: false,
+      data: c.viewsHistory.map((i) => i.views),
+    })),
+  ];
+
+  const xAxisData = viewsHistoryData.value?.map((i) => new Date(i.date).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })) ?? [];
+
+  return {
+    title: {
+      text: "История просмотров",
+      left: "center",
+    },
+    tooltip: {
+      trigger: "axis",
+    },
+    legend: {},
+    grid: {
+      left: 40,
+      right: 20,
+      bottom: 40,
+      top: 80,
+    },
+    xAxis: {
+      type: "category",
+      data: xAxisData,
+    },
+    yAxis: {
+      type: "value",
+    },
+    series,
+  };
+});
 
 function buildParams(filters: typeof appliedFilters) {
   return {
@@ -442,33 +531,11 @@ const appliedFilters = reactive({
   microdistrict: "",
 });
 
-const categories = computed(
-  () =>
-    settlementsData.value?.map((item, index) => {
-      switch (appliedFilters.groupBy) {
-        case "region":
-          return item.region ?? `Область ${index + 1}`;
-        case "settlement":
-          return item.settlement ?? `Населённый пункт ${index + 1}`;
-        case "district":
-          return item.district ?? `Район ${index + 1}`;
-        case "microdistrict":
-          return item.microdistrict ?? `Микрорайон ${index + 1}`;
-        case "street":
-          return item.street ?? `Улица ${index + 1}`;
-        default:
-          return `Группа ${index + 1}`;
-      }
-    }) ?? [],
-);
-
-const isChartReady = ref(false);
-
 const { $api } = useNuxtApp();
 
 const drillLevels = ["region", "settlement", "district", "microdistrict", "street"];
 
-const openOffer = (offer: OfferResponseFull) => {
+const openOffer = (offer) => {
   const router = useRouter();
   router.push(`/offers/${offer.id}`);
 };
@@ -479,29 +546,22 @@ async function drillDown(categoryName: string) {
   for (let i = currentIndex + 1; i < drillLevels.length; i++) {
     const nextLevel = drillLevels[i];
 
-    // Устанавливаем groupBy на следующий уровень
     appliedFilters.groupBy = nextLevel;
 
-    // Сбрасываем фильтры всех уровней ниже текущего nextLevel
     drillLevels.slice(i + 1).forEach((level) => {
       appliedFilters[level] = "";
     });
 
-    // Фильтр текущего уровня — это значение категории, по которой кликнули
     appliedFilters[drillLevels[currentIndex]] = categoryName;
 
-    // Делаем запрос к API
     await refreshSettlementsData();
 
-    // Проверяем, есть ли данные на этом уровне
     if (settlementsData.value?.length && settlementsData.value.length > 0) {
       await refreshOneObjectData();
       await refreshPriceHistoryData();
       await refreshViewsHistoryData();
       return;
     }
-
-    // Если данных нет — идём на следующий уровень
   }
 
   console.log("Нет данных на следующих уровнях");
@@ -514,13 +574,9 @@ async function drillUpTo(targetLevel: (typeof drillLevels)[number]) {
   const targetIndex = drillLevels.indexOf(targetLevel);
   if (targetIndex < 0) return;
 
-  // 🚫 КЛЮЧЕВОЕ УСЛОВИЕ
-  // Если у уровня нет значения — это просто уровень, не точка drill
   if (!appliedFilters[targetLevel]) {
-    // Просто остаёмся на этом уровне
     appliedFilters.groupBy = targetLevel;
 
-    // Чистим всё ниже
     drillLevels.forEach((level, idx) => {
       if (idx > targetIndex) {
         appliedFilters[level] = "";
@@ -531,11 +587,8 @@ async function drillUpTo(targetLevel: (typeof drillLevels)[number]) {
     await refreshOneObjectData();
     await refreshPriceHistoryData();
     await refreshViewsHistoryData();
-    return;
   }
 
-  // ⬇️ Ниже — логика для случая,
-  // когда у breadcrumb ЕСТЬ значение (например "ЦАО")
   appliedFilters.groupBy = targetLevel;
   appliedFilters[targetLevel] = "";
 
@@ -556,35 +609,27 @@ async function drillUp() {
 
   if (currentIndex <= 0) return;
 
-  // Идём ВВЕРХ, пропуская пустые уровни
   for (let i = currentIndex - 1; i >= 0; i--) {
     const level = drillLevels[i];
 
-    // 1. Устанавливаем groupBy
     appliedFilters.groupBy = level;
 
-    // 2. Очищаем фильтр этого уровня
     appliedFilters[level] = "";
 
-    // 3. Очищаем всё ниже
     drillLevels.forEach((l, idx) => {
       if (idx > i) {
         appliedFilters[l] = "";
       }
     });
 
-    // 4. Запрашиваем данные
     await refreshSettlementsData();
 
-    // 5. Если данные есть — стоп
     if (settlementsData.value?.length) {
       await refreshOneObjectData();
       await refreshPriceHistoryData();
       await refreshViewsHistoryData();
       return;
     }
-
-    // иначе — идём выше
   }
 }
 
@@ -615,9 +660,6 @@ const breadcrumbs = computed(() => {
   return drillLevels
     .slice(0, currentIndex + 1)
     .filter((level, idx) => {
-      // Показываем уровень, если:
-      // 1) Значение установлено
-      // 2) Или это текущий groupBy
       return appliedFilters[level] || idx === currentIndex;
     })
     .map((level) => ({
@@ -666,289 +708,209 @@ const {
   pending: loadingSettlements,
   error: settlementsError,
   refresh: refreshSettlementsData,
-} = useAsyncData<SettlementData[]>(
-  "group-stats",
-  async () => {
-    const response = await $api("/analysis/group-stats", {
-      params: {
-        group_by: appliedFilters.groupBy,
-        settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
-        is_new_house: appliedFilters.is_new_house,
-        region_name: appliedFilters.region || undefined,
-        settlement_name: appliedFilters.settlement || undefined,
-        district_name: appliedFilters.district || undefined,
-        microdistrict_name: appliedFilters.microdistrict || undefined,
-      },
-    });
+} = await useAsyncData<SettlementData[]>("group-stats", async () => {
+  const response = await $api("/analysis/group-stats", {
+    params: {
+      group_by: appliedFilters.groupBy,
+      settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
+      is_new_house: appliedFilters.is_new_house,
+      region_name: appliedFilters.region || undefined,
+      settlement_name: appliedFilters.settlement || undefined,
+      district_name: appliedFilters.district || undefined,
+      microdistrict_name: appliedFilters.microdistrict || undefined,
+    },
+  });
 
-    return response.results;
-  },
-  // {
-  //   watch: [toRef(appliedFilters, "chartType")],
-  //   deep: true,
-  // },
-);
+  return response.results;
+});
 
 const {
   data: OneObjectData,
   pending: loadingOneObject,
   error: OneObjectError,
   refresh: refreshOneObjectData,
-} = useAsyncData<OneObjectStats>(
-  "stats",
-  () => {
-    return $api("/analysis/stats", {
-      params: {
-        settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
-        region_name: appliedFilters.region || undefined,
-        settlement_name: appliedFilters.settlement || undefined,
-        district_name: appliedFilters.district || undefined,
-        microdistrict_name: appliedFilters.microdistrict || undefined,
-        is_new_house: appliedFilters.is_new_house,
-      },
-    });
-  },
-  {
-    // watch: [appliedFilters],
-    // deep: true,
-  },
-);
+} = await useAsyncData<OneObjectStats>("stats", () => {
+  return $api("/analysis/stats", {
+    params: {
+      settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
+      region_name: appliedFilters.region || undefined,
+      settlement_name: appliedFilters.settlement || undefined,
+      district_name: appliedFilters.district || undefined,
+      microdistrict_name: appliedFilters.microdistrict || undefined,
+      is_new_house: appliedFilters.is_new_house,
+    },
+  });
+});
 
 const {
   data: viewsHistoryData,
   pending: loadingViewsHistory,
   error: viewsHistoryError,
   refresh: refreshViewsHistoryData,
-} = useAsyncData<ViewsHistoryData>(
-  "views-history",
-  () => {
-    const response = $api("/analysis/last-10-days-views-history", {
-      params: {
-        settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
-        region_name: appliedFilters.region || undefined,
-        settlement_name: appliedFilters.settlement || undefined,
-        district_name: appliedFilters.district || undefined,
-        microdistrict_name: appliedFilters.microdistrict || undefined,
-        is_new_house: appliedFilters.is_new_house,
-      },
-    });
+} = await useAsyncData<ViewsHistoryData>("views-history", () => {
+  const response = $api("/analysis/last-10-days-views-history", {
+    params: {
+      settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
+      region_name: appliedFilters.region || undefined,
+      settlement_name: appliedFilters.settlement || undefined,
+      district_name: appliedFilters.district || undefined,
+      microdistrict_name: appliedFilters.microdistrict || undefined,
+      is_new_house: appliedFilters.is_new_house,
+    },
+  });
 
-    return response;
-  },
-  {
-    // watch: [
-    //   toRef(appliedFilters, "settlement"),
-    //   toRef(appliedFilters, "region"),
-    //   toRef(appliedFilters, "district"),
-    //   toRef(appliedFilters, "microdistrict"),
-    //   toRef(appliedFilters, "settlementTypes"),
-    // ],
-  },
-);
+  return response;
+});
 
 const {
   data: priceHistoryData,
   pending: loadingPriceHistory,
   error: priceHistoryError,
   refresh: refreshPriceHistoryData,
-} = useAsyncData<PriceHistory[]>(
-  "price-history",
-  () => {
-    const response = $api("/analysis/average-prices-history", {
-      params: {
-        settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
-        region_name: appliedFilters.region || undefined,
-        settlement_name: appliedFilters.settlement || undefined,
-        district_name: appliedFilters.district || undefined,
-        microdistrict_name: appliedFilters.microdistrict || undefined,
-        is_new_house: appliedFilters.is_new_house,
-      },
-    });
-
-    return response;
-  },
-  {
-    // watch: [
-    //   toRef(appliedFilters, "settlement"),
-    //   toRef(appliedFilters, "region"),
-    //   toRef(appliedFilters, "district"),
-    //   toRef(appliedFilters, "microdistrict"),
-    //   toRef(appliedFilters, "settlementTypes"),
-    // ],
-  },
-);
-const basePriceSeries = computed(() => ({
-  id: "base",
-  name: (() => {
-    const label = buildLabel(appliedFilters);
-    return `${label} (текущий выбор)`;
-  })(),
-  type: "line",
-  smooth: true,
-  data: priceHistoryData.value?.map((i) => i.avg_price) ?? [],
-  lineStyle: { width: 3 },
-  itemStyle: { color: colorPalette[0] },
-}));
-
-const baseViewsSeries = computed(() => ({
-  id: "base-views",
-  name: (() => {
-    const label = buildLabel(appliedFilters);
-    return `${label} (текущий выбор)`;
-  })(),
-  type: "line",
-  smooth: true,
-  data: viewsHistoryData.value?.map((i) => i.views) ?? [],
-  itemStyle: { color: colorPalette[0] },
-}));
-
-const viewsHistoryDataReady = computed(() => viewsHistoryData.value?.length && viewsHistoryData.value?.length > 0);
-
-const viewsHistoryChartOption = computed(() => {
-  const comparisonSeries = comparisons.value.map((c, index) => ({
-    id: `cmp-${c.id}`,
-    name: c.label,
-    type: "line",
-    smooth: true,
-    data: c.viewsHistory.map((i) => i.views),
-    itemStyle: {
-      color: colorPalette[(index + 1) % colorPalette.length],
+} = await useAsyncData<PriceHistory[]>("price-history", () => {
+  const response = $api("/analysis/average-prices-history", {
+    params: {
+      settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
+      region_name: appliedFilters.region || undefined,
+      settlement_name: appliedFilters.settlement || undefined,
+      district_name: appliedFilters.district || undefined,
+      microdistrict_name: appliedFilters.microdistrict || undefined,
+      is_new_house: appliedFilters.is_new_house,
     },
-  }));
+  });
 
-  return {
-    title: { text: "История просмотров", left: "center" },
-    tooltip: { trigger: "axis" },
-    xAxis: {
-      type: "category",
-      data: viewsHistoryData.value?.map((i) => i.date) ?? comparisons.value[0]?.viewsHistory.map((i) => i.date) ?? [],
-    },
-    yAxis: { type: "value" },
-    series: [baseViewsSeries.value, ...comparisonSeries],
-  };
+  return response;
 });
 
-const priceHistoryDataReady = computed(() => !!priceHistoryData.value?.length);
+function getPieCenters(count: number): string[][] {
+  const cols = Math.ceil(Math.sqrt(count)); // количество колонок
+  const rows = Math.ceil(count / cols); // количество строк
+  const centers: string[][] = [];
 
-const priceHistoryChartOption = computed(() => {
-  const comparisonSeries = comparisons.value.map((c, index) => ({
-    id: `cmp-${c.id}`,
-    name: c.label,
-    type: "line",
-    smooth: true,
-    data: c.priceHistory.map((i) => i.avg_price),
-    itemStyle: {
-      color: colorPalette[(index + 1) % colorPalette.length],
-    },
-  }));
+  const xStep = 100 / cols;
+  const yStep = 100 / rows;
 
-  return {
-    title: { text: "История цен", left: "center" },
-    tooltip: { trigger: "axis" },
-    xAxis: {
-      type: "category",
-      data: priceHistoryData.value?.map((i) => i.date) ?? comparisons.value[0]?.priceHistory.map((i) => i.date) ?? [],
-    },
-    yAxis: { type: "value" },
-    series: [basePriceSeries.value, ...comparisonSeries],
-  };
-});
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const idx = row * cols + col;
+      if (idx >= count) break;
+      centers.push([`${(col + 0.5) * xStep}%`, `${(row + 0.5) * yStep}%`]);
+    }
+  }
+
+  return centers;
+}
+
+function getPieRadius(count: number): string {
+  const cols = Math.ceil(Math.sqrt(count));
+  const rows = Math.ceil(count / cols);
+  const maxRadiusX = (100 / cols / 2) * 0.9; // немного отступ
+  const maxRadiusY = (100 / rows / 2) * 0.9;
+  return `${Math.min(maxRadiusX, maxRadiusY)}%`;
+}
 
 const propertyTypesPieOption = computed(() => {
-  const data = OneObjectData.value?.statistics.property_types ?? {};
+  const chartsData = [
+    { label: "Текущий выбор", data: OneObjectData.value?.statistics.property_types ?? {} },
+    ...comparisons.value.filter((c) => c.stats).map((c) => ({ label: c.label, data: c.stats.statistics.property_types })),
+  ];
+
+  const centers = getPieCenters(chartsData.length);
+  const radius = getPieRadius(chartsData.length);
+
+  const series = chartsData.map((chart, idx) => ({
+    name: chart.label,
+    type: "pie",
+    radius,
+    center: centers[idx],
+    data: Object.entries(chart.data).map(([name, value]) => ({ name, value })),
+    emphasis: {
+      itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: "rgba(0,0,0,0.3)" },
+    },
+  }));
 
   return {
-    title: {
-      text: "Типы недвижимости",
-      left: "center",
-    },
-    tooltip: {
-      trigger: "item",
-      formatter: "{b}: {c} ({d}%)",
-    },
-    legend: {
-      bottom: 0,
-    },
-    series: [
-      {
-        type: "pie",
-        radius: "60%",
-        data: Object.entries(data).map(([name, value]) => ({
-          name,
-          value,
-        })),
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: "rgba(0,0,0,0.3)",
-          },
-        },
-      },
-    ],
+    title: { text: "Типы недвижимости", left: "center" },
+    tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
+    legend: { bottom: 0 },
+    series,
   };
 });
 
 const apartmentsByRoomsPieOption = computed(() => {
-  const data = OneObjectData.value?.statistics.apartments_by_rooms.rooms ?? {};
+  const chartsData = [
+    {
+      label: "Текущий выбор",
+      data: OneObjectData.value?.statistics.apartments_by_rooms.rooms ?? {},
+    },
+    ...comparisons.value.filter((c) => c.stats).map((c) => ({ label: c.label, data: c.stats.statistics.apartments_by_rooms.rooms })),
+  ];
+
+  const centers = getPieCenters(chartsData.length);
+  const radius = getPieRadius(chartsData.length);
+
+  const series = chartsData.map((chart, idx) => ({
+    name: chart.label,
+    type: "pie",
+    radius,
+    center: centers[idx],
+    data: Object.entries(chart.data).map(([name, value]) => ({
+      name: name.replace("_rooms", " к.").replace("studio", "Студия").replace("open_plan", "Свободная планировка"),
+      value,
+    })),
+    emphasis: {
+      itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: "rgba(0,0,0,0.3)" },
+    },
+  }));
 
   return {
-    title: {
-      text: "Квартиры по комнатам",
-      left: "center",
-    },
-    tooltip: {
-      trigger: "item",
-      formatter: "{b}: {c} ({d}%)",
-    },
-    legend: {
-      bottom: 0,
-    },
-    series: [
-      {
-        type: "pie",
-        radius: ["35%", "65%"],
-        data: Object.entries(data).map(([name, value]) => ({
-          name: name.replace("_rooms", " к.").replace("studio", "Студия").replace("open_plan", "Свободная планировка"),
-          value,
-        })),
-      },
-    ],
+    title: { text: "Квартиры по комнатам", left: "center" },
+    tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
+    legend: { bottom: 0 },
+    series,
   };
 });
 
 const flatTypePieOption = computed(() => {
-  const data = OneObjectData.value?.statistics.apartments_by_rooms.flat_type ?? { new_houses: 0, secondary: 0 };
+  const chartsData = [
+    {
+      label: "Текущий выбор",
+      data: {
+        Новостройки: OneObjectData.value?.statistics.apartments_by_rooms.flat_type.new_houses ?? 0,
+        Вторичка: OneObjectData.value?.statistics.apartments_by_rooms.flat_type.secondary ?? 0,
+      },
+    },
+    ...comparisons.value
+      .filter((c) => c.stats)
+      .map((c) => ({
+        label: c.label,
+        data: {
+          Новостройки: c.stats.statistics.apartments_by_rooms.flat_type.new_houses,
+          Вторичка: c.stats.statistics.apartments_by_rooms.flat_type.secondary,
+        },
+      })),
+  ];
+
+  const centers = getPieCenters(chartsData.length);
+  const radius = getPieRadius(chartsData.length);
+
+  const series = chartsData.map((chart, idx) => ({
+    name: chart.label,
+    type: "pie",
+
+    radius: [`25%`, radius], // внутренний радиус 40%, внешний как раньше
+    center: centers[idx],
+    data: Object.entries(chart.data).map(([name, value]) => ({ name, value })),
+    emphasis: {
+      itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: "rgba(0,0,0,0.3)" },
+    },
+  }));
 
   return {
-    title: {
-      text: "Новостройки vs Вторичка",
-      left: "center",
-    },
-    tooltip: {
-      trigger: "item",
-      formatter: "{b}: {c} ({d}%)",
-    },
-    legend: {
-      bottom: 0,
-    },
-    series: [
-      {
-        type: "pie",
-        radius: ["40%", "70%"],
-        data: [
-          { name: "Новостройки", value: data.new_houses },
-          { name: "Вторичка", value: data.secondary },
-        ],
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: "rgba(0,0,0,0.3)",
-          },
-        },
-      },
-    ],
+    title: { text: "Новостройки vs Вторичка", left: "center" },
+    tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
+    legend: { bottom: 0 },
+    series,
   };
 });
 
@@ -1027,113 +989,84 @@ function buildSeriesForFilters(filtersSnapshot: typeof appliedFilters, settlemen
   }
 }
 
+const chartGridHeight = 220;
+const chartTopOffset = 40;
+const chartGap = 100;
+
 const chartOption = computed(() => {
-  const grids = [];
-  const xAxes = [];
-  const yAxes = [];
-  const series = [];
+  const grids: any[] = [];
+  const xAxes: any[] = [];
+  const yAxes: any[] = [];
+  const series: any[] = [];
 
-  let gridIndex = 0;
-
-  // ===== ОСНОВНОЙ ГРИД =====
-  grids.push({
-    top: 40,
-    left: 60,
-    right: 40,
-    height: 220,
-  });
-
-  xAxes.push({
-    type: "category",
-    gridIndex,
-    data: settlementsData.value.map((i) => getCategoryLabelData(i, appliedFilters.groupBy)),
-    axisLabel: { rotate: 30 },
-  });
-
-  yAxes.push({
-    type: "value",
-    gridIndex,
-  });
-
-  series.push(
-    ...buildSeriesForFilters(
-      appliedFilters,
-      settlementsData.value,
-      "price-main", // 👈 уникальный stack
-    ).map((s) => ({
-      ...s,
-      xAxisIndex: gridIndex,
-      yAxisIndex: gridIndex,
+  const allGraphs = [
+    { settlements: settlementsData.value, filters: appliedFilters },
+    ...comparisons.value.map((c) => ({
+      settlements: c.settlementsData,
+      filters: { ...c.filters, chartType: appliedFilters.chartType },
+      label: c.label,
     })),
-  );
+  ];
 
-  gridIndex++;
+  allGraphs.forEach((graph, idx) => {
+    const top = chartTopOffset + idx * (chartGridHeight + chartGap);
 
-  // ===== COMPARISON ГРИДЫ =====
-  comparisons.value.forEach((c) => {
     grids.push({
-      top: 40 + gridIndex * 260,
-      left: 60,
+      top,
+      left: 0,
       right: 40,
-      height: 220,
+      height: chartGridHeight,
     });
+
+    const categories = graph.settlements.map((i) => getCategoryLabelData(i, graph.filters.groupBy));
 
     xAxes.push({
       type: "category",
-      gridIndex,
-      data: c.settlementsData.map((i) => getCategoryLabelData(i, c.filters.groupBy)),
-      axisLabel: { rotate: 30 },
+      gridIndex: idx,
+      data: categories,
+      axisLabel: {
+        rotate: 30,
+      },
+
+      boundaryGap: true,
     });
 
     yAxes.push({
       type: "value",
-      gridIndex,
+      gridIndex: idx,
     });
 
     series.push(
-      ...buildSeriesForFilters(
-        { ...c.filters, chartType: appliedFilters.chartType },
-        c.settlementsData,
-        `price-${c.id}`, // 👈 УНИКАЛЬНЫЙ stack на grid
-      ).map((s) => ({
+      ...buildSeriesForFilters({ ...graph.filters, chartType: appliedFilters.chartType }, graph.settlements, `stack-${idx}`).map((s) => ({
         ...s,
-        name: `${s.name} — ${c.label}`,
-        xAxisIndex: gridIndex,
-        yAxisIndex: gridIndex,
+        xAxisIndex: idx,
+        yAxisIndex: idx,
+        name: graph.label ? `${s.name} — ${graph.label}` : s.name,
       })),
     );
-
-    gridIndex++;
   });
+
+  const dataZoom = allGraphs.map((_, idx) => ({
+    type: "inside",
+    xAxisIndex: idx,
+
+    zoomOnMouseWheel: true,
+    moveOnMouseMove: true,
+    preventDefaultMouseMove: true,
+  }));
 
   return {
     tooltip: {
       trigger: "axis",
       axisPointer: { type: "shadow" },
     },
-
-    legend: {
-      top: 0,
-    },
-
+    legend: { top: 0 },
     grid: grids,
     xAxis: xAxes,
     yAxis: yAxes,
     series,
+    dataZoom,
   };
-});
-
-const titleText = computed(() => {
-  switch (appliedFilters.chartType) {
-    case "priceCategories":
-      return "Категории цен";
-    case "avgPricePerMeter":
-      return "Средняя цена за м²";
-    case "avgDailyViewsCount":
-      return "Среднее кол-во просмотров за день";
-    default:
-      return "Количество сделок";
-  }
 });
 
 const selectedFilterType = ref("");
@@ -1145,7 +1078,7 @@ const autocompleteResults = reactive({
   microdistrict: [],
 });
 
-const { data: autocompleteData, refresh: refreshAutocomplete } = useAsyncData(
+const { data: autocompleteData, refresh: refreshAutocomplete } = await useAsyncData(
   "autocomplete-filterss",
   () =>
     $api("/offers/autocomplete-filters", {
@@ -1157,11 +1090,9 @@ const { data: autocompleteData, refresh: refreshAutocomplete } = useAsyncData(
   { immediate: false },
 );
 
-function applyFilters() {
-  // groupBy обновляем сразу
+async function applyFilters() {
   appliedFilters.groupBy = draftFilters.groupBy;
 
-  // Остальные поля применяем только при нажатии
   appliedFilters.region = draftFilters.region;
   appliedFilters.settlement = draftFilters.settlement;
   appliedFilters.district = draftFilters.district;
@@ -1169,13 +1100,11 @@ function applyFilters() {
   appliedFilters.settlementTypes = [...draftFilters.settlementTypes];
   appliedFilters.is_new_house = draftFilters.is_new_house;
 
-  // Обновляем данные
-  refreshSettlementsData();
-  refreshOneObjectData();
-  refreshPriceHistoryData();
-  refreshViewsHistoryData();
+  await refreshSettlementsData();
+  await refreshOneObjectData();
+  await refreshPriceHistoryData();
+  await refreshViewsHistoryData();
 
-  // Очищаем автокомплит
   Object.values(autocompleteResults).forEach((arr) => arr.splice(0));
 }
 
@@ -1232,9 +1161,7 @@ watch(
   (newGroupBy) => {
     const visible = visibleInputs.value;
 
-    // Перебираем все уровни фильтров
     ["region", "settlement", "district", "microdistrict"].forEach((level) => {
-      // Если уровень скрыт — очищаем его
       if (!visible.includes(level)) {
         draftFilters[level] = "";
       }
@@ -1254,126 +1181,7 @@ function selectResult(type: AutocompleteField, item: string) {
   Object.values(autocompleteResults).forEach((arr) => arr.splice(0));
 }
 
-watchEffect(() => {
-  isChartReady.value = !!settlementsData.value?.length;
-});
-
 const colorPalette = ["#FF5733", "#33FF57", "#3357FF", "#F2E205", "#9C27B0", "#FFC107"];
-
-function offersSeries() {
-  return [
-    {
-      name: "Количество предложений",
-      type: "bar",
-      data: settlementsData.value?.map((i) => i.offers_count) ?? [],
-      itemStyle: {
-        color: (params: any) => colorPalette[params.dataIndex % colorPalette.length],
-      },
-    },
-  ];
-}
-function priceCategoriesSeries() {
-  return [
-    {
-      name: "Дешёвые",
-      type: "bar",
-      stack: "price",
-      data: settlementsData.value?.map((i) => i.price_categories.cheap) ?? [],
-      itemStyle: { color: "#00e396" },
-    },
-    {
-      name: "Средние",
-      type: "bar",
-      stack: "price",
-      data: settlementsData.value?.map((i) => i.price_categories.normal) ?? [],
-      itemStyle: { color: "#008ffb" },
-    },
-    {
-      name: "Дорогие",
-      type: "bar",
-      stack: "price",
-      data: settlementsData.value?.map((i) => i.price_categories.expensive) ?? [],
-      itemStyle: { color: "#ff4560" },
-    },
-  ];
-}
-
-function avgPricePerMeterSeries() {
-  return [
-    {
-      name: "Средняя цена за м²",
-      type: "bar",
-      data: settlementsData.value?.map((i) => i.averages.average_price_per_square_meter) ?? [],
-      itemStyle: {
-        color: (params: any) => colorPalette[params.dataIndex % colorPalette.length],
-      },
-    },
-  ];
-}
-
-function avgDailyViewsCountSeries() {
-  return [
-    {
-      name: "Среднее число просмотров",
-      type: "bar",
-      data: settlementsData.value?.map((i) => i.averages.average_views_count) ?? [],
-      itemStyle: {
-        color: (params: any) => colorPalette[params.dataIndex % colorPalette.length],
-      },
-    },
-  ];
-}
-
-function areaBoxplotSeries() {
-  return [
-    {
-      name: "Площадь (м²)",
-      type: "boxplot",
-      data:
-        settlementsData.value?.map((item) => [
-          item.area_boxplot?.min ?? 0,
-          item.area_boxplot?.q1 ?? 0,
-          item.area_boxplot?.median ?? 0,
-          item.area_boxplot?.q3 ?? 0,
-          item.area_boxplot?.max ?? 0,
-        ]) ?? [],
-    },
-  ];
-}
-
-function priceBoxplotSeries() {
-  return [
-    {
-      name: "Цена",
-      type: "boxplot",
-      data:
-        settlementsData.value?.map((item) => [
-          item.price_boxplot?.min ?? 0,
-          item.price_boxplot?.q1 ?? 0,
-          item.price_boxplot?.median ?? 0,
-          item.price_boxplot?.q3 ?? 0,
-          item.price_boxplot?.max ?? 0,
-        ]) ?? [],
-    },
-  ];
-}
-
-const series = computed(() => {
-  switch (appliedFilters.chartType) {
-    case "priceCategories":
-      return priceCategoriesSeries();
-    case "avgPricePerMeter":
-      return avgPricePerMeterSeries();
-    case "avgDailyViewsCount":
-      return avgDailyViewsCountSeries();
-    case "areaBoxplot":
-      return areaBoxplotSeries();
-    case "priceBoxplot":
-      return priceBoxplotSeries();
-    default:
-      return offersSeries();
-  }
-});
 </script>
 <style scoped>
 @reference "tailwindcss";
