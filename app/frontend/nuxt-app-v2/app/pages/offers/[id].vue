@@ -1,6 +1,6 @@
 <template>
   <UContainer class="px-5!">
-    <div class="mt-5">
+    <div class="my-5">
       <span
         >Опубликовано:
         {{
@@ -22,63 +22,59 @@
           </div>
           <div class="text-muted my-4">
             {{ offer.address.full_address }}
-            <ULink class="text-primary cursor-pointer" @click="showOnMap(offer)">На карте</ULink>
+            <ULink class="text-primary cursor-pointer hover:text-info" @click="showOnMap(offer)">На карте</ULink>
           </div>
           <div class="mb-6">
-            <div class="flex-1 w-full">
-              <UCarousel
-                ref="carousel"
-                v-slot="{ item }"
-                arrows
-                :items="offer.images_urls"
-                :prev="{ onClick: onClickPrev }"
-                :next="{ onClick: onClickNext }"
-                :ui="{
-                  controls: 'absolute top-61 inset-x-17.5 opasity-0',
-                }"
-                class="w-full max-w-200 min-h-120 mx-auto border-2 border-[#e5e7eb]"
-                @select="onSelect">
-                <img :src="item" width="2000" height="480" class="rounded-lg" />
-              </UCarousel>
+            <UCarousel
+              ref="carousel"
+              v-slot="{ item }"
+              arrows
+              :items="offer.images_urls"
+              :prev="{ onClick: onClickPrev }"
+              :next="{ onClick: onClickNext }"
+              :ui="{
+                controls: 'absolute top-61 inset-x-17.5 opasity-0',
+              }"
+              class="w-full max-w-200 min-h-120 mx-auto border-2 border-default"
+              @select="onSelect">
+              <img :src="item" width="2000" height="480" class="rounded-lg" />
+            </UCarousel>
 
-              <div ref="thumbsContainer" class="no-scroll flex gap-3 max-w-200 overflow-x-auto whitespace-nowrap pt-4 mx-auto">
-                <div
-                  v-for="(item, index) in offer.images_urls"
-                  :key="index"
-                  class="sas h-15 opacity-35 hover:opacity-100 transition-opacity"
-                  :class="{ 'opacity-100': activeIndex === index }"
-                  @click="select(index)">
-                  <img :src="item" width="78" height="100" class="rounded-lg" />
-                </div>
+            <div ref="thumbsContainer" class="no-scroll flex gap-3 max-w-200 overflow-x-auto whitespace-nowrap pt-4 mx-auto">
+              <div
+                v-for="(item, index) in offer.images_urls"
+                :key="index"
+                class="sas h-15 opacity-35 hover:opacity-100 transition-opacity cursor-pointer"
+                :class="{ 'opacity-100': activeIndex === index }"
+                @click="select(index)">
+                <img :src="item" width="78" height="100" class="rounded-lg" />
               </div>
             </div>
           </div>
 
           <div class="info-card">
-            <h3 class="!mt-0">Оценки</h3>
-            <div class="flex justify-between">
+            <h3>Оценки</h3>
+            <div class="flex gap-3 justify-between">
               <div class="category-item">
-                <span class="category-label">Для пожилых:</span>
+                <p>Для пожилых:</p>
                 <UBadge size="lg" :color="getCategoryColor(offer.elderly_category)">
                   {{ getCategoryLabel(offer.elderly_category) }}
                 </UBadge>
               </div>
               <div class="category-item">
-                <span class="category-label">Для семьи:</span>
+                <p>Для семьи:</p>
                 <UBadge size="lg" :color="getCategoryColor(offer.family_category)">
                   {{ getCategoryLabel(offer.family_category) }}
                 </UBadge>
               </div>
               <div class="category-item">
-                <span class="category-label">Транспортная доступность:</span>
+                <p>Транспортная доступность:</p>
                 <UBadge size="lg" :color="getCategoryColor(offer.transport_access_category)">
                   {{ getCategoryLabel(offer.transport_access_category) }}
                 </UBadge>
               </div>
             </div>
-
-            <h3 class="mb-0!">Описание</h3>
-
+            <h3>Описание</h3>
             <UAccordion
               type="multiple"
               :items="items"
@@ -92,177 +88,172 @@
               </template>
             </UAccordion>
             <div class="flex gap-10" v-if="['Квартира', 'Апартаменты'].includes(offer.property_type.name)">
-              <div class="flex-1">
-                <h3 class="!mt-0">О квартире</h3>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <span class="label">Тип:</span>
-                    <span v-if="offer.is_new_house" class="value">Новостройка</span>
-                    <span v-else="offer.is_new_house" class="value">Вторичка</span>
-                  </div>
-                  <div v-if="offer.rooms_count > 0 && offer.rooms_count < 10" class="info-item">
-                    <span class="label">Кол-во комнат:</span>
-                    <span class="value">{{ offer.rooms_count }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="label">Общая площадь:</span>
-                    <span class="value">{{ offer.total_area }} м²</span>
-                  </div>
-                  <div v-if="offer.living_area" class="info-item">
-                    <span class="label">Жилая площадь:</span>
-                    <span class="value">{{ offer.living_area }} м²</span>
-                  </div>
-                  <div v-if="offer.kitchen_area" class="info-item">
-                    <span class="label">Площадь кухни:</span>
-                    <span class="value">{{ offer.kitchen_area }} м²</span>
-                  </div>
-                  <div v-if="offer.ceiling_height" class="info-item">
-                    <span class="label">Высота потолков:</span>
-                    <span class="value">{{ offer.ceiling_height }} м</span>
-                  </div>
-                  <div v-if="offer.bathrooms_count" class="info-item">
-                    <span class="label">Кол-во санузлов:</span>
-                    <span class="value">{{ offer.bathrooms_count }} {{ offer.bathroom_type?.name }}</span>
-                  </div>
-                  <div v-if="offer.has_balcony" class="info-item">
-                    <span class="label">Балкон</span>
-                    <span class="value">Есть</span>
-                  </div>
-                  <div v-if="offer.floor" class="info-item">
-                    <span class="label">Этаж:</span>
-                    <span class="value">{{ offer.floor }}</span>
-                  </div>
-                  <div v-if="offer.window_view_type" class="info-item">
-                    <span class="label">Вид из окон:</span>
-                    <span class="value">{{ offer.window_view_type?.name }}</span>
-                  </div>
-                  <div v-if="offer.renovation_type" class="info-item">
-                    <span v-if="offer.is_new_house" class="label">Отделка:</span>
-                    <span v-else class="label">Ремонт:</span>
-                    <span class="value">{{ offer.renovation_type?.name }}</span>
-                  </div>
+              <div class="info-grid">
+                <h3>О квартире</h3>
+                <div>
+                  <p>Тип:</p>
+                  <span v-if="offer.is_new_house">Новостройка</span>
+                  <span v-else="offer.is_new_house">Вторичка</span>
+                </div>
+                <div v-if="offer.rooms_count > 0 && offer.rooms_count < 10">
+                  <p>Кол-во комнат:</p>
+                  <span>{{ offer.rooms_count }}</span>
+                </div>
+                <div>
+                  <p>Общая площадь:</p>
+                  <span>{{ offer.total_area }} м²</span>
+                </div>
+                <div v-if="offer.living_area">
+                  <p>Жилая площадь:</p>
+                  <span>{{ offer.living_area }} м²</span>
+                </div>
+                <div v-if="offer.kitchen_area">
+                  <p>Площадь кухни:</p>
+                  <span>{{ offer.kitchen_area }} м²</span>
+                </div>
+                <div v-if="offer.ceiling_height">
+                  <p>Высота потолков:</p>
+                  <span>{{ offer.ceiling_height }} м</span>
+                </div>
+                <div v-if="offer.bathrooms_count">
+                  <p>Кол-во санузлов:</p>
+                  <span>{{ offer.bathrooms_count }} {{ offer.bathroom_type?.name }}</span>
+                </div>
+                <div v-if="offer.has_balcony">
+                  <p>Балкон</p>
+                  <span>Есть</span>
+                </div>
+                <div v-if="offer.floor">
+                  <p>Этаж:</p>
+                  <span>{{ offer.floor }}</span>
+                </div>
+                <div v-if="offer.window_view_type">
+                  <p>Вид из окон:</p>
+                  <span>{{ offer.window_view_type?.name }}</span>
+                </div>
+                <div v-if="offer.renovation_type">
+                  <p v-if="offer.is_new_house">Отделка:</p>
+                  <span v-else>Ремонт:</span>
+                  <span>{{ offer.renovation_type?.name }}</span>
                 </div>
               </div>
-              <div class="flex-1">
-                <h3 class="!mt-0">О доме</h3>
-                <div class="info-grid">
-                  <div v-if="offer.house_built_year" class="info-item">
-                    <span class="label">Год постройки:</span>
-                    <span class="value">{{ offer.house_built_year }}</span>
-                  </div>
-                  <div v-if="offer.house_floors_count" class="info-item">
-                    <span class="label">Кол-во этажей:</span>
-                    <span class="value">{{ offer.house_floors_count }}</span>
-                  </div>
-                  <div v-if="offer.elevators_count" class="info-item">
-                    <span class="label">Кол-во лифтов:</span>
-                    <span class="value">{{ offer.elevators_count }}</span>
-                  </div>
-                  <div v-if="offer.house_material_type" class="info-item">
-                    <span class="label">Тип дома:</span>
-                    <span class="value">{{ offer.house_material_type?.name }}</span>
-                  </div>
-                  <div v-if="offer.heating_type" class="info-item">
-                    <span class="label">Отопление:</span>
-                    <span class="value">{{ offer.heating_type?.name }}</span>
-                  </div>
-                  <div v-if="offer.parking_type" class="info-item">
-                    <span class="label">Парковка:</span>
-                    <span class="value">{{ offer.parking_type?.name }}</span>
-                  </div>
-                  <div v-if="offer.has_garbage_chute" class="info-item">
-                    <span class="label">Мусоропровод:</span>
-                    <span class="value">Есть</span>
-                  </div>
+
+              <div class="info-grid">
+                <h3>О доме</h3>
+                <div v-if="offer.house_built_year">
+                  <p>Год постройки:</p>
+                  <span>{{ offer.house_built_year }}</span>
+                </div>
+                <div v-if="offer.house_floors_count">
+                  <p>Кол-во этажей:</p>
+                  <span>{{ offer.house_floors_count }}</span>
+                </div>
+                <div v-if="offer.elevators_count">
+                  <p>Кол-во лифтов:</p>
+                  <span>{{ offer.elevators_count }}</span>
+                </div>
+                <div v-if="offer.house_material_type">
+                  <p>Тип дома:</p>
+                  <span>{{ offer.house_material_type?.name }}</span>
+                </div>
+                <div v-if="offer.heating_type">
+                  <p>Отопление:</p>
+                  <span>{{ offer.heating_type?.name }}</span>
+                </div>
+                <div v-if="offer.parking_type">
+                  <p>Парковка:</p>
+                  <span>{{ offer.parking_type?.name }}</span>
+                </div>
+                <div v-if="offer.has_garbage_chute">
+                  <p>Мусоропровод:</p>
+                  <span>Есть</span>
                 </div>
               </div>
             </div>
             <div class="mt-0.5" v-else>
               <div class="flex gap-10">
-                <div class="flex-1">
-                  <h3 class="!mt-0">О доме</h3>
-                  <div class="info-grid">
-                    <div class="info-item">
-                      <span class="label">Площадь:</span>
-                      <span class="value">{{ offer.total_area }} м²</span>
-                    </div>
-                    <div v-if="offer.house_material_type" class="info-item">
-                      <span class="label">Материал дома:</span>
-                      <span class="value">{{ offer.house_material_type?.name }}</span>
-                    </div>
-                    <div v-if="offer.house_floors_count" class="info-item">
-                      <span class="label">Кол-во этажей:</span>
-                      <span class="value">{{ offer.house_floors_count }}</span>
-                    </div>
-                    <div v-if="offer.bedrooms_count" class="info-item">
-                      <span class="label">Кол-во спален:</span>
-                      <span class="value">{{ offer.bedrooms_count }}</span>
-                    </div>
-                    <div v-if="offer.house_built_year" class="info-item">
-                      <span class="label">Год постройки:</span>
-                      <span class="value">{{ offer.house_built_year }}</span>
-                    </div>
+                <div class="info-grid">
+                  <h3>О доме</h3>
+                  <div>
+                    <p>Площадь:</p>
+                    <span>{{ offer.total_area }} м²</span>
+                  </div>
+                  <div v-if="offer.house_material_type">
+                    <p>Материал дома:</p>
+                    <span>{{ offer.house_material_type?.name }}</span>
+                  </div>
+                  <div v-if="offer.house_floors_count">
+                    <p>Кол-во этажей:</p>
+                    <span>{{ offer.house_floors_count }}</span>
+                  </div>
+                  <div v-if="offer.bedrooms_count">
+                    <p>Кол-во спален:</p>
+                    <span>{{ offer.bedrooms_count }}</span>
+                  </div>
+                  <div v-if="offer.house_built_year">
+                    <p>Год постройки:</p>
+                    <span>{{ offer.house_built_year }}</span>
                   </div>
                 </div>
-                <div class="flex-1">
-                  <h3 class="!mt-0">Об участке</h3>
-                  <div class="info-grid">
-                    <div v-if="offer.land_area" class="info-item">
-                      <span class="label">Площадь</span>
-                      <span class="value">{{ offer.land_area }} сот.</span>
-                    </div>
-                    <div v-if="offer.land_type" class="info-item">
-                      <span class="label">Статус участка</span>
-                      <span class="value">{{ offer.land_type?.name }}</span>
-                    </div>
+
+                <div class="info-grid">
+                  <h3>Об участке</h3>
+                  <div v-if="offer.land_area">
+                    <p>Площадь</p>
+                    <span>{{ offer.land_area }} сот.</span>
+                  </div>
+                  <div v-if="offer.land_type">
+                    <p>Статус участка</p>
+                    <span>{{ offer.land_type?.name }}</span>
                   </div>
                 </div>
               </div>
-              <h3>Коммуникации и удобства</h3>
-              <div class="info-grid">
-                <div v-if="offer.bathrooms_count" class="info-item">
-                  <span class="label">Кол-во санузлов:</span>
-                  <span class="value">{{ offer.bathrooms_count }} {{ offer.bathroom_type?.name?.toLowerCase() }}</span>
+
+              <div class="info-grid mt-2 w-full!">
+                <h3>Коммуникации и удобства</h3>
+                <div v-if="offer.bathrooms_count">
+                  <p>Кол-во санузлов:</p>
+                  <span>{{ offer.bathrooms_count }} {{ offer.bathroom_type?.name?.toLowerCase() }}</span>
                 </div>
-                <div v-if="offer.sewerage_type" class="info-item">
-                  <span class="label">Канализация</span>
-                  <span class="value">{{ offer.sewerage_type?.name }}</span>
+                <div v-if="offer.sewerage_type">
+                  <p>Канализация</p>
+                  <span>{{ offer.sewerage_type?.name }}</span>
                 </div>
-                <div v-if="offer.water_supply_type" class="info-item">
-                  <span class="label">Водоснабжение</span>
-                  <span class="value">{{ offer.water_supply_type?.name }}</span>
+                <div v-if="offer.water_supply_type">
+                  <p>Водоснабжение</p>
+                  <span>{{ offer.water_supply_type?.name }}</span>
                 </div>
-                <div v-if="offer.heating_type" class="info-item">
-                  <span class="label">Отопление</span>
-                  <span class="value">{{ offer.heating_type?.name }}</span>
+                <div v-if="offer.heating_type">
+                  <p>Отопление</p>
+                  <span>{{ offer.heating_type?.name }}</span>
                 </div>
-                <div v-if="offer.has_electricity" class="info-item">
-                  <span class="label">Электричество</span>
-                  <span class="value">Есть</span>
+                <div v-if="offer.has_electricity">
+                  <p>Электричество</p>
+                  <span>Есть</span>
                 </div>
-                <div v-if="offer.gas_type" class="info-item">
-                  <span class="label">Газ</span>
-                  <span class="value">{{ offer.gas_type?.name }}</span>
+                <div v-if="offer.gas_type">
+                  <p>Газ</p>
+                  <span>{{ offer.gas_type?.name }}</span>
                 </div>
-                <div v-if="offer.has_garage || offer.has_terrace || offer.has_bathhouse || offer.has_pool" class="info-item !items-start">
-                  <span class="label">Дополнительно</span>
+                <div v-if="offer.has_garage || offer.has_terrace || offer.has_bathhouse || offer.has_pool" class="!items-start">
+                  <p>Дополнительно</p>
                   <div class="flex flex-col gap-1">
-                    <span v-if="offer.has_garage" class="value">Гараж</span>
-                    <span v-if="offer.has_terrace" class="value">Терраса</span>
-                    <span v-if="offer.has_bathhouse" class="value">Баня</span>
-                    <span v-if="offer.has_pool" class="value">Бассейн</span>
+                    <span v-if="offer.has_garage">Гараж</span>
+                    <span v-if="offer.has_terrace">Терраса</span>
+                    <span v-if="offer.has_bathhouse">Баня</span>
+                    <span v-if="offer.has_pool">Бассейн</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="map-placeholder">
+          <div class="map-container">
             <h3>Расположение</h3>
-
             <yandex-map
               v-model="map"
               real-settings-location
+              cursor-grab
               :settings="{
                 location: {
                   ...LOCATION,
@@ -275,7 +266,16 @@
               height="500px">
               <yandex-map-default-scheme-layer />
               <yandex-map-default-features-layer />
-              <yandex-map-marker :settings="{ coordinates: offer.address.coordinates_list }">
+              <yandex-map-marker
+                :settings="{
+                  coordinates: offer.address.coordinates_list,
+                  onClick: () => {
+                    LOCATION = {
+                      center: offer.address.coordinates_list,
+                      zoom: 20,
+                    };
+                  },
+                }">
                 <div class="house-marker">
                   <svg class="marker-svg" data-name="Pin" width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M27 0C16.507 0 8 8.507 8 19C8 30.6644 19.5164 38.5163 27 46C34.4076 38.5197 46 30.622 46 19C46 8.507 37.493 0 27 0Z"></path>
@@ -320,25 +320,24 @@
                 :key="infra.infrastructure.id"
                 class="infrastructure-item">
                 <UIcon size="20" :name="getInfrastructureIcon(infra.infrastructure.infrastructure_type.id)" />
-                <div v-if="infra.infrastructure.name !== 'unknown'" class="infra-info">
-                  <span class="infra-type">{{ infra.infrastructure.infrastructure_type.name }}</span>
-
-                  <span class="infra-type font-semibold !text-black">{{ infra.infrastructure.name }}</span>
+                <div v-if="infra.infrastructure.name !== 'unknown'" class="flex flex-col justify-center items-center">
+                  <span>{{ infra.infrastructure.infrastructure_type.name }}</span>
+                  <span class="font-semibold text-black!">{{ infra.infrastructure.name }}</span>
                 </div>
-                <div v-else class="infra-info">
-                  <span class="infra-type">{{ infra.infrastructure.infrastructure_type.name }}</span>
+                <div v-else class="text-center">
+                  <span>{{ infra.infrastructure.infrastructure_type.name }}</span>
                 </div>
-                <span class="infra-distance">{{ infra.distance }} м</span>
+                <span class="text-base!">{{ infra.distance }} м</span>
               </div>
             </div>
           </div>
         </div>
-        <div class="flex-1">
-          <!-- card -->
-          <div class="sticky top-17">
-            <div class="contact-card rounded-lg ring ring-default">
-              <div class="price-section">
-                <div class="price">
+
+        <div v-if="offer.price_history?.length <= 1 || offer.views_history === null" class="flex-1">
+          <div class="sticky top-17 w-full">
+            <div class="p-6 rounded-lg ring ring-default">
+              <div>
+                <div class="text-3xl font-bold text-[#2b6cb0] flex justify-between items-center">
                   <p class="flex gap-4 items-center">
                     {{ formatPrice(offer.price) }} ₽
                     <UBadge size="lg" :color="getPriceCategoryColor(offer.price_category)">
@@ -351,12 +350,12 @@
                   </button>
                 </div>
 
-                <div class="price-per-meter">
+                <div>
                   <span>Цена за метр:</span><span class="font-semibold !text-[#38a169]">{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span>
                 </div>
               </div>
-              <div class="contacts">
-                <h3 class="mt-2 mb-3">Контакты:</h3>
+              <div>
+                <h3 class="mt-2 mb-2!">Контакты:</h3>
 
                 <div v-if="offer.contact_phone" class="phone-number">{{ formatPhone(offer.contact_phone) }}</div>
                 <div v-else>Временный номер, проверьте в источнике</div>
@@ -371,15 +370,14 @@
                 </div>
               </div>
             </div>
-            <div v-if="offer.price_history.length > 1" class="price-history-section">
+            <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-[var(--ui-border)]">
               <h3>История цен</h3>
 
-              <VChart v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
-              <!-- <div v-else class="no-data">Нет данных по истории цен</div> -->
-
-              <!-- <div v-else class="no-data">Нет данных по истории цен</div> -->
+              <VChart class="mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
+              <div v-else>Нет данных по истории цен</div>
             </div>
-            <div class="views-section">
+
+            <div class="views-section p-6! rounded-lg ring ring-[var(--ui-border)]">
               <h3>Статистика просмотров</h3>
               <div class="views-stats">
                 <div class="stat-item">
@@ -395,9 +393,70 @@
                   <span class="stat-value">{{ offer.daily_views_count }}</span>
                 </div>
               </div>
+              <VChart class="mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
             </div>
+          </div>
+        </div>
 
-            <VChart v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
+        <div v-else class="sticky top-17 w-full">
+          <div class="p-6 rounded-lg ring ring-default">
+            <div>
+              <div class="price">
+                <p class="flex gap-4 items-center">
+                  {{ formatPrice(offer.price) }} ₽
+                  <UBadge size="lg" :color="getPriceCategoryColor(offer.price_category)">
+                    {{ getPriceCategoryLabel(offer.price_category) }}
+                  </UBadge>
+                </p>
+
+                <button class="favorite-heart" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
+                  <UIcon size="30" :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" class="heart-icon" />
+                </button>
+              </div>
+
+              <div class="price-per-meter">
+                <span>Цена за метр:</span><span class="font-semibold !text-[#38a169]">{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span>
+              </div>
+            </div>
+            <div>
+              <h3 class="mt-2 mb-2">Контакты:</h3>
+
+              <div v-if="offer.contact_phone" class="phone-number">{{ formatPhone(offer.contact_phone) }}</div>
+              <div v-else>Временный номер, проверьте в источнике</div>
+
+              <div class="seller-info">
+                <div class="seller-type">{{ offer.seller.seller_type?.name }}</div>
+                <div class="seller-name">{{ offer.seller.name }}</div>
+              </div>
+              <div class="original-link">
+                <UIcon size="18" name="i-heroicons-link"></UIcon>
+                <a target="_blank" :href="offer.url">Источник</a>
+              </div>
+            </div>
+          </div>
+          <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-[var(--ui-border)]">
+            <h3>История цен</h3>
+            <VChart class="mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
+            <div v-else>Нет данных по истории цен</div>
+          </div>
+
+          <div class="views-section">
+            <h3>Статистика просмотров</h3>
+            <div class="views-stats">
+              <div class="stat-item">
+                <p>Всего:</p>
+                <span>{{ offer.views_count }}</span>
+              </div>
+              <div class="stat-item">
+                <p>10 дней:</p>
+                <span>{{ offer.last_ten_days_views_count }}</span>
+              </div>
+              <div class="stat-item">
+                <p>Сегодня:</p>
+                <span>{{ offer.daily_views_count }}</span>
+              </div>
+            </div>
+            <VChart class="mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
           </div>
         </div>
       </div>
@@ -678,8 +737,9 @@ const viewsChartOption = computed(() => {
 const items = computed<AccordionItem[]>(() => {
   const lines =
     offer.value?.description
+      ?.replace(/^(<[^>]*>)?/, "") // Удаляем первый тег в начале строки, если он есть
       ?.replace(/<[^>]*>/g, "\n") // заменяет любой HTML-тег на новую строку
-      .split("\n") ?? [];
+      ?.split("\n") ?? [];
 
   const labelLines = lines.slice(0, 2); // строки 1–3
   const contentLines = lines.slice(2); // начиная с 4-й
@@ -688,21 +748,6 @@ const items = computed<AccordionItem[]>(() => {
     {
       label: labelLines.join("\n"),
       content: contentLines.join("\n"),
-    },
-  ];
-});
-const viewsChartSeries = computed(() => {
-  if (!offer.value?.views_history?.length) return null;
-
-  const sortedHistory = [...offer.value.views_history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  return [
-    {
-      name: "Просмотры",
-      data: sortedHistory.map((item) => ({
-        x: new Date(item.date).getTime(),
-        y: item.views,
-      })),
     },
   ];
 });
@@ -778,60 +823,147 @@ const getCategoryColor = (category: string) => {
   @apply cursor-pointer;
 }
 
-.info-card {
-  @apply ring ring-[var(--ui-border)] rounded-lg h-max p-7;
+:deep(button:not(:disabled)) {
+  @apply cursor-pointer;
 }
 
-.info-card h3,
-.contact-card h3 {
-  @apply text-2xl font-semibold my-4;
+:deep(.map-container canvas) {
+  @apply rounded-xl!;
+}
+
+.info-card {
+  @apply ring ring-[var(--ui-border)] rounded-lg h-max p-7 gap-3;
+}
+
+.info-card h3:first-of-type {
+  @apply mt-0;
+}
+
+.info-card h3:last-of-type {
+  @apply mb-0;
 }
 
 .stat-item,
 .category-item {
-  @apply flex gap-4 items-center bg-[#f8fafc] p-4 rounded-lg;
+  @apply flex gap-4 items-center bg-[#f8fafc] p-4 rounded-lg w-1/3;
 }
 
-/* .stat-item,
-.category-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
-  background: #f8fafc;
-  border-radius: 0.5rem;
-} */
+.category-item p {
+  @apply text-[var(--ui-text-muted)];
+}
+
+.info-grid {
+  @apply flex flex-col gap-2.5 w-1/2;
+}
+
+.info-grid div {
+  @apply flex justify-between items-center py-2 border-b-1 border-b-[var(--ui-border)];
+}
+
+.info-grid p {
+  @apply text-[var(--ui-text-muted)] font-medium;
+}
+.info-grid h3 {
+  @apply my-1!;
+}
+
+.info-grid h3,
+.info-card h3,
+.infrastructure-section h3,
+.map-container h3 {
+  @apply my-4 text-2xl font-semibold text-black font-semibold;
+}
+.infrastructure-section h3 {
+  @apply ml-6.5 my-5.5;
+}
+.map-container h3 {
+  @apply ml-6.5 my-5!;
+}
+
+.info-grid span {
+  @apply text-black font-semibold;
+}
+
+.info-grid div:last-of-type {
+  @apply border-b-0;
+}
 
 .house-marker {
-  width: 50px;
+  @apply w-12.5
+  cursor-pointer;
 }
 
 .marker-svg {
-  position: relative;
-  top: -40px;
-  right: 20px;
-  fill: black;
+  @apply relative top-[-40px] right-5 fill-black;
+}
+
+.hint {
+  @apply absolute p-2 bg-white ring ring-[var(--ui-border)] rounded-lg whitespace-nowrap transform translate-x-[8px] -translate-y-1/2 left-2.5;
+}
+
+.marker {
+  @apply flex cursor-pointer bg-[var(--ui-info)] text-white justify-center items-center p-1.5 rounded-full border-2 border-white shadow-[0_0_5px_rgba(0,0,0,0.5)];
+}
+
+.infrastructure-list {
+  @apply flex flex-wrap gap-3;
+}
+
+.infrastructure-item {
+  @apply flex-[1_1_auto] max-w-[33%] min-w-max text-center px-3 py-2 bg-slate-50 rounded-lg whitespace-nowrap;
+}
+
+.infrastructure-item span {
+  @apply text-[var(--ui-text-muted)] mb-0.5 text-sm;
+}
+
+.favorite-heart {
+  @apply z-10 flex h-11.25 w-11.25 cursor-pointer items-center justify-center
+         rounded-full border-none
+         bg-white/90 text-red-500
+         transition-all duration-300 ease-in-out
+         hover:bg-slate-100! hover:text-red-500!;
+}
+
+.favorite-heart.active {
+  background: rgba(239, 68, 68, 0.1);
+  color: red;
 }
 
 .price {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #2b6cb0;
-  align-items: center;
+  @apply text-3xl font-bold text-[#2b6cb0] flex justify-between items-center;
 }
 
 .price-per-meter span {
-  color: #718096;
+  @apply text-[var(--ui-text-muted)];
 }
 
 .price-per-meter {
-  margin-top: 3px;
-  font-size: 1.025rem;
-  color: #38a169;
-  display: flex;
-  justify-content: space-between;
+  @apply mt-2 text-[#38a169] flex justify-between;
+}
+
+.seller-info {
+  @apply my-3;
+}
+
+.seller-name {
+  @apply font-semibold mt-1 text-lg;
+}
+
+.seller-type {
+  @apply text-[var(--ui-text-muted)] text-sm;
+}
+
+.phone-number {
+  @apply text-lg font-bold;
+}
+
+.original-link {
+  @apply flex items-center gap-1.5 w-fit transition-all;
+}
+
+.original-link:hover {
+  @apply text-[var(--ui-info)];
 }
 
 .gallery-section {
@@ -877,66 +1009,15 @@ const getCategoryColor = (category: string) => {
   opacity: 1;
 }
 
-.favorite-heart {
-  color: red;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 10;
-}
-
-.favorite-heart.active {
-  background: rgba(239, 68, 68, 0.1);
-  color: red;
-}
-
 .heart-icon {
   font-size: 1.25rem;
   transition: all 0.3s ease;
-}
-
-.favorite-heart.active .heart-icon {
-  color: #ef4444;
-}
-
-.favorite-heart:hover {
-  color: #ef4444;
-  background: #eff1f3;
-}
-
-.hint {
-  position: absolute;
-  padding: 8px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  white-space: nowrap;
-  transform: translate(8px, -50%);
-  left: 10px;
 }
 
 .thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.marker {
-  background: #1874cf;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 5px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .main-info-grid {
@@ -947,65 +1028,11 @@ const getCategoryColor = (category: string) => {
 }
 
 .contact-card {
-  top: 66px;
-  background: white;
-  height: max-content;
   padding: 1.5rem;
-}
-
-.info-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.info-grid .info-item:last-of-type {
-  border-bottom: none;
-}
-
-.label {
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.value {
-  color: #1f2937;
-  font-weight: 600;
-}
-
-.seller-info {
-  margin-top: 12px;
-  margin-bottom: 12px;
-}
-
-.seller-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-top: 0.5rem;
-}
-
-.seller-type {
-  color: #718096;
-  font-size: 14px;
 }
 
 .phone-section {
   margin-bottom: 1.5rem;
-}
-
-.phone-number {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
 }
 
 .call-button {
@@ -1038,17 +1065,6 @@ const getCategoryColor = (category: string) => {
   object-fit: scale-down !important;
 }
 
-.original-link {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.original-link :deep(a) {
-  padding-left: 0 !important;
-  padding: 0;
-}
-
 .description-section {
   margin-top: 1rem;
   background: white;
@@ -1058,26 +1074,9 @@ const getCategoryColor = (category: string) => {
   padding-bottom: 0;
 }
 
-.infrastructure-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(390px, auto));
-  gap: 8px;
-}
-
-.infrastructure-item {
-  display: grid;
-  align-items: center;
-  padding: 10px;
+.infrastructure-item:hover {
+  background: #e9eef4 !important;
   cursor: pointer;
-  gap: 8px;
-  background: #f8f9fa;
-  grid-template-columns: max-content 6fr max-content;
-}
-
-.infra-info {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
 }
 
 .infra-icon {
@@ -1086,21 +1085,15 @@ const getCategoryColor = (category: string) => {
   text-align: center;
 }
 
-.address-section,
 .views-section,
-.categories-section {
-  margin-top: 1rem;
-  background: white;
-  border: 2px solid #e5e7eb;
-  border-bottom: 0px;
-  padding: 1.5rem;
-  padding-bottom: 0;
+price-history-section {
+  @apply p-6! rounded-lg ring ring-[var(--ui-border)] p-6 mt-5;
 }
 
 .price-history-section {
   margin-top: 1rem;
   background: white;
-  border: 2px solid #e5e7eb;
+
   padding: 1.5rem;
   padding-bottom: 0;
 }
@@ -1127,36 +1120,10 @@ const getCategoryColor = (category: string) => {
   margin-top: 2rem;
 }
 
-.map-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  gap: 0.5rem;
-  border-radius: 0.5rem;
-  color: #6b7280;
-  justify-content: start;
-}
-
-.infrastructure-section h3,
-.map-placeholder h3 {
-  font-size: 1.5rem;
-  color: black;
-  padding-left: 1.5rem;
-  font-weight: 600;
-  margin: 1.5rem 0;
-}
-
 .infra-name {
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 0.25rem;
-}
-
-.infra-type {
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin-bottom: 0.25rem;
-  text-align: center;
 }
 
 .chart-container {
@@ -1178,11 +1145,20 @@ const getCategoryColor = (category: string) => {
   border: 2px dashed #d1d5db;
 }
 
-.views-stats,
-.categories-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
+.views-stats {
+  @apply flex gap-3;
+}
+
+.stat-item {
+  @apply w-1/3 flex;
+}
+
+.stat-item p {
+  @apply text-[var(--ui-text-muted)];
+}
+
+.stat-item span {
+  @apply text-black font-semibold;
 }
 
 .stat-label,

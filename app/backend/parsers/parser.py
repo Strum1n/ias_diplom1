@@ -16,6 +16,7 @@ from fake_useragent import UserAgent
 from geoalchemy2 import WKTElement
 from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
+from geopy.geocoders import Photon
 from jsonpath_ng import parse
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import select, tuple_
@@ -53,10 +54,10 @@ async def offers_urls_bypass(source: Literal["avito", "cian"]):
     config = use_config(PATH_TO_AVITO_CONFIG, "r")
     max_retries = 5
 
-    browser = await driver.start(headless=False, browser="brave")
+    browser = await driver.start(headless=False)
     page = await browser.get(config[source]["url"])
     try:
-        await page.wait_for_ready_state("complete", timeout=3)
+        await page.wait_for_ready_state("complete", timeout=10)
     except TimeoutError:
         pass
     try:
@@ -68,6 +69,7 @@ async def offers_urls_bypass(source: Literal["avito", "cian"]):
     total_offers = 0
     successful_tasks_total = 0
     # TODO добавтиь обработку конца парсинга
+    await page.sleep(5)
     while True:
         filtered_offers_count = 0
         if config[source]["price_filter_btn_selector"] != "":
@@ -84,8 +86,8 @@ async def offers_urls_bypass(source: Literal["avito", "cian"]):
                 await max_price_filter_el.send_keys(digit)
 
             await min_price_filter_el.focus()
-
             await min_price_filter_el.clear_input()
+            await min_price_filter_el.clear_input_by_deleting()
 
             for digit in str(config[source]["min_price"]):
                 await page.sleep(1)
@@ -139,7 +141,7 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
             if source == "avito":
                 await asyncio.sleep(random.uniform(1, 2))
             if source == "cian":
-                await asyncio.sleep(random.uniform(0.5, 0.65))
+                await asyncio.sleep(random.uniform(0.5, 0.7))
         results = await asyncio.gather(*tasks, return_exceptions=True)
         successful_page_tasks = 0
         duplicates = 0
@@ -332,102 +334,6 @@ async def parse_offers_last(source: Literal["avito", "cian"]):
             break
 
 
-async def parse_offer_to_db_avito_v2(browser: driver.Browser, url: str):
-    already_exist = await check_existens_offers(url, session_factory=async_session_maker)
-    if already_exist:
-        logging.warning(f"{url} Уже есть в БД")
-        raise Exception("Уже есть в БД")
-    start_time_origin = time.time()
-    global STOP_CREATE_NEW_PAGE
-    max_retries = 5
-    property_page = None
-    for attempt in range(max_retries):
-        if property_page and property_page.closed is False:
-            await property_page.reload()
-        else:
-            property_page = await browser.get(url, new_tab=True)
-        try:
-            is_geetest_captcha = await property_page.select("#geetest_captcha", 2)
-        except TimeoutError:
-            is_geetest_captcha = False
-        if is_geetest_captcha:
-            STOP_CREATE_NEW_PAGE = True
-            await captcha_solver_v2(property_page)
-            STOP_CREATE_NEW_PAGE = False
-        close_btn = None
-        offer_info_el = await property_page.find("window.__preloadedState__ = ", timeout=3)
-        offer_info_raw_text_encoded = await offer_info_el.get_html()
-        offer_info_raw_text_encoded = offer_info_raw_text_encoded.split('preloadedState__ = "')[1].split('";</script>')[0]
-        offer_info_raw_text_decoded = unquote(offer_info_raw_text_encoded)
-        offer_json = deep_parse_json(json.loads(offer_info_raw_text_decoded.replace("\xa0", "")))
-        # json_text = json.dumps(offer_json, ensure_ascii=False)
-        try:
-            price_history_el = await property_page.select(".price-history__cursorPointer___XzY5ZW", 2)
-            price_history_el = price_history_el.children[1]
-            await price_history_el.mouse_move()
-            price_h = await property_page.select(".style__container___XzhlND", timeout=2)
-            await property_page.close()
-        except Exception as e:
-            print(e)
-            try:
-                close_btn = await property_page.select('[data-marker="NOT_INTERESTING_MARKER"]', 2)
-                await close_btn.mouse_click()
-                continue
-            except Exception as e:
-                print(e)
-                logging.warning(f"Ошибка {e} на сранице: {url}, попытка {attempt}")
-                continue
-        matches = re.findall(r"(\d{1,2}\s+[а-яё]+\s+\d{4})\s+(\d+)\s*₽(?:\s+\d+\s*₽)?", price_h.text_all.replace("\u2009", ""))
-        price_history_result = []
-        for i, (date_str, price_str) in enumerate(matches):
-            date_obj = dateparser.parse(date_str, languages=["ru"])
-            change_time = date_obj.isoformat() + "+00:00"
-            item = {"priceData": {"price": int(price_str), "currency": "rur"}, "changeTime": change_time}
-            price_history_result.append(item)
-        offer_json["priceHistoryGenerated"] = price_history_result
-        address_info = await parse_address(offer_json, url)
-        if address_info is None:
-            logging.warning(f"Неверный геокод, пропуск: {url}")
-            raise Exception("Уже есть в БД")
-        new_offer_info = await parse_offer_info(offer_json)
-        identical_offers = await check_identical_offers(
-            (address_info["latitude"], address_info["longitude"]),
-            new_offer_info.get("total_area"),
-            new_offer_info.get("living_area"),
-            new_offer_info.get("kitchen_area"),
-            new_offer_info.get("floor"),
-            new_offer_info.get("house_floors_count"),
-            async_session_maker,
-            url,
-        )
-        if identical_offers:
-            print(f"В БД есть идентичное текущему {url} объявление {[offer.url for offer in identical_offers]}")
-            raise Exception("Уже есть в БД")
-        type_ids = await find_types(async_session_maker, address_info, new_offer_info)
-        if "suburban" or "doma_dachi_kottedzhi" in url:
-            infrastructure_info = await parse_infrastructure(
-                coordinates=(address_info["latitude"], address_info["longitude"]),
-                radius=5000,
-            )
-        else:
-            infrastructure_info = await parse_infrastructure(coordinates=(address_info["latitude"], address_info["longitude"]))
-
-        new_offer = create_offer_from_data(new_offer_info, address_info, type_ids=type_ids)
-
-        address_id = await add_offer_to_db(new_offer, async_session_maker)
-        if infrastructure_info:
-            await add_address_infrastructure_link(async_session_maker, address_id, infrastructure_info)
-        end_time = time.time()
-        print()
-        logging.info(f"Удачно добавлено в бд за {(end_time - start_time_origin):.3f} - {url}")
-        print()
-        return
-    else:
-        logging.error(f"Превышено число попыток: {max_retries}")
-        await property_page.close()
-        raise Exception()
-
-
 async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | None:
     already_exist = await check_existens_offers(url, session_factory=async_session_maker)
     if already_exist:
@@ -474,7 +380,7 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
             except Exception as e:
                 print(e)
                 continue
-            matches = re.findall(r"(\d{1,2}\s+[а-яё]+\s+\d{4})\s+(\d+)\s*₽(?:\s+\d+\s*₽)?", price_h.text_all.replace("\u2009", ""))
+            matches = re.findall(r"(\d{1,2}\s+[а-яё]+(?:\s+\d{4})?)\s+(\d+)\s*₽(?:\s+\d+\s*₽)?", price_h.text_all.replace("\u2009", ""))
             await property_page.close()
             price_history_result = []
             for i, (date_str, price_str) in enumerate(matches):
@@ -487,9 +393,11 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
                 item = {"priceData": {"price": int(price_str), "currency": "rur"}, "changeTime": change_time}
 
                 price_history_result.append(item)
-            start_time_parse_offer_info_from_json = time.time()
-            offer_json["priceHistoryGenerated"] = price_history_result
 
+            start_time_parse_offer_info_from_json = time.time()
+            if price_history_result is None:
+                continue
+            offer_json["priceHistoryGenerated"] = price_history_result
             start_time1 = time.time()
 
             address_info = await parse_address(offer_json, url)
@@ -574,14 +482,20 @@ async def parse_address(json_data: dict, url: str):
     try:
         geo_info = parse("$..geo").find(json_data)[0].value
         district_name_from_site = (parse("$..content").find(geo_info)[0].value) if len(parse("$..content").find(geo_info)) > 0 else None
+
         geolocator = Nominatim(user_agent="sassessds")
+        geolocator1 = Photon(user_agent="sfsdfsdfs")
+        geolocators = []
+        geolocators.append(geolocator)
+        geolocators.append(geolocator1)
         address_from_url = parse("$..address").find(geo_info)[0].value + (f", {district_name_from_site}" if district_name_from_site else "")
         coordinates = (geo_info["coords"]["lat"], geo_info["coords"]["lng"])
-        # await asyncio.to_thread(api.query, overpass_query)
         coord_string = f"{coordinates[0]},{coordinates[1]}"
         # location = geolocator.reverse(f"{coordinates[0]},{coordinates[1]}")
-        location = geolocator.reverse(coord_string)
-        address_elements = location.raw["address"]
+        # location = geolocator.reverse(coord_string)
+        current_geolocator = random.choice(geolocators)
+        location = await asyncio.to_thread(current_geolocator.reverse, coord_string)
+        address_elements = location.raw.get("address") or location.raw["properties"]
         overpass_query = f"""
         [out:json];
         is_in({geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})->.a;
@@ -716,7 +630,7 @@ async def parse_address(json_data: dict, url: str):
         street_keys = next((values for key, values in street_types.items() if street_value and any(v in street_value.lower() for v in values)), None)
 
         if street_keys:
-            street_name = street_value.replace(street_keys[0], "").strip()
+            street_name = street_value.replace(street_keys[0], "").replace(" (дублёр)", "").strip()
             street_full_name = street_keys[0] + " " + street_value.replace(street_keys[0], "").strip()
             street_short_name = street_keys[1] + " " + street_value.replace(street_keys[0], "").strip()
             if street_name.lower().split()[len(street_name.lower().split()) - 1] not in address_from_url.lower() and street_keys[1] in address_from_url:
@@ -833,15 +747,14 @@ async def parse_offer_info(json_data: dict):
         json_data_1 = json_data_2["item"]
         url = json_data_1["seo"]["canonicalUrl"]
         source = "avito" if "avito.ru" in url else None
-        update_date_source = None
+        update_date_source = dateparser.parse(json_data_1["sortFormatedDate"], languages=["ru"]).isoformat() + "+00:00"
 
         total_views_count = json_data_2["viewStat"]["totalViews"]
         daily_views_count = json_data_2["viewStat"]["todayViews"]
 
         views_history = None
         last_ten_days_views_count = None
-        creation_date_source = dateparser.parse(json_data_1["sortFormatedDate"], languages=["ru"])
-        creation_date_source = creation_date_source.isoformat() + "+00:00"
+        creation_date_source = json_data["priceHistoryGenerated"][len(json_data["priceHistoryGenerated"]) - 1]["changeTime"]
         is_new_house = (
             True
             if json_data["@avito/bx-item-view"]["analytics"]["microCategorySlug"] == "novostroyka"
