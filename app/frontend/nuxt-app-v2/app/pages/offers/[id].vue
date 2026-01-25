@@ -337,7 +337,7 @@
           <div class="sticky top-17 w-full">
             <div class="p-6 rounded-lg ring ring-default">
               <div>
-                <div class="text-3xl font-bold text-[#2b6cb0] flex justify-between items-center">
+                <div class="price">
                   <p class="flex gap-4 items-center">
                     {{ formatPrice(offer.price) }} ₽
                     <UBadge size="lg" :color="getPriceCategoryColor(offer.price_category)">
@@ -350,12 +350,12 @@
                   </button>
                 </div>
 
-                <div>
+                <div class="price-per-meter">
                   <span>Цена за метр:</span><span class="font-semibold !text-[#38a169]">{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span>
                 </div>
               </div>
               <div>
-                <h3 class="mt-2 mb-2!">Контакты:</h3>
+                <h3 class="mt-2 mb-2">Контакты:</h3>
 
                 <div v-if="offer.contact_phone" class="phone-number">{{ formatPhone(offer.contact_phone) }}</div>
                 <div v-else>Временный номер, проверьте в источнике</div>
@@ -365,32 +365,39 @@
                   <div class="seller-name">{{ offer.seller.name }}</div>
                 </div>
                 <div class="original-link">
-                  <UIcon size="18" name="i-heroicons-link"></UIcon>
-                  <a target="_blank" :href="offer.url">Источник</a>
+                  <p class="flex items-center gap-1">
+                    <UIcon size="18" name="i-heroicons-link"></UIcon>
+                    Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}</a>
+                  </p>
+                  <div
+                    class="flex flex-col gap-1"
+                    v-if="offer.identical_urls && offer.identical_urls[0] && offer.identical_urls[0].includes('avito') && offer.source != 'avito'">
+                    <p>В других источниках:</p>
+                    <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">Avito</a>
+                  </div>
                 </div>
               </div>
             </div>
             <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-[var(--ui-border)]">
               <h3>История цен</h3>
-
               <VChart class="mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
               <div v-else>Нет данных по истории цен</div>
             </div>
 
-            <div class="views-section p-6! rounded-lg ring ring-[var(--ui-border)]">
+            <div class="views-section">
               <h3>Статистика просмотров</h3>
               <div class="views-stats">
                 <div class="stat-item">
-                  <span class="stat-label">Всего:</span>
-                  <span class="stat-value">{{ offer.views_count }}</span>
+                  <p>Всего:</p>
+                  <span>{{ offer.views_count }}</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-label">10 дней:</span>
-                  <span class="stat-value">{{ offer.last_ten_days_views_count }}</span>
+                  <p>10 дней:</p>
+                  <span>{{ offer.last_ten_days_views_count }}</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-label">Сегодня:</span>
-                  <span class="stat-value">{{ offer.daily_views_count }}</span>
+                  <p>Сегодня:</p>
+                  <span>{{ offer.daily_views_count }}</span>
                 </div>
               </div>
               <VChart class="mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
@@ -429,8 +436,16 @@
                 <div class="seller-name">{{ offer.seller.name }}</div>
               </div>
               <div class="original-link">
-                <UIcon size="18" name="i-heroicons-link"></UIcon>
-                <a target="_blank" :href="offer.url">Источник</a>
+                <p class="flex items-center gap-1">
+                  <UIcon size="18" name="i-heroicons-link"></UIcon>
+                  Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}</a>
+                </p>
+                <div
+                  class="flex flex-col gap-1"
+                  v-if="offer.identical_urls && offer.identical_urls[0] && offer.identical_urls[0].includes('avito') && offer.source != 'avito'">
+                  <p>В других источниках:</p>
+                  <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">Avito</a>
+                </div>
               </div>
             </div>
           </div>
@@ -666,7 +681,7 @@ const priceChartOption = computed(() => {
     },
     grid: {
       left: 40,
-      right: 20,
+      right: 0,
       top: 30,
       bottom: 30,
     },
@@ -712,7 +727,7 @@ const viewsChartOption = computed(() => {
     },
     grid: {
       left: 40,
-      right: 20,
+      right: 0,
       top: 30,
       bottom: 30,
     },
@@ -910,7 +925,7 @@ const getCategoryColor = (category: string) => {
 }
 
 .infrastructure-item {
-  @apply flex-[1_1_auto] max-w-[33%] min-w-max text-center px-3 py-2 bg-slate-50 rounded-lg whitespace-nowrap;
+  @apply flex-[1_1_auto] w-[30%] min-w-max text-center px-3 py-2 bg-slate-50 rounded-lg whitespace-nowrap;
 }
 
 .infrastructure-item span {
@@ -959,11 +974,28 @@ const getCategoryColor = (category: string) => {
 }
 
 .original-link {
-  @apply flex items-center gap-1.5 w-fit transition-all;
+  @apply flex flex-col items-start items-center gap-1.5 w-fit transition-all;
 }
 
-.original-link:hover {
-  @apply text-[var(--ui-info)];
+.views-section,
+price-history-section {
+  @apply p-6! rounded-lg ring ring-[var(--ui-border)] p-6 mt-5;
+}
+
+.views-stats {
+  @apply flex gap-3;
+}
+
+.stat-item {
+  @apply w-1/3 flex;
+}
+
+.stat-item p {
+  @apply text-[var(--ui-text-muted)];
+}
+
+.stat-item span {
+  @apply text-black font-semibold;
 }
 
 .gallery-section {
@@ -1085,11 +1117,6 @@ const getCategoryColor = (category: string) => {
   text-align: center;
 }
 
-.views-section,
-price-history-section {
-  @apply p-6! rounded-lg ring ring-[var(--ui-border)] p-6 mt-5;
-}
-
 .price-history-section {
   margin-top: 1rem;
   background: white;
@@ -1143,22 +1170,6 @@ price-history-section {
   background: #f8fafc;
   border-radius: 0.5rem;
   border: 2px dashed #d1d5db;
-}
-
-.views-stats {
-  @apply flex gap-3;
-}
-
-.stat-item {
-  @apply w-1/3 flex;
-}
-
-.stat-item p {
-  @apply text-[var(--ui-text-muted)];
-}
-
-.stat-item span {
-  @apply text-black font-semibold;
 }
 
 .stat-label,

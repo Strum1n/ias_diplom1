@@ -69,6 +69,8 @@ class OfferResponseFull(BaseModel):
     family_score: float | None
     family_category: str | None
     price_category: str | None
+    identical_urls: list | None
+    source: str | None
 
     address: Optional["AddressResponseFull"]
     offer_type: Optional["OfferType"]

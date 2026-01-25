@@ -16,16 +16,90 @@ lon = 37.668273
 # Запрос к публичному API Overpass Turbo
 
 
+# 53.269452, 34.304505
+# 53.233565, 34.310874
+# 53.267653, 34.289709
+# 53.348370, 34.310703
+# 53.348913, 34.315311
+# 53.296445, 34.316371
+# 53.207631, 34.319408
+# 55.751320, 37.595159
 # 55.751143, 37.590003
 async def sas():
-    lat = 55.751143
-    lon = 37.590003
+    lat = 53.269452
+    lon = 34.304505
     overpass_url = "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
     overpass_query = f"""
-    [out:json];
-    is_in({lat},{lon})->.a;
-    relation(pivot.a)["boundary"="administrative"]["admin_level"~"5|6|7|8|9"];
-    out body;
+[out:json][timeout:25];
+
+/* Найти все объекты, содержащие точку */
+is_in({lat},{lon})->.a;
+
+/* Административные границы */
+relation(pivot.a)
+  ["boundary"="administrative"]
+  -> .admin;
+
+/* Населённый пункт (город, посёлок и т.п.) */
+(
+  node(around:500,{lat},{lon})
+    ["place"~"city|town|village|hamlet"];
+  relation(around:500,{lat},{lon})
+    ["place"~"city|town|village|hamlet"];
+) -> .place;
+
+/* Улица рядом с точкой */
+way["highway"]["name"](around:250,{lat},{lon})
+  -> .street;
+
+/* ===== ЖИЛОЙ КОМПЛЕКС ===== */
+
+/* 1. ЖК как site */
+relation(around:150,{lat},{lon})
+  ["site"="apartment_complex"]
+  ["name"]
+  -> .residential_site;
+
+/* 2. ЖК как place */
+(
+  node(around:150,{lat},{lon})
+    ["place"~"neighbourhood|quarter|residential"]
+    ["name"];
+  relation(around:150,{lat},{lon})
+    ["place"~"neighbourhood|quarter|residential"]
+    ["name"];
+) -> .residential_place;
+
+/* 3. ЖК как landuse */
+(
+  way(around:150,{lat},{lon})
+    ["landuse"="residential"]
+    ["name"];
+  relation(around:150,{lat},{lon})
+    ["landuse"="residential"]
+    ["name"];
+) -> .residential_landuse;
+
+/* ===== СНТ / ДАЧНЫЕ ТОВАРИЩЕСТВА ===== */
+
+/* 4. СНТ как allotments (основной вариант) */
+(
+  way(around:300,{lat},{lon})
+    ["landuse"="allotments"]
+    ["name"];
+  relation(around:300,{lat},{lon})
+    ["landuse"="allotments"]
+    ["name"];
+) -> .allotments;
+
+/* ===== ВЫВОД ===== */
+.admin               out tags;
+.place               out tags;
+.street              out tags;
+.residential_site    out tags;
+.residential_place   out tags;
+.residential_landuse out tags;
+.allotments          out tags;
     """
     api = overpy.Overpass(url=overpass_url, retry_timeout=10, max_retry_count=5)
 

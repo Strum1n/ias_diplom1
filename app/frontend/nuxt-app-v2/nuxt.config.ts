@@ -9,7 +9,7 @@ export default defineNuxtConfig({
     provider: 'bunny'
   },
   echarts: {
-    charts: ["BarChart", "BoxplotChart", "LineChart", "PieChart"],
+    charts: ["BarChart", "BoxplotChart", "LineChart", "PieChart","RadarChart"],
     components: [
       "TitleComponent",
       "GridComponent",

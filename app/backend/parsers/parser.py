@@ -115,8 +115,11 @@ SUCCESFULL_OFFERS = 0
 
 async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, source: Literal["avito", "cian"]):
     while True:
-        correct_url = page.url.replace(f"&p={str(config[source]['p'] - 1)}", "") + f"&p={str(config[source]['p'])}"
-        await page.get(correct_url)
+        if "?p" in page.url:
+            url_with_page_number = page.url.replace(f"?p={str(config[source]['p'] - 1)}", "") + f"?p={str(config[source]['p'])}"
+        else:
+            url_with_page_number = page.url.replace(f"&p={str(config[source]['p'] - 1)}", "") + f"&p={str(config[source]['p'])}"
+        await page.get(url_with_page_number)
         await page.wait_for_ready_state("interactive")
         await page.sleep(1.5)
         if source == "avito":
@@ -139,7 +142,7 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
                 task = asyncio.create_task(parse_offer_to_db(browser, url))
             tasks.append(task)
             if source == "avito":
-                await asyncio.sleep(random.uniform(1, 2))
+                await asyncio.sleep(random.uniform(1.2, 1.7))
             if source == "cian":
                 await asyncio.sleep(random.uniform(0.5, 0.7))
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -182,163 +185,11 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
         use_config(PATH_TO_AVITO_CONFIG, "w", config)
 
 
-async def parse_offers_last(source: Literal["avito", "cian"]):
-    path_to_config = PATH_TO_AVITO_CONFIG
-    config = use_config(path_to_config, "r")
-
-    max_retries = 8
-    while True:
-        # browser1= await Browser.create(browser='brave')
-        browser = await driver.start(headless=False, browser="brave")
-        page = await browser.get(config[source]["url"])
-        try:
-            await page.wait_for_ready_state("interactive", timeout=3)
-        except TimeoutError:
-            pass
-        for attempt in range(max_retries):
-            if "Иногда такое случается, чтобы вернуться на сайт <b>нажмите на кнопку Продолжить</b> для решения капчи" in await page.get_content():
-                print("sas")
-                await captcha_solver(page)
-            elif "#block" in page.url:
-                continue
-            elif "Доступ ограничен" in await page.get_content():
-                await asyncio.sleep(random.uniform(2.5, 3))
-                await page.reload()
-                await asyncio.sleep(random.uniform(2.5, 3))
-                kek = await page.get_content()
-            else:
-                break
-        else:
-            await browser.stop()
-            continue
-        break
-    total_offers = 0
-    successful_tasks_total = 0
-    while True:
-        try:
-            if config[source]["price_filter_btn_selector"] != "":
-                price_filter_btn = await page.select(config[source]["price_filter_btn_selector"])
-                await price_filter_btn.mouse_click()
-            await asyncio.sleep(3)
-            await page.wait_for_ready_state("complete", 50)
-            max_price_filter_el = await page.select(config[source]["max_price_selector"])
-            min_price_filter_el = await page.select(config[source]["min_price_selector"])
-            filtered_offers_count = 0
-            while filtered_offers_count < config[source]["items_on_page"] * config[source]["max_available_page"]:
-                while True:
-                    try:
-                        await max_price_filter_el.focus()
-                        await max_price_filter_el.clear_input()
-
-                        for digit in str(config[source]["max_price"]):
-                            await page.sleep(1)
-                            await max_price_filter_el.send_keys(digit)
-
-                        await min_price_filter_el.focus()
-
-                        await min_price_filter_el.clear_input()
-
-                        for digit in str(config[source]["min_price"]):
-                            await page.sleep(1)
-                            await min_price_filter_el.send_keys(digit)
-
-                        await page.sleep(5)
-                        filter_btn = await page.select(config[source]["filter_btn_selector"])
-                        filtered_offers_count = int(re.findall(r"\d+", filter_btn.text_all.replace(" ", ""))[0])
-                        if (
-                            filtered_offers_count > config[source]["items_on_page"] * config[source]["max_available_page"]
-                            or "Показать больше 1 тыс. объявлений" in filter_btn.text_all
-                        ):
-                            config[source]["max_price"] -= config[source]["price_step"]
-                            break
-                        elif "Ничего не найден" in filter_btn.text_all:
-                            await page.reload()
-                        else:
-                            config[source]["max_price"] += config[source]["price_step"]
-                    except Exception as e:
-                        print(e)
-                        await page.reload()
-                        continue
-                break
-            await filter_btn.click()
-            await filter_btn.mouse_click()
-            await page.sleep(1.5)
-
-            while True:
-                correct_url = page.url.replace(f"&p={str(config[source]['p'] - 1)}", "") + f"&p={str(config[source]['p'])}"
-                await page.get(correct_url)
-                await page.wait_for_ready_state("interactive")
-                await page.sleep(1.5)
-                if source == "avito":
-                    offers_urls = [config[source]["domen_url"] + url_el.attrs["href"].split("?")[0] for url_el in await page.select_all(config[source]["offer_urls_selector"])]
-                elif source == "cian":
-                    offers_urls = [url_el.attrs["href"].split("?")[0] for url_el in await page.select_all(config[source]["offer_urls_selector"])]
-
-                tasks = []
-                for url in offers_urls:
-                    while STOP_CREATE_NEW_PAGE == True:
-                        await asyncio.sleep(5)
-                    active_tasks = [t for t in tasks if not t.done()]
-                    if source == "avito":
-                        if len(active_tasks) > 4:
-                            await asyncio.sleep(5)
-                        task = asyncio.create_task(parse_offer_to_db_avito(browser, url))
-                    elif source == "cian":
-                        task = asyncio.create_task(parse_offer_to_db(browser, url))
-                    tasks.append(task)
-                    if source == "avito":
-                        await asyncio.sleep(random.uniform(1, 1.3))
-                    if source == "cian":
-                        await asyncio.sleep(random.uniform(0.5, 0.7))
-                results = await asyncio.gather(*tasks, return_exceptions=True)
-                successful_page_tasks = 0
-                duplicates = 0
-                errors = 0
-                for idx, result in enumerate(results):
-                    if isinstance(result, Exception):
-                        if "Уже есть в БД" in str(result):
-                            duplicates += 1
-                        else:
-                            print(f"Ошибка в задаче {idx} (URL: {offers_urls[idx]}): {str(result)}")
-                            errors += 1
-                        if errors > 5:
-                            print("Превышен лимит запросов с IP")
-                            print("Ожидаем для сброса лимитов")
-                            await asyncio.sleep(15)
-                    else:
-                        successful_page_tasks += 1
-                        successful_tasks_total += 1
-                    total_offers += 1
-                print(
-                    f"Спарсили страницу {config[source]['p']}, c которой добавлено в БД: {successful_page_tasks}, ошибок: {errors}, пропущено: {duplicates}, ВСЕГО спаршено {successful_tasks_total} / {total_offers}"
-                )
-                next_page_btn = None
-                try:
-                    next_page_btn = await page.select(config[source]["next_btn_selector"], timeout=2)
-                except Exception as e:
-                    print(f"Спарсили последнюю страницу {config[source]['p']} c ценами {config[source]['min_price']} - {config[source]['max_price']}")
-
-                if next_page_btn is None:
-                    config[source]["p"] = 1
-                    config[source]["min_price"] = config[source]["max_price"]
-                    config[source]["max_price"] += config[source]["price_step"]
-                    # if source == "cian":
-                    #     config[source]["max_price"] = int(str(config[source]["max_price"]) + "0")
-
-                    use_config(path_to_config, "w", config)
-                    break
-                config[source]["p"] += 1
-                use_config(path_to_config, "w", config)
-        except Exception as e:
-            print(e)
-            break
-
-
 async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | None:
     already_exist = await check_existens_offers(url, session_factory=async_session_maker)
     if already_exist:
         logging.warning(f"{url} Уже есть в БД")
-        raise Exception("Уже есть в БД")
+        return
     start_time_origin = time.time()
     max_retries = 6
     property_page = None
@@ -354,14 +205,6 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
                 await property_page.reload()
                 await property_page.sleep(1.5)
 
-            close_btn = None
-            try:
-                close_btn = await property_page.select('[data-marker="NOT_INTERESTING_MARKER"]', 2)
-            except Exception as e:
-                pass
-            if close_btn:
-                await close_btn.mouse_click()
-                FIRST_CLICK = False
             if "Иногда такое случается, чтобы вернуться на сайт <b>нажмите на кнопку Продолжить</b> для решения капчи" in await property_page.get_content():
                 raise Exception
             offer_info_el = await property_page.find("window.__preloadedState__ = ", timeout=3)
@@ -371,17 +214,17 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
             offer_json = deep_parse_json(json.loads(offer_info_raw_text_decoded.replace("\xa0", "")))
             json_text = json.dumps(offer_json, ensure_ascii=False)
             await property_page.sleep(0.25)
-
             try:
                 price_history_el = await property_page.select(".price-history__cursorPointer___XzY5ZW", 3)
                 price_history_el = price_history_el.children[1]
                 await price_history_el.mouse_move()
                 price_h = await property_page.select(".style__container___XzhlND", timeout=2)
             except Exception as e:
-                print(e)
+                close_btn = await property_page.select('[data-marker="NOT_INTERESTING_MARKER"]', 2)
+                await close_btn.mouse_click()
                 continue
             matches = re.findall(r"(\d{1,2}\s+[а-яё]+(?:\s+\d{4})?)\s+(\d+)\s*₽(?:\s+\d+\s*₽)?", price_h.text_all.replace("\u2009", ""))
-            await property_page.close()
+
             price_history_result = []
             for i, (date_str, price_str) in enumerate(matches):
                 # Преобразуем дату
@@ -396,7 +239,9 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
 
             start_time_parse_offer_info_from_json = time.time()
             if price_history_result is None:
+                logging.warning(f"Ошибка, попытка {attempt}")
                 continue
+            await property_page.close()
             offer_json["priceHistoryGenerated"] = price_history_result
             start_time1 = time.time()
 
@@ -406,9 +251,6 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
                 logging.warning(f"Неверный геокод, пропуск: {url}")
                 raise Exception("Уже есть в БД")
             end_time1 = time.time()
-            print()
-            print(f"Время parse_geo_info_from_json {(end_time1 - start_time1):.3f}")
-            print()
 
             new_offer_info = await parse_offer_info(offer_json)
             identical_offers = await check_identical_offers(
@@ -423,11 +265,9 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
             )
             if identical_offers:
                 print(f"Идентичные объявления {[offer.url for offer in identical_offers]} для {url}")
-                raise Exception("Уже есть в БД", {url})
+                return
             end_time_parse_offer_info_from_json = time.time()
-            print()
-            print(f"Время работы parse_offer_info_from_json: {(end_time_parse_offer_info_from_json - start_time_parse_offer_info_from_json):.3f}")
-            print()
+
             type_ids = await find_types(async_session_maker, address_info, new_offer_info)
 
             if "suburban" or "doma_dachi_kottedzhi" in url:
@@ -443,12 +283,12 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
             address_id = await add_offer_to_db(new_offer, async_session_maker)
             if infrastructure_info:
                 await add_address_infrastructure_link(async_session_maker, address_id, infrastructure_info)
-            await property_page.close()
+
             end_time = time.time()
             print()
             logging.info(f"Удачно добавлено в бд за {(end_time - start_time_origin):.3f} - {url}")
             print()
-            await property_page.close()
+
             return new_offer
         except Exception as e:
             print(e)
@@ -461,9 +301,11 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
                 raise Exception(f"Уже есть в БД, {url}")
             elif "Иногда такое случается, чтобы вернуться на сайт <b>нажмите на кнопку Продолжить</b> для решения капчи" in await property_page.get_content():
                 STOP_CREATE_NEW_PAGE = True
-                await captcha_solver_v2(property_page)
-                await asyncio.sleep(7)
-                STOP_CREATE_NEW_PAGE = False
+                is_captcha_solved = await captcha_solver_v2(property_page)
+                if is_captcha_solved:
+                    STOP_CREATE_NEW_PAGE = False
+                else:
+                    continue
             elif "Доступ ограничен" not in await property_page.get_content():
                 STOP_CREATE_NEW_PAGE = False
                 FIRST_CLICK = True
@@ -483,23 +325,26 @@ async def parse_address(json_data: dict, url: str):
         geo_info = parse("$..geo").find(json_data)[0].value
         district_name_from_site = (parse("$..content").find(geo_info)[0].value) if len(parse("$..content").find(geo_info)) > 0 else None
 
-        geolocator = Nominatim(user_agent="sassessds")
-        geolocator1 = Photon(user_agent="sfsdfsdfs")
+        geolocator = Photon(user_agent=UA_DESKTOP.random)
+        # geolocator1 = Photon(user_agent=UA_DESKTOP.random)
         geolocators = []
         geolocators.append(geolocator)
-        geolocators.append(geolocator1)
+        # geolocators.append(geolocator1)
         address_from_url = parse("$..address").find(geo_info)[0].value + (f", {district_name_from_site}" if district_name_from_site else "")
         coordinates = (geo_info["coords"]["lat"], geo_info["coords"]["lng"])
         coord_string = f"{coordinates[0]},{coordinates[1]}"
-        # location = geolocator.reverse(f"{coordinates[0]},{coordinates[1]}")
+        try:
+            location = geolocator.reverse(f"{coordinates[0]},{coordinates[1]}")
+        except Exception as e:
+            print(e)
         # location = geolocator.reverse(coord_string)
         current_geolocator = random.choice(geolocators)
-        location = await asyncio.to_thread(current_geolocator.reverse, coord_string)
+        # location = await asyncio.to_thread(current_geolocator.reverse, coord_string)
         address_elements = location.raw.get("address") or location.raw["properties"]
         overpass_query = f"""
         [out:json];
         is_in({geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})->.a;
-        relation(pivot.a)["boundary"="administrative"]["admin_level"~"5|6|7|8|9"];
+        relation(pivot.a)["boundary"="administrative"]["admin_level"~"5|6|7|8|9|10"];
         out body;
         """
         api = overpy.Overpass(url="https://maps.mail.ru/osm/tools/overpass/api/interpreter", retry_timeout=10, max_retry_count=5)
@@ -1117,7 +962,7 @@ async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1
 
 
 async def main():
-    await offers_urls_bypass("cian")
+    await offers_urls_bypass("avito")
 
 
 if __name__ == "__main__":

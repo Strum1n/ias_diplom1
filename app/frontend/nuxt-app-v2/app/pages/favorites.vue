@@ -9,7 +9,6 @@
 
     <USeparator class="my-7" />
 
-    <!-- Фильтры и сортировка -->
     <div class="filters-section">
       <div class="filter-group">
         <label>Тип недвижимости:</label>
@@ -40,29 +39,23 @@
       </div>
     </div>
 
-    <!-- Состояние загрузки -->
     <div v-if="pending" class="loading">
       <UIcon class="size-10" name="codex:loader" />
-      <!-- <p>Загружаем избранные объявления...</p> -->
     </div>
 
-    <!-- Состояние ошибки -->
     <div v-else-if="error" class="error">
       <h3>Ошибка при загрузке</h3>
       <p>{{ error.message }}</p>
     </div>
 
-    <!-- Пустой список -->
     <div v-else-if="filteredOffers.length === 0" class="empty-state">
       <UIcon name="material-symbols-light:favorite" class="size-25 bg-red-500" />
       <h3>В избранном пока пусто</h3>
       <p>Добавляйте объявления, которые вам понравились, чтобы не потерять</p>
     </div>
 
-    <!-- Список объявлений -->
     <div v-else class="offers-list">
       <div v-for="offer in sortedOffers" :key="offer.id" class="offer-card">
-        <!-- Основная информация -->
         <div class="offer-content">
           <div class="offer-header">
             <div class="offer-gallery aspect-[4/3] overflow-hidden">
@@ -95,7 +88,6 @@
                 </div>
               </div>
 
-              <!-- Основные характеристики -->
               <div class="characteristics">
                 <div class="char-item">
                   <span class="char-label">Общая площадь:</span>
@@ -149,7 +141,6 @@
             </div>
           </div>
 
-          <!-- Контактная информация -->
           <div class="contact-info">
             <div class="flex items-center gap-1">
               <UIcon size="16" name="solar:phone-outline"></UIcon>
@@ -166,23 +157,20 @@
       </div>
     </div>
     <USeparator class="my-10" />
-    <!-- Секция сравнения внизу страницы -->
+
     <div v-if="filteredOffers.length > 1" class="comparison-section-bottom">
       <div class="section-header">
-        <h2>Сравнение объектов</h2>
-        <p>Сравните выбранные объявления по различным критериям</p>
+        <h2>Помощь в выборе</h2>
+        <p>Воспользуйтесь методами многокритериального принятия решений, для выбора объекта недвижимости</p>
       </div>
 
-      <!-- Кнопка для открытия интерфейса сравнения -->
       <div class="comparison-controls">
         <button @click="toggleComparisonInterface" class="compare-btn">
-          {{ showComparisonInterface ? "Скрыть сравнение" : "🎯 Сравнить все объявления" }}
+          {{ showComparisonInterface ? "Скрыть сравнение" : "🎯 Выбрать метод" }}
         </button>
       </div>
 
-      <!-- Интерфейс сравнения -->
       <div v-if="showComparisonInterface" class="comparison-interface">
-        <!-- Выбор метода -->
         <div class="method-selection">
           <label>Метод анализа:</label>
           <select v-model="selectedMethod" class="method-select">
@@ -223,7 +211,6 @@
           <div v-if="selectedCriteria.length === 0 && availableCriteria.length > 0" class="no-criteria-warning">⚠️ Выберите хотя бы один критерий для анализа</div>
         </div>
 
-        <!-- Настройка весов выбранных критериев -->
         <div v-if="selectedCriteria.length > 0" class="criteria-weights">
           <h3>Настройка весов критериев</h3>
 
@@ -246,7 +233,6 @@
           </div>
         </div>
 
-        <!-- Параметры алгоритма (только для ELECTRE) -->
         <div v-if="selectedCriteria.length > 0 && selectedMethod === 'electre'" class="algorithm-params">
           <h4>Параметры алгоритма ELECTRE:</h4>
           <div class="params-grid">
@@ -265,7 +251,6 @@
           </div>
         </div>
 
-        <!-- Кнопки действий -->
         <div class="analysis-actions">
           <button @click="runAnalysis" :disabled="analysisLoading || selectedCriteria.length === 0" class="analyze-button">
             <span v-if="analysisLoading">Анализ...</span>
@@ -379,6 +364,7 @@
               </div>
             </div>
           </div>
+          <VChart v-if="radarSeries.length" :option="radarOption" autoresize class="radar-chart" />
         </div>
       </div>
     </div>
@@ -386,15 +372,7 @@
 </template>
 
 <script setup lang="ts">
-import type {
-  OfferResponseFull,
-  InfrastructureResponseFull,
-  InfrastructureTypeResponseFull,
-  AddressResponseFull,
-  AddressInfrastructureLinkResponseFull,
-  SellerResponseFull,
-  SellerTypeResponseFull,
-} from "~/types/api";
+import type { OfferResponseFull, InfrastructureResponseFull, AddressResponseFull, AddressInfrastructureLinkResponseFull, SellerResponseFull } from "~/types/api";
 
 // Используем типы из API
 type Address = AddressResponseFull;
@@ -429,7 +407,6 @@ const sortFields = ref<SelectItem[]>([
 const sortValue = ref(sortFields.value[7]?.value);
 const icon = computed(() => sortFields.value.find((item) => item.value === sortValue.value)?.icon);
 
-// Интерфейсы для ELECTRE (остаются без изменений)
 interface ElectreParams {
   alpha: number;
   beta: number;
@@ -451,7 +428,6 @@ interface ElectreResults {
   allIds: number[];
 }
 
-// Интерфейсы для TOPSIS (остаются без изменений)
 interface TopsisResults {
   scores: number[];
   ranked_indices: number[];
@@ -468,13 +444,10 @@ interface AnalysisCriterion {
   isAvailableForAll?: boolean;
 }
 
-// Состояние
 const { $api } = useNuxtApp();
 
-// Используем useAsyncData для загрузки данных с pending и error
 const { data: favoriteOffers, pending, error, refresh: refreshFavorites } = await useAsyncData("favorites", () => $api("offers/favorites/"));
 
-// Состояние для анализа (остается без изменений)
 const showComparisonInterface = ref(false);
 const selectedMethod = ref("electre");
 const analysisLoading = ref(false);
@@ -483,10 +456,8 @@ const selectedCriteria = ref<string[]>([]);
 const criteriaWeights = ref<{ [key: string]: number }>({});
 const criteriaDirections = ref<{ [key: string]: "min" | "max" }>({});
 
-// Фильтры и сортировка (остаются без изменений)
 const propertyType = ref(propertyTypesItems.value[0].value);
 
-// Параметры ELECTRE (остаются без изменений)
 const electreParams = ref<ElectreParams>({
   alpha: 0.8,
   beta: 0.4,
@@ -495,11 +466,9 @@ const electreParams = ref<ElectreParams>({
 
 const electreResults = ref<ElectreResults | null>(null);
 
-// Состояние для TOPSIS (остается без изменений)
 const topsisResults = ref<TopsisResults | null>(null);
 const topsisRanking = ref<Array<{ offerId: number; score: number; rank: number }>>([]);
 
-// Вычисляемые свойства с проверкой на undefined
 const filteredOffers = computed(() => {
   if (!favoriteOffers.value) return [];
   if (!propertyType.value || propertyType.value == "Все типы") {
@@ -593,7 +562,6 @@ const getPriceCategoryLabel = (category: string) => {
   }
 };
 
-// Методы для инфраструктуры (остаются без изменений)
 const getClosestInfrastructure = (offer: Offer) => {
   const typeMap = new Map<number, InfrastructureLink>();
 
@@ -627,24 +595,21 @@ const getInfrastructureIcon = (typeId: number): string => {
   return icons[typeId] || "📍";
 };
 
-// Методы для анализа с проверкой на undefined
 const toggleComparisonInterface = () => {
   showComparisonInterface.value = !showComparisonInterface.value;
   if (showComparisonInterface.value) {
     electreResults.value = null;
     topsisResults.value = null;
     topsisRanking.value = [];
-    actionError.value = null;
+
     initializeAvailableCriteria();
 
-    // Выбираем критерии по умолчанию только те, которые доступны у всех объектов
-    const defaultCriteria = ["price", "total_area", "price_per_square_meter", "transport_access_score"];
+    const defaultCriteria = ["price", "total_area"];
     selectedCriteria.value = defaultCriteria.filter((key) => availableCriteria.value.some((c) => c.key === key && c.isAvailableForAll));
 
-    // Устанавливаем веса по умолчанию = 1
     selectedCriteria.value.forEach((key) => {
       criteriaWeights.value[key] = 1;
-      // Устанавливаем направление по умолчанию
+
       if (!criteriaDirections.value[key]) {
         const criterion = availableCriteria.value.find((c) => c.key === key);
         criteriaDirections.value[key] = criterion?.direction || "max";
@@ -660,7 +625,6 @@ const initializeAvailableCriteria = () => {
     return;
   }
 
-  // Базовые критерии
   const basicCriteria: AnalysisCriterion[] = [
     {
       key: "price",
@@ -749,10 +713,8 @@ const initializeAvailableCriteria = () => {
     },
   ];
 
-  // Инфраструктурные критерии
   const infrastructureCriteria: AnalysisCriterion[] = [];
 
-  // Собираем все типы инфраструктуры
   const infrastructureTypes = new Map<number, string>();
   currentOffers.forEach((offer) => {
     offer.address.infrastructures_links.forEach((link) => {
@@ -764,7 +726,6 @@ const initializeAvailableCriteria = () => {
     });
   });
 
-  // Создаем критерии для каждого типа инфраструктуры
   infrastructureTypes.forEach((typeName, typeId) => {
     infrastructureCriteria.push({
       key: `infrastructure_${typeId}`,
@@ -778,17 +739,14 @@ const initializeAvailableCriteria = () => {
     });
   });
 
-  // Объединяем критерии
   const allCriteria = [...basicCriteria, ...infrastructureCriteria];
 
-  // Проверяем доступность критериев для всех объектов
   availableCriteria.value = allCriteria.filter((criterion) => {
     const hasValueForAllOffers = currentOffers.every((offer) => {
       const value = criterion.getValue(offer);
       return value !== null && value !== undefined && value !== 0;
     });
 
-    // Вычисляем диапазон значений только для доступных критериев
     if (hasValueForAllOffers) {
       const values = currentOffers
         .map((offer) => {
@@ -829,11 +787,11 @@ const toggleCriterion = (key: string) => {
     selectedCriteria.value.splice(index, 1);
   } else {
     selectedCriteria.value.push(key);
-    // Устанавливаем вес = 1 ТОЛЬКО для нового критерия, если его еще нет
+
     if (criteriaWeights.value[key] === undefined) {
       criteriaWeights.value[key] = 1;
     }
-    // Устанавливаем направление по умолчанию для нового критерия, если его еще нет
+
     if (!criteriaDirections.value[key]) {
       const criterion = availableCriteria.value.find((c) => c.key === key);
       criteriaDirections.value[key] = criterion?.direction || "max";
@@ -856,10 +814,65 @@ const formatCriterionRange = (criterion: AnalysisCriterion) => {
   return `${formatValue(criterion.minValue)} - ${formatValue(criterion.maxValue)}`;
 };
 
+const radarIndicators = computed(() => {
+  return selectedCriteria.value
+    .map((key) => {
+      const c = availableCriteria.value.find((i) => i.key === key);
+      if (!c || c.minValue === undefined || c.maxValue === undefined) return null;
+
+      return {
+        name: c.displayName,
+        min: c.minValue,
+        max: c.maxValue,
+      };
+    })
+    .filter(Boolean);
+});
+
+const radarSeries = computed(() => {
+  if (!filteredOffers.value.length || !selectedCriteria.value.length) return [];
+
+  return filteredOffers.value.map((offer) => ({
+    name: offer.title,
+    value: selectedCriteria.value.map((key) => {
+      const c = availableCriteria.value.find((i) => i.key === key);
+      return c?.getValue(offer) ?? 0;
+    }),
+  }));
+});
+
+const radarOption = computed(() => {
+  if (!radarIndicators.value.length || !radarSeries.value.length) return {};
+
+  return {
+    tooltip: {
+      trigger: "item",
+    },
+    legend: {
+      type: "scroll",
+      bottom: 0,
+    },
+    radar: {
+      indicator: radarIndicators.value,
+      radius: "65%",
+      splitNumber: 5,
+    },
+    series: [
+      {
+        type: "radar",
+        data: radarSeries.value,
+        symbolSize: 6,
+        areaStyle: {
+          opacity: 0.15,
+        },
+      },
+    ],
+  };
+});
+
 const updateCriterionWeight = (key: string, value: string) => {
   const numValue = parseFloat(value);
   if (!isNaN(numValue) && numValue >= 1) {
-    // минимальное значение 1, максимальное не ограничено
     criteriaWeights.value[key] = numValue;
   }
 };
@@ -873,11 +886,9 @@ const resetWeights = () => {
   criteriaWeights.value = {};
   criteriaDirections.value = {};
 
-  // После сброса заново устанавливаем критерии по умолчанию
-  const defaultCriteria = ["price", "total_area", "price_per_square_meter", "transport_access_score"];
+  const defaultCriteria = ["price", "total_area"];
   selectedCriteria.value = defaultCriteria.filter((key) => availableCriteria.value.some((c) => c.key === key && c.isAvailableForAll));
 
-  // Устанавливаем веса по умолчанию = 1
   selectedCriteria.value.forEach((key) => {
     criteriaWeights.value[key] = 1;
     const criterion = availableCriteria.value.find((c) => c.key === key);
@@ -886,7 +897,6 @@ const resetWeights = () => {
 };
 
 const runAnalysis = async () => {
-  actionError.value = null;
   if (selectedMethod.value === "electre") {
     await runElectreAnalysis();
   } else if (selectedMethod.value === "topsis") {
@@ -896,28 +906,24 @@ const runAnalysis = async () => {
 
 const runElectreAnalysis = async () => {
   analysisLoading.value = true;
-  actionError.value = null;
 
   try {
     const selectedOffersData = filteredOffers.value;
     if (!selectedOffersData || selectedOffersData.length === 0) {
-      actionError.value = "Нет данных для анализа";
       return;
     }
 
-    // Подготавливаем данные для ELECTRE
     const evaluations = selectedOffersData.map((offer) =>
       selectedCriteria.value.map((key) => {
         const criterion = availableCriteria.value.find((c) => c.key === key);
         const value = criterion ? criterion.getValue(offer) : 0;
         return value !== null && value !== undefined ? value : 0;
-      })
+      }),
     );
 
     const weights = selectedCriteria.value.map((key) => criteriaWeights.value[key] || 0);
     const isMin = selectedCriteria.value.map((key) => criteriaDirections.value[key] === "min");
 
-    // Заменяем authorizedFetch на $api
     const response = await $api("analysis/electre", {
       method: "GET",
       params: {
@@ -931,16 +937,14 @@ const runElectreAnalysis = async () => {
     });
 
     if (response) {
-      // Сохраняем индексы как есть (не преобразуем в ID)
       electreResults.value = {
         ...response,
-        // kernel содержит индексы, а не ID
+
         allIds: selectedOffersData.map((offer) => offer.id),
       };
     }
   } catch (err: any) {
     console.error("Ошибка при анализе ELECTRE:", err);
-    actionError.value = err.message || "Ошибка при выполнении анализа ELECTRE";
   } finally {
     analysisLoading.value = false;
   }
@@ -948,30 +952,25 @@ const runElectreAnalysis = async () => {
 
 const runTopsisAnalysis = async () => {
   analysisLoading.value = true;
-  actionError.value = null;
 
   try {
     const selectedOffersData = filteredOffers.value;
     if (!selectedOffersData || selectedOffersData.length === 0) {
-      actionError.value = "Нет данных для анализа";
       return;
     }
 
-    // Подготавливаем данные для TOPSIS
     const evaluations = selectedOffersData.map((offer) =>
       selectedCriteria.value.map((key) => {
         const criterion = availableCriteria.value.find((c) => c.key === key);
         const value = criterion ? criterion.getValue(offer) : 0;
         return value !== null && value !== undefined ? value : 0;
-      })
+      }),
     );
 
     const weights = selectedCriteria.value.map((key) => criteriaWeights.value[key] || 0);
 
-    // Переименовываем переменную, чтобы избежать конфликта имен
     const criteriaDirectionsArray = selectedCriteria.value.map((key) => criteriaDirections.value[key] === "max");
 
-    // Заменяем authorizedFetch на $api
     const response = await $api("analysis/topsis", {
       method: "GET",
       params: {
@@ -984,13 +983,10 @@ const runTopsisAnalysis = async () => {
     if (response) {
       topsisResults.value = response;
 
-      // Создаем копию массива и переворачиваем порядок для отображения
-      // от 1-го места к последнему
       const rankedIndices = [...response.ranked_indices];
 
       const rankedOfferIds = [...response.ranked_indices].map((index: number) => selectedOffersData[index].id);
 
-      // Создаем структуру для отображения
       topsisRanking.value = rankedOfferIds.map((offerId: number, index: number) => ({
         offerId,
         score: response.scores[rankedIndices[index]],
@@ -999,13 +995,12 @@ const runTopsisAnalysis = async () => {
     }
   } catch (err: any) {
     console.error("Ошибка при анализе TOPSIS:", err);
-    actionError.value = err.message || "Ошибка при выполнении анализа TOPSIS";
+    err.message || "Ошибка при выполнении анализа TOPSIS";
   } finally {
     analysisLoading.value = false;
   }
 };
 
-// Методы для отображения результатов ELECTRE (остаются без изменений)
 const getDominanceComparisons = (offerId: number) => {
   if (!electreResults.value || !favoriteOffers.value) return [];
 
@@ -1039,7 +1034,6 @@ const getCriterionShortName = (criterionKey: string) => {
   const criterion = availableCriteria.value.find((c) => c.key === criterionKey);
   if (!criterion) return criterionKey;
 
-  // Создаем mapping для коротких имен
   const shortNames: { [key: string]: string } = {
     price: "Цена",
     price_per_square_meter: "Цена за м²",
@@ -1055,7 +1049,6 @@ const getCriterionShortName = (criterionKey: string) => {
     family_score: "Для семьи",
   };
 
-  // Для инфраструктурных критериев
   if (criterionKey.startsWith("infrastructure_")) {
     const typeName = criterion.displayName.replace("Расстояние до ", "");
     return typeName.length > 15 ? typeName.substring(0, 15) + "..." : typeName;
@@ -1085,7 +1078,6 @@ const getOfferUrlByIndex = (index: number) => {
   return offer ? offer.url : "#";
 };
 
-// Методы для TOPSIS с проверкой на undefined
 const getOfferTitle = (offerId: number) => {
   if (!favoriteOffers.value) return `Объявление ${offerId}`;
   const offer = favoriteOffers.value.find((o) => o.id === offerId);
@@ -1125,7 +1117,6 @@ const getProgressFillClass = (index: number) => {
   return "";
 };
 
-// Вспомогательные методы (остаются без изменений)
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("ru-RU").format(price);
 };
@@ -1144,6 +1135,15 @@ const formatPrice = (price: number) => {
 
 .filter-group {
   @apply flex gap-4 items-center;
+}
+
+.radar-chart {
+  height: 520px;
+  width: 100%;
+  margin-top: 32px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--ui-border-muted);
 }
 
 .no-criteria-available {
@@ -1300,7 +1300,9 @@ const formatPrice = (price: number) => {
   background: white;
 
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   padding: 20px;
   border: 1px solid var(--ui-border-muted);
 }

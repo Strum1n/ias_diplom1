@@ -134,38 +134,42 @@ async def check_identical_offers(
 
 async def captcha_solver_v2(page: zendriver.Tab) -> bool:
     is_captcha_solved = False
-    while is_captcha_solved is False:
-        geetest_footer = None
-        try:
-            geetest_footer = await page.select_all(".geetest_footer", 2)
-        except TimeoutError:
-            pass
-        if geetest_footer is None:
-            button = await page.select(".button")
-            await button.click()
-        background_el = await page.wait_for(".geetest_bg")
-        await background_el.save_screenshot("background_with_puzzle.png")
-        slice_el = await page.select(".geetest_slice")
-        await page.evaluate("document.querySelector('.geetest_slice').style.display = 'none';")
+    try:
+        while is_captcha_solved is False:
+            geetest_footer = None
+            try:
+                geetest_footer = await page.select_all(".geetest_footer", 2)
+            except TimeoutError:
+                pass
+            if geetest_footer is None:
+                button = await page.select(".button")
+                await button.click()
+            background_el = await page.wait_for(".geetest_bg")
+            await background_el.save_screenshot("background_with_puzzle.png")
+            slice_el = await page.select(".geetest_slice")
+            await page.evaluate("document.querySelector('.geetest_slice').style.display = 'none';")
 
-        await background_el.save_screenshot("background.png")
-        await page.evaluate("document.querySelector('.geetest_slice').style.display = '';")
-        try:
-            distance = get_simple_distance("background_with_puzzle.png", "background.png")
-        except TypeError:
-            distance = 0
-        await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(30, 40))
-        await page.sleep(5)
-        await page.reload()
-        background_el = None
-        try:
-            background_el = await page.wait_for(".geetest_bg", timeout=2)
-        except TimeoutError:
-            pass
-        if background_el is None:
-            print("Капча успешно решена")
-            is_captcha_solved = True
-            return is_captcha_solved
+            await background_el.save_screenshot("background.png")
+            await page.evaluate("document.querySelector('.geetest_slice').style.display = '';")
+            try:
+                distance = get_simple_distance("background_with_puzzle.png", "background.png")
+            except TypeError:
+                distance = 0
+            await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(30, 40))
+            await page.sleep(5)
+            await page.reload()
+            background_el = None
+            try:
+                background_el = await page.wait_for(".geetest_bg", timeout=2)
+            except TimeoutError:
+                pass
+            if background_el is None:
+                print("Капча успешно решена")
+                is_captcha_solved = True
+                return is_captcha_solved
+    except Exception as e:
+        print(e)
+        return False
 
 
 async def captcha_solver(page: zendriver.Tab):
