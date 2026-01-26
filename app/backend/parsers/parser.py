@@ -136,15 +136,15 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
             active_tasks = [t for t in tasks if not t.done()]
             if source == "avito":
                 if len(active_tasks) > 4:
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(3)
                 task = asyncio.create_task(parse_offer_to_db_avito(browser, url))
             elif source == "cian":
                 task = asyncio.create_task(parse_offer_to_db(browser, url))
             tasks.append(task)
             if source == "avito":
-                await asyncio.sleep(random.uniform(1.2, 1.7))
+                await asyncio.sleep(random.uniform(0.9, 1.2))
             if source == "cian":
-                await asyncio.sleep(random.uniform(0.5, 0.7))
+                await asyncio.sleep(random.uniform(0.7, 1))
         results = await asyncio.gather(*tasks, return_exceptions=True)
         successful_page_tasks = 0
         duplicates = 0
@@ -171,13 +171,10 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
         try:
             next_page_btn = await page.select(config[source]["next_btn_selector"], timeout=2)
         except Exception as e:
-            if source == "cian" and "suburban" in page.url:
-                next_page_btn = "kek"
-            else:
-                print(f"Спарсили последнюю страницу {config[source]['p']} c ценами {config[source]['min_price']} - {config[source]['max_price']}")
+            print(f"Спарсили последнюю страницу {config[source]['p']} c ценами {config[source]['min_price']} - {config[source]['max_price']}")
         if next_page_btn is None:
             config[source]["p"] = 1
-            config[source]["min_price"] = config[source]["max_price"]
+            config[source]["min_price"] = config[source]["max_price"] + 1
             config[source]["max_price"] += config[source]["price_step"]
             use_config(PATH_TO_AVITO_CONFIG, "w", config)
             return
@@ -212,7 +209,7 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
             offer_info_raw_text_encoded = offer_info_raw_text_encoded.split('preloadedState__ = "')[1].split('";</script>')[0]
             offer_info_raw_text_decoded = unquote(offer_info_raw_text_encoded)
             offer_json = deep_parse_json(json.loads(offer_info_raw_text_decoded.replace("\xa0", "")))
-            json_text = json.dumps(offer_json, ensure_ascii=False)
+            # json_text = json.dumps(offer_json, ensure_ascii=False)
             await property_page.sleep(0.25)
             try:
                 price_history_el = await property_page.select(".price-history__cursorPointer___XzY5ZW", 3)
@@ -322,53 +319,206 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
 
 async def parse_address(json_data: dict, url: str):
     try:
-        geo_info = parse("$..geo").find(json_data)[0].value
-        district_name_from_site = (parse("$..content").find(geo_info)[0].value) if len(parse("$..content").find(geo_info)) > 0 else None
+        geo_info = json_data["@avito/bx-item-view"]["buyerItem"]["item"]["geo"]
+        # district_name_from_site = (parse("$..content").find(geo_info)) if len(parse("$..content").find(geo_info)) > 0 else None
 
-        geolocator = Photon(user_agent=UA_DESKTOP.random)
-        # geolocator1 = Photon(user_agent=UA_DESKTOP.random)
-        geolocators = []
-        geolocators.append(geolocator)
-        # geolocators.append(geolocator1)
-        address_from_url = parse("$..address").find(geo_info)[0].value + (f", {district_name_from_site}" if district_name_from_site else "")
-        coordinates = (geo_info["coords"]["lat"], geo_info["coords"]["lng"])
-        coord_string = f"{coordinates[0]},{coordinates[1]}"
-        try:
-            location = geolocator.reverse(f"{coordinates[0]},{coordinates[1]}")
-        except Exception as e:
-            print(e)
-        # location = geolocator.reverse(coord_string)
-        current_geolocator = random.choice(geolocators)
-        # location = await asyncio.to_thread(current_geolocator.reverse, coord_string)
-        address_elements = location.raw.get("address") or location.raw["properties"]
+        # geolocator = Photon(user_agent=UA_DESKTOP.random)
+        # address_from_url = parse("$..address").find(geo_info)[0].value + (f", {district_name_from_site}" if district_name_from_site else "")
         overpass_query = f"""
-        [out:json];
-        is_in({geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})->.a;
-        relation(pivot.a)["boundary"="administrative"]["admin_level"~"5|6|7|8|9|10"];
-        out body;
-        """
+[out:json][timeout:25];
+
+/* Найти все объекты, содержащие точку */
+is_in({geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})->.a;
+
+/* Административные границы */
+relation(pivot.a)
+  ["boundary"="administrative"]
+  -> .admin;
+
+/* ===== НАСЕЛЁННЫЙ ПУНКТ (БЕЗ SUBURB) ===== */
+(
+  node(around:7000,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["place"~"city|town|village|hamlet"];
+  relation(around:7000,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["place"~"city|town|village|hamlet"];
+) -> .place;
+
+/* ===== SUBURB (ТОЛЬКО ЕСЛИ ТОЧКА СТОИТ В НЁМ) ===== */
+(
+  node(around:1,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["place"~"suburb|residential"];
+  relation(around:1,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["place"~"suburb|residential"];
+    way(around:1,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["place"~"suburb|residential"];
+) -> .suburb;
+
+/* ===== УЛИЦА ===== */
+way["highway"]["name"](around:300,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+  -> .street;
+
+/* ===== ЖИЛОЙ КОМПЛЕКС ===== */
+
+/* 1. ЖК как site */
+relation(around:150,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+  ["site"="apartment_complex"]
+  ["name"]
+  -> .residential_site;
+
+/* 2. ЖК как place */
+(
+  node(around:150,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["place"~"neighbourhood|quarter|residential"]
+    ["name"];
+  relation(around:150,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["place"~"neighbourhood|quarter|residential"]
+    ["name"];
+) -> .residential_place;
+
+/* 3. ЖК как landuse */
+(
+  way(around:150,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["landuse"="residential"]
+    ["name"];
+  relation(around:150,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["landuse"="residential"]
+    ["name"];
+) -> .residential_landuse;
+
+/* ===== СНТ / ДАЧНЫЕ ТОВАРИЩЕСТВА ===== */
+(
+  way(around:300,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["landuse"="allotments"]
+    ["name"];
+  relation(around:300,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+    ["landuse"="allotments"]
+    ["name"];
+) -> .allotments;
+
+/* ===== ВЫВОД ===== */
+.admin               out tags;
+.place               out tags center;
+.suburb              out tags center;
+.street              out tags center;
+.residential_site    out tags;
+.residential_place   out tags;
+.residential_landuse out tags;
+.allotments          out tags;
+    """
+        overpass_query = f"""
+[out:json];
+is_in({geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})->.areas;
+
+(
+  node(pivot.areas);
+  way(pivot.areas);
+  relation(pivot.areas);
+)->.inside;
+way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"]["lng"]})
+  -> .street;
+.inside out tags center;
+.street out tags center;
+    """
         api = overpy.Overpass(url="https://maps.mail.ru/osm/tools/overpass/api/interpreter", retry_timeout=10, max_retry_count=5)
 
         data = await asyncio.to_thread(api.query, overpass_query)
-        # if district_name_from_site and ("район" in district_name_from_site or "р-н" in district_name_from_site):
-        #     address_elements["district1"] = district_name_from_site
 
-        partnership_name = address_elements.get("allotments")
-        partnership_full_name = address_elements.get("allotments")
-        partnership_short_name = address_elements.get("allotments")
+        region = next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "4"), None)
+        settlement = [
+            relation
+            for relation in [*data.relations, *data.nodes]
+            if (relation.tags.get("place", "ы") in ["city", "town", "village", "hamlet"] and relation.tags["name"] in geo_info["address"])
+        ] or [relation for relation in [*data.relations, *data.nodes] if (relation.tags.get("place", "ы") in ["city", "town", "village", "hamlet"] and relation.tags["name"])]
+        settlement = (
+            min(
+                settlement,
+                key=lambda e: geodesic(
+                    (geo_info["coords"]["lat"], geo_info["coords"]["lng"]),
+                    (e.center_lat if e._type_value == "relation" else e.lat, e.center_lon if e._type_value == "relation" else e.lon),
+                ).meters,
+            ).tags
+            if settlement
+            else None
+        )
+        if settlement is None and region == "Москва":
+            settlement = {"name": "Москва"}
 
-        if region := address_elements.get("state"):
+        settlement_types_prefix = {"деревня": "д.", "поселок": "пос.", "поселок городского типа": "пгт.", "рабочий поселок": " рп.", "село": "с.", "город": "г."}
+        if re.search(r"д\.\s+[А-ЯЁA-Z]", geo_info["address"]) is None:
+            del settlement_types_prefix["деревня"]
+        found_settlement_type = next((key for key, value in settlement_types_prefix.items() if value in geo_info["address"]), "город")
+
+        if settlement:
+            settlement_name = settlement["name"]
+            settlement_full_name = found_settlement_type + " " + settlement_name
+            settlement_short_name = settlement_types_prefix[found_settlement_type] + " " + settlement_name
+
+        super_municipality = next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "6"), None)
+
+        municipality = (
+            next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "5"), None)
+            if settlement and settlement["name"] == "Москва"
+            else next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "8"), None)
+        )
+
+        district = (
+            next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "8"), None)
+            if settlement["name"] == "Москва"
+            else next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "9"), None)
+        )
+
+        microdistrict = next((relation.tags["name"] for relation in data.relations if "микрорайон" in relation.tags.get("name", "")), None)
+        partnership = next(
+            (
+                way.tags["name"]
+                for way in [*data.relations, *data.ways]
+                if way.tags.get("landuse") in ["allotments", "residential"]
+                and re.findall(r"(?<!\S)[А-ЯЁ][А-Яа-яёЁ-]*", way.tags.get("name", ""))
+                and re.findall(r"(?<!\S)[А-ЯЁ][А-Яа-яёЁ-]*", way.tags["name"])[0] in geo_info["address"]
+            ),
+            None,
+        )
+
+        street = next(
+            (
+                way.tags["name"]
+                for way in data.ways
+                if way.tags.get("name", "") != partnership
+                and re.findall(r"\b[A-ZА-ЯЁ0-9][^ \n\r\t]*\b", way.tags.get("name", ""))
+                and re.findall(r"\b[A-ZА-ЯЁ0-9][^ \n\r\t]*\b", way.tags["name"])[0].split()[len(re.findall(r"\b[A-ZА-ЯЁ0-9][^ \n\r\t]*\b", way.tags["name"])[0].split()) - 1]
+                in geo_info["address"]
+            ),
+            None,
+        )
+        # json_text = json.dumps(json_data, ensure_ascii=False)
+        residential_complex = None
+        residential_complex = (
+            json_data["@avito/bx-item-view"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["description"]
+            if json_data["@avito/bx-item-view"]["buyerItem"]["item"].get("houseParams")
+            and "Название новостройки" in json_data["@avito/bx-item-view"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["title"]
+            else None
+        )
+        if residential_complex is None:
+            residential_complex = (
+                re.findall(r"(?:(?<=кп\s)|(?<=жк\s)|(?<=жилой комплекс\s)|(?<=коттеджный посёлок\s)|(?<=коттеджный поселок\s)).*", geo_info["address"].lower())[0]
+                if re.findall(r"(?:(?<=кп\s)|(?<=жк\s)|(?<=жилой комплекс\s)|(?<=коттеджный посёлок\s)|(?<=коттеджный поселок\s)).*", geo_info["address"].lower())
+                else None or next((way.tags["name"] for way in data.ways if way.tags.get("landuse") == "allotments" and way.tags.get("name") != partnership), None)
+            )
+        if residential_complex is None:
+            residential_complex = next((relation.tags["name"] for relation in data.relations if relation.tags.get("landuse") == "residential"), None)
+
+        partnership_name = partnership
+        partnership_full_name = partnership
+        partnership_short_name = partnership
+
+        if region:
             region_name = region.replace(" область", "")
             region_full_name = region
             region_short_name = region.replace(" область", " обл.")
 
-        if (
-            municipality := address_elements.get("municipality")
-            or (address_elements.get("county") if "район" not in address_elements.get("county", "") else None)
-            or (data.relations[1].tags["name"] if len(data.relations) > 0 else None)
-        ):
+        if municipality:
             municipality_name = re.findall(
-                r"(?:\b[А-ЯЁ][а-яё]{1,3}\.\s+)?(?:(?:\d+-[а-яё]+\s+)?[А-ЯЁ][а-яё]+(?:-[А-ЯЁ]?[а-яё]+)*(?:\s+[А-ЯЁ][а-яё]+(?:-[А-ЯЁ]?[а-яё]+)*)*(?:\s+[А-ЯЁ]+)?)",
+                r"(?:\b[А-ЯЁ][а-яё]{1,3}\\.\s+)?(?:(?:\d+-[а-яё]+\s+)?[А-ЯЁ][а-яё]+(?:-[А-ЯЁ]?[а-яё]+)*(?:\s+[А-ЯЁ][а-яё]+(?:-[А-ЯЁ]?[а-яё]+)*)*(?:\s+[А-ЯЁ]+)?)",
                 municipality,
             )[0]
 
@@ -392,7 +542,7 @@ async def parse_address(json_data: dict, url: str):
                 municipality_full_name = municipality
                 municipality_short_name = municipality
                 municipality_name = municipality
-        if super_municipality := address_elements.get("county") if "район" in address_elements.get("county", "") else None:
+        if super_municipality:
             super_municipality_name = re.findall(
                 r"(?:\b[А-ЯЁ][а-яё]{1,3}\.\s+)?(?:(?:\d+-[а-яё]+\s+)?[А-ЯЁ][а-яё]+(?:-[А-ЯЁ]?[а-яё]+)*(?:\s+[А-ЯЁ][а-яё]+(?:-[А-ЯЁ]?[а-яё]+)*)*(?:\s+[А-ЯЁ]+)?)",
                 super_municipality,
@@ -400,59 +550,12 @@ async def parse_address(json_data: dict, url: str):
             super_municipality_full_name = super_municipality
             super_municipality_short_name = super_municipality
 
-        settlements_keys = {
-            "city": ("город", "г."),
-            "village": ("деревня", "д."),
-            "hamlet": ("поселок", "пос."),
-            "town": ("город", "г."),
-        }
-        settlements_keys["hamlet"] = ("деревня", "д.") if "д." in address_from_url else ("поселок", "пос.")
-        settlements_keys["town"] = (
-            ("деревня", "д.")
-            if "д." in address_from_url
-            else ("поселок городского типа", "пгт")
-            if "пгт" in address_from_url
-            else ("село", "с.")
-            if "с." in address_from_url
-            else ("рабочий поселок", "рп.")
-            if "рп." in address_from_url
-            else ("город", "г.")
-        )
-        settlements_keys["village"] = (
-            ("поселок", "пос.")
-            if "пос." in address_from_url
-            else ("село", "с.")
-            if "с." in address_from_url
-            else ("рабочий поселок", "рп.")
-            if "рп." in address_from_url
-            else ("деревня", "д.")
-        )
-
-        for key, value in settlements_keys.items():
-            if address_elements.get(key) and "район" not in address_elements.get(key):
-                settlement_name = address_elements[key]
-                settlement_full_name = value[0] + " " + address_elements[key]
-                settlement_short_name = value[1] + " " + address_elements[key]
-
-        if district := data.relations[0].tags["name"] if len(data.relations) > 0 and "район" in data.relations[0].tags["name"] else None:
+        if district:
             district_name = district.replace("район", "").replace("р-н", "").strip()
             district_short_name = "р-н " + district.replace("район", "").replace("р-н", "").strip()
             district_full_name = "район " + district.replace("район", "").replace("р-н", "").strip()
 
-        # if district := address_elements.get("district1") or (
-        #     address_elements.get("suburb") if "микрорайон" not in address_elements.get("suburb", "") and "район" in address_elements.get("suburb", "") else None
-        # ):
-        #     district_name = district.replace("район", "").replace("р-н", "").strip()
-        #     district_short_name = "р-н " + district.replace("район", "").replace("р-н", "").strip()
-        #     district_full_name = "район " + district.replace("район", "").replace("р-н", "").strip()
-
-        if (
-            microdistrict := address_elements.get("neighbourhood")
-            if "микрорайон" in address_elements.get("neighbourhood", "")
-            else None
-            or (address_elements.get("quarter") if "микрорайон" in address_elements.get("quarter", "") else None)
-            or (address_elements.get("suburb") if "микрорайон" in address_elements.get("suburb", "") else None)
-        ):
+        if microdistrict:
             microdistrict_name = microdistrict.replace("микрорайон", "").strip()
             microdistrict_short_name = "мкр. " + microdistrict.replace("микрорайон", "").strip()
             microdistrict_full_name = "микрорайон " + microdistrict.replace("микрорайон", "").strip()
@@ -470,49 +573,25 @@ async def parse_address(json_data: dict, url: str):
             "улица": ("улица", "ул."),
         }
 
-        street_value = address_elements.get("road") or address_elements.get("street")
-
-        street_keys = next((values for key, values in street_types.items() if street_value and any(v in street_value.lower() for v in values)), None)
+        street_keys = next((values for key, values in street_types.items() if street and any(v in street.lower() for v in values)), None)
 
         if street_keys:
-            street_name = street_value.replace(street_keys[0], "").replace(" (дублёр)", "").strip()
-            street_full_name = street_keys[0] + " " + street_value.replace(street_keys[0], "").strip()
-            street_short_name = street_keys[1] + " " + street_value.replace(street_keys[0], "").strip()
-            if street_name.lower().split()[len(street_name.lower().split()) - 1] not in address_from_url.lower() and street_keys[1] in address_from_url:
-                print(f"Неверный геокод для адреса: {address_elements}, где верный адрес: {address_from_url}")
-                return
-        elif street_keys is None and address_elements.get("neighbourhood"):
-            pass
-        elif (
-            street_keys is not None
-            and next(
-                (key for key in address_elements.keys() if key in street_keys.keys()),
-                None,
-            )
-            is None
-        ):
-            pass
-        else:
-            print(f"Неверный геокод для адреса: {address_elements}, где верный адрес: {address_from_url}")
-            return
+            street_name = street.replace(street_keys[0], "").replace(" (дублёр)", "").strip()
+            street_full_name = street_keys[0] + " " + street.replace(street_keys[0], "").strip()
+            street_short_name = street_keys[1] + " " + street.replace(street_keys[0], "").strip()
 
-        residential_complex = None
-        if parse("$..houseParams..items..title").find(json_data) and parse("$..houseParams..items..title").find(json_data)[0].value == "Название новостройки":
-            residential_complex = parse("$..houseParams..items..description").find(json_data)[0].value
-            address_elements["residential_complex"] = residential_complex
-
-        if address_elements.get("residential_complex") is None:
-            residential_complex = (
-                re.findall(r"жилой комплекс [^,][А-яЁ ]+", address_from_url)[0]
-                if re.findall(r"жилой комплекс [^,][А-яЁ ]+", address_from_url)
-                else None or address_elements.get("neighbourhood")
-                if "Жилой комплекс" in address_elements.get("neighbourhood", "") or "Коттеджный посёлок" in address_elements.get("neighbourhood", "")
-                else None
-            )
+        # if residential_complex is None:
+        #     residential_complex = (
+        #         re.findall(r"жилой комплекс [^,][А-яЁ ]+", address_from_url)[0]
+        #         if re.findall(r"жилой комплекс [^,][А-яЁ ]+", address_from_url)
+        #         else None or address_elements.get("neighbourhood")
+        #         if "Жилой комплекс" in address_elements.get("neighbourhood", "") or "Коттеджный посёлок" in address_elements.get("neighbourhood", "")
+        #         else None
+        #     )
 
         if residential_complex:
             residential_complex_name = (
-                residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").replace("Коттеджный посёлок", "").strip()
+                residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").replace("Коттеджный посёлок", "").replace("КП", "").strip()
             )
             if "Коттеджный посёлок" not in residential_complex:
                 residential_complex_name = residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").strip()
@@ -523,13 +602,13 @@ async def parse_address(json_data: dict, url: str):
                 residential_complex_short_name = "КП " + residential_complex_name[0].lower() + residential_complex_name[1:]
                 residential_complex_full_name = residential_complex_name + " коттеджный поселок"
             is_suburban = True if "коттеджный поселок" in residential_complex_full_name else False
-        house_number = re.findall(r"(?:д\.\s*)?(\d+\w*)(?=\s*(?:,|р-н|$))", address_from_url) or address_elements.get("house_number")
+        house_number = re.findall(r"(?:д\.\s*)?(\d+\w*)(?=\s*(?:,|р-н|$))", geo_info["address"])
         if house_number:
             house_number = house_number[0].strip().replace(",", "").replace("корп.", "к").replace(" ", "")
 
         address = {
-            "latitude": coordinates[0],
-            "longitude": coordinates[1],
+            "latitude": geo_info["coords"]["lat"],
+            "longitude": geo_info["coords"]["lng"],
             "region_name": region_name if "region_name" in locals() else None,
             "region_full_name": region_full_name if "region_full_name" in locals() else None,
             "region_short_name": region_short_name if "region_short_name" in locals() else None,
@@ -554,11 +633,11 @@ async def parse_address(json_data: dict, url: str):
             "street_name": street_name if "street_name" in locals() else None,
             "street_full_name": street_full_name if "street_full_name" in locals() else None,
             "street_short_name": street_short_name if "street_short_name" in locals() else None,
-            "house_number": house_number,
             "residential_complex_name": residential_complex_name if "residential_complex_name" in locals() else None,
             "residential_complex_full_name": residential_complex_full_name if "residential_complex_full_name" in locals() else None,
             "residential_complex_short_name": residential_complex_short_name if "residential_complex_short_name" in locals() else None,
             "is_complex_suburban": True if ("is_suburban" in locals() and is_suburban) else False if ("is_suburban" in locals() and is_suburban == False) else None,
+            "house_number": house_number,
         }
 
         if address.get("settlement_name", "") == address.get("municipality_name", ""):
@@ -579,7 +658,7 @@ async def parse_address(json_data: dict, url: str):
 
         address["full_address"] = full_address
         address["full_address"] = address["full_address"][8:] if address.get("settlement_name", "") == "Москва" else address["full_address"]
-
+        print(f"распаршенный адрес {address['full_address']}, адрес с сайта: {geo_info['address']}")
         return address
     except Exception as e:
         logging.error(f"Произошла ошибка: {e} в {url}", exc_info=True)
@@ -962,7 +1041,7 @@ async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1
 
 
 async def main():
-    await offers_urls_bypass("avito")
+    await offers_urls_bypass("cian")
 
 
 if __name__ == "__main__":

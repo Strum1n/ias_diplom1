@@ -1,6 +1,8 @@
 import asyncio
 import json
+import re
 import dateparser
+from geopy.distance import geodesic
 
 # Английский → Русский
 from geopy.geocoders import Photon
@@ -10,12 +12,17 @@ import overpy
 import requests
 import json
 
-lat = 55.843308
-lon = 37.668273
+lat = 56.29594415106905
+lon = 37.24678720569668
 # 55.843308, 37.668273
 # Запрос к публичному API Overpass Turbo
 
 
+# 53.297473, 34.312347
+# 56.29594415106905, 'lng': 37.24678720569668
+# 53.280264, 34.305547
+# 53.296445, 34.316371
+# 56.054789, 37.410035
 # 53.269452, 34.304505
 # 53.233565, 34.310874
 # 53.267653, 34.289709
@@ -25,85 +32,45 @@ lon = 37.668273
 # 53.207631, 34.319408
 # 55.751320, 37.595159
 # 55.751143, 37.590003
+
+
 async def sas():
-    lat = 53.269452
-    lon = 34.304505
+    lat = 53.266290
+    lon = 34.323693
     overpass_url = "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
     overpass_query = f"""
-[out:json][timeout:25];
+[out:json];
+is_in({lat},{lon})->.areas;
 
-/* Найти все объекты, содержащие точку */
-is_in({lat},{lon})->.a;
-
-/* Административные границы */
-relation(pivot.a)
-  ["boundary"="administrative"]
-  -> .admin;
-
-/* Населённый пункт (город, посёлок и т.п.) */
 (
-  node(around:500,{lat},{lon})
-    ["place"~"city|town|village|hamlet"];
-  relation(around:500,{lat},{lon})
-    ["place"~"city|town|village|hamlet"];
-) -> .place;
+  node(pivot.areas);
+  way(pivot.areas);
+  relation(pivot.areas);
+)->.inside;
 
-/* Улица рядом с точкой */
-way["highway"]["name"](around:250,{lat},{lon})
-  -> .street;
-
-/* ===== ЖИЛОЙ КОМПЛЕКС ===== */
-
-/* 1. ЖК как site */
-relation(around:150,{lat},{lon})
-  ["site"="apartment_complex"]
-  ["name"]
-  -> .residential_site;
-
-/* 2. ЖК как place */
-(
-  node(around:150,{lat},{lon})
-    ["place"~"neighbourhood|quarter|residential"]
-    ["name"];
-  relation(around:150,{lat},{lon})
-    ["place"~"neighbourhood|quarter|residential"]
-    ["name"];
-) -> .residential_place;
-
-/* 3. ЖК как landuse */
-(
-  way(around:150,{lat},{lon})
-    ["landuse"="residential"]
-    ["name"];
-  relation(around:150,{lat},{lon})
-    ["landuse"="residential"]
-    ["name"];
-) -> .residential_landuse;
-
-/* ===== СНТ / ДАЧНЫЕ ТОВАРИЩЕСТВА ===== */
-
-/* 4. СНТ как allotments (основной вариант) */
-(
-  way(around:300,{lat},{lon})
-    ["landuse"="allotments"]
-    ["name"];
-  relation(around:300,{lat},{lon})
-    ["landuse"="allotments"]
-    ["name"];
-) -> .allotments;
-
-/* ===== ВЫВОД ===== */
-.admin               out tags;
-.place               out tags;
-.street              out tags;
-.residential_site    out tags;
-.residential_place   out tags;
-.residential_landuse out tags;
-.allotments          out tags;
+.inside out tags center;
     """
     api = overpy.Overpass(url=overpass_url, retry_timeout=10, max_retry_count=5)
 
     data = await asyncio.to_thread(api.query, overpass_query)
+    region = next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "4"), None)
+    super_district = next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "6"), None)
+    municipality_name = next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "8"), None)
+    district = next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "9"), None)
+    microdistrict = next((relation.tags["name"] for relation in [*data.relations, *data.nodes] if "микрорайон" in relation.tags.get("name", "")), None)
+    settlement = [relation for relation in [*data.relations, *data.nodes] if relation.tags.get("place", "ы") in ["city", "town", "village", "hamlet"]]
+    settlement = (
+        min(
+            settlement,
+            key=lambda e: geodesic((lat, lon), (e.center_lat if e._type_value == "relation" else e.lat, e.center_lon if e._type_value == "relation" else e.lon)).meters,
+        ).tags["name"]
+        if settlement
+        else None
+    )
+    street = min(
+        [relation for relation in data.ways],
+        key=lambda e: geodesic((lat, lon), (e.center_lat, e.center_lon)).meters,
+    ).tags["name"]
     return data
 
 
@@ -140,13 +107,17 @@ relation(around:150,{lat},{lon})
 # sas = kek.get("sas", {})
 # for key, value in kek.items():
 #     print(value)
-# geolocator = Photon(user_agent="strumin@mail")
-# location_reverse = geolocator.reverse(f"{lat}, {lon}")
-# location_text = json.dumps(location_reverse._raw, ensure_ascii=False)
-# print("sas")
+geolocator = Photon(user_agent="strumin@mail")
+location_reverse = geolocator.reverse(f"{lat}, {lon}")
+location_text = json.dumps(location_reverse._raw, ensure_ascii=False)
+print("sas")
 
 
 async def main():
+    kek = "д. dfжаница"
+    sas = re.search("д\.\s+[А-ЯЁA-Z]", kek)
+    print()
+
     await sas()
     print("sas")
 

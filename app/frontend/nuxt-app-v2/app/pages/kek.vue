@@ -390,25 +390,74 @@ async function addComparison() {
   });
 }
 
+type PricePoint = {
+  date: string;
+  avg_price: number;
+};
+
+function aggregateByMonth(data?: PricePoint[]) {
+  if (!data?.length) return [];
+
+  const map = new Map<string, { sum: number; count: number; date: Date }>();
+
+  for (const item of data) {
+    const d = new Date(item.date);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+
+    if (!map.has(key)) {
+      map.set(key, {
+        sum: 0,
+        count: 0,
+        date: new Date(d.getFullYear(), d.getMonth(), 1),
+      });
+    }
+
+    const acc = map.get(key)!;
+    acc.sum += item.avg_price;
+    acc.count += 1;
+  }
+
+  return Array.from(map.values())
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .map((i) => ({
+      date: i.date,
+      avg_price: Math.round(i.sum / i.count),
+    }));
+}
+
 const priceHistoryChartOption = computed(() => {
+  // 🔹 агрегируем основной ряд
+  const baseMonthly = aggregateByMonth(priceHistoryData.value);
+
+  // 🔹 агрегируем сравнения
+  const comparisonMonthly = comparisons.value.map((c) => ({
+    ...c,
+    monthly: aggregateByMonth(c.priceHistory),
+  }));
+
   const series = [
     {
       name: "Текущий выбор",
       type: "line",
       smooth: true,
       showSymbol: false,
-      data: priceHistoryData.value?.map((i) => i.avg_price),
+      data: baseMonthly.map((i) => [i.date, i.avg_price]),
     },
-    ...comparisons.value.map((c) => ({
+    ...comparisonMonthly.map((c) => ({
       name: c.label,
       type: "line",
       smooth: true,
       showSymbol: false,
-      data: c.priceHistory.map((i) => i.avg_price),
+      data: baseMonthly.map((i) => [i.date, i.avg_price]),
     })),
   ];
 
-  const xAxisData = priceHistoryData.value?.map((i) => new Date(i.date).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })) ?? [];
+  const xAxisData = baseMonthly.map((i) =>
+    i.date.toLocaleDateString("ru-RU", {
+      month: "short",
+      year: "numeric",
+    }),
+  );
 
   return {
     title: {
@@ -419,22 +468,22 @@ const priceHistoryChartOption = computed(() => {
       trigger: "axis",
       valueFormatter: (v: number) => (v ? `${v.toLocaleString()} ₽` : "—"),
     },
+    dataZoom: {
+      type: "inside",
+      zoomOnMouseWheel: true,
+      moveOnMouseMove: true,
+      preventDefaultMouseMove: true,
+    },
     legend: {},
     grid: {
       left: 0,
       right: 0,
-      bottom: 0,
-      top: 0,
+      bottom: 65,
+      top: 65,
     },
-    xAxis: {
-      type: "category",
-      data: xAxisData,
-    },
+    xAxis: { type: "time" },
     yAxis: {
       type: "value",
-      axisLabel: {
-        formatter: (v: number) => `${v / 1000}k`,
-      },
     },
     series,
   };
@@ -468,12 +517,19 @@ const viewsHistoryChartOption = computed(() => {
     tooltip: {
       trigger: "axis",
     },
+    dataZoom: {
+      type: "inside",
+
+      zoomOnMouseWheel: true,
+      moveOnMouseMove: true,
+      preventDefaultMouseMove: true,
+    },
     legend: {},
     grid: {
-      left: 40,
-      right: 20,
-      bottom: 40,
-      top: 80,
+      left: 0,
+      right: 0,
+      bottom: 65,
+      top: 65,
     },
     xAxis: {
       type: "category",

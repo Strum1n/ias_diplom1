@@ -367,13 +367,13 @@
                 <div class="original-link">
                   <p class="flex items-center gap-1">
                     <UIcon size="18" name="i-heroicons-link"></UIcon>
-                    Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}</a>
+                    Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}.RU</a>
                   </p>
                   <div
                     class="flex flex-col gap-1"
                     v-if="offer.identical_urls && offer.identical_urls[0] && offer.identical_urls[0].includes('avito') && offer.source != 'avito'">
                     <p>В других источниках:</p>
-                    <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">Avito</a>
+                    <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">Avito.ru</a>
                   </div>
                 </div>
               </div>
@@ -438,13 +438,13 @@
               <div class="original-link">
                 <p class="flex items-center gap-1">
                   <UIcon size="18" name="i-heroicons-link"></UIcon>
-                  Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}</a>
+                  Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}.RU</a>
                 </p>
                 <div
                   class="flex flex-col gap-1"
                   v-if="offer.identical_urls && offer.identical_urls[0] && offer.identical_urls[0].includes('avito') && offer.source != 'avito'">
                   <p>В других источниках:</p>
-                  <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">Avito</a>
+                  <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">Avito.ru</a>
                 </div>
               </div>
             </div>
@@ -921,7 +921,7 @@ const getCategoryColor = (category: string) => {
 }
 
 .infrastructure-list {
-  @apply flex flex-wrap gap-3;
+  @apply flex flex-wrap gap-2.5;
 }
 
 .infrastructure-item {

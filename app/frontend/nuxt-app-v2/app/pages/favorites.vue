@@ -166,7 +166,7 @@
 
       <div class="comparison-controls">
         <button @click="toggleComparisonInterface" class="compare-btn">
-          {{ showComparisonInterface ? "Скрыть сравнение" : "🎯 Выбрать метод" }}
+          {{ showComparisonInterface ? "Скрыть" : "🎯 Выбрать метод" }}
         </button>
       </div>
 
@@ -1504,8 +1504,8 @@ const formatPrice = (price: number) => {
 }
 
 .infrastructure-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
