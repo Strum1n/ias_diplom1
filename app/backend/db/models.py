@@ -110,7 +110,7 @@ class Offer(BaseModel, table=True):
             onupdate=func.now(),
         )
     )
-    address_id: int | None = Field(foreign_key="address.id", ondelete="CASCADE")
+    address_id: int | None = Field(foreign_key="address.id", ondelete="CASCADE", index=True)
     address: Optional["Address"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     seller_id: int | None = Field(foreign_key="seller.id")
@@ -282,7 +282,7 @@ class Address(BaseModel, table=True):
     super_municipality_id: int | None = Field(foreign_key="super_municipality.id")
     settlement_id: int | None = Field(foreign_key="settlement.id")
     partnership_id: int | None = Field(foreign_key="partnership.id")
-    district_id: int | None = Field(foreign_key="district.id")
+    district_id: int | None = Field(foreign_key="district.id", index=True)
     microdistrict_id: int | None = Field(foreign_key="microdistrict.id")
     street_id: int | None = Field(foreign_key="street.id")
     residential_complex_id: int | None = Field(foreign_key="residential_complex.id")
@@ -339,7 +339,7 @@ class Municipality(BaseModel, table=True):
 
 class MunicipalityType(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
-    name: str | None
+    name: str | None = Field(index=True)
 
     municipalities: List["Municipality"] = Relationship(back_populates="municipality_type")
 
@@ -386,7 +386,7 @@ class Settlement(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
     full_name: str | None = Field(unique=True)
-    short_name: str | None
+    short_name: str | None = Field(index=True)
 
     settlement_type_id: int | None = Field(foreign_key="settlement_type.id")
 
@@ -405,7 +405,7 @@ class District(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
-    short_name: str | None
+    short_name: str | None = Field(index=True)
 
     addresses: List["Address"] = Relationship(back_populates="district")
 
@@ -414,7 +414,7 @@ class Microdistrict(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
-    short_name: str | None
+    short_name: str | None = Field(index=True)
 
     addresses: List["Address"] = Relationship(back_populates="microdistrict")
 
@@ -423,7 +423,7 @@ class Street(BaseModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
-    short_name: str | None
+    short_name: str | None = Field(index=True)
 
     street_type_id: int | None = Field(foreign_key="street_type.id")
 
@@ -485,13 +485,13 @@ class InfrastructureType(BaseModel, table=True):
 
 class User(BaseModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_name: str | None = Field(unique=True)
-    email: str | None
+    user_name: str | None
+    email: str | None = Field(unique=True)
     full_name: str | None
     registration_date: datetime | None = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()))
 
     role_id: int | None = Field(foreign_key="role.id")
-    role: Optional["Role"] = Relationship(back_populates="users")
+    role: Optional["Role"] = Relationship(back_populates="users", sa_relationship_kwargs={"lazy": "selectin"})
 
     password_id: int | None = Field(foreign_key="password.id")
     password: Optional["Password"] = Relationship(back_populates="user", sa_relationship_kwargs={"uselist": False, "lazy": "selectin"})

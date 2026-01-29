@@ -69,8 +69,8 @@ const form = reactive({
 });
 
 const roleOptions = ref<SelectItem[]>([
-  { value: 1, label: "Пользователь" },
-  { value: 2, label: "Администратор" },
+  { value: 2, label: "Пользователь" },
+  { value: 1, label: "Администратор" },
 ]);
 
 const router = useRouter();

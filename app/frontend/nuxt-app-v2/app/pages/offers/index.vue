@@ -19,7 +19,7 @@
         {{ offersError }}
       </div>
 
-      <div class="flex gap-8 text-sm items-center mb-5">
+      <div class="flex gap-8 text-sm items-center relative mb-5">
         <span class="font-[550]">Всего объявлений: {{ totalCount.toLocaleString("ru-RU") }}</span>
         <span class="font-[550] text-primary">Подходящих объявлений: {{ filteredCount.toLocaleString("ru-RU") }}</span>
         <USelect
@@ -32,6 +32,8 @@
             trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
           }">
         </USelect>
+
+        <UButton icon="i-bx:export" @click="exportCsv()" class="absolute right-0" variant="outline" color="info" v-if="userRole == 'Админ'">Экспорт в CSV</UButton>
       </div>
 
       <div v-if="offersPending" class="flex justify-center mt-75">
@@ -206,11 +208,48 @@
 </template>
 
 <script setup lang="ts">
+import { jwtDecode } from "jwt-decode";
 import type { OfferResponseFull, OfferResponseWithPagination } from "~/types/api";
+const { logout, loading, accessToken, isAuthenticated } = useAuth();
+const userRole = computed(() => {
+  if (!accessToken.value) return "";
+  try {
+    const { role } = jwtDecode<{ role: string }>(accessToken.value);
+    return role;
+  } catch {
+    return "";
+  }
+});
 
 interface Filters {
   [key: string]: any;
 }
+
+const exportCsv = async () => {
+  try {
+    const query = prepareRequestQuery();
+
+    const blob = await $api("/offers/export", {
+      method: "GET",
+      params: query,
+      responseType: "blob", // ⬅️ ключевой момент
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `offers_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Ошибка экспорта CSV:", error);
+  }
+};
 
 const sortFields = ref<SelectItem[]>([
   {

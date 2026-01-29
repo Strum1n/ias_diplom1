@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     renderer: "canvas",
   },
   devServer: {
-    host: '127.0.0.1',
+    host: '192.168.0.168',
     port: 3000
   },
   yandexMaps: {
@@ -31,7 +31,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
-    apiBase: 'http://localhost:8000',
+    apiBase: 'http://192.168.0.168:8000',
     public: {
       apiBase: '/api',
     },

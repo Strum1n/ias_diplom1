@@ -114,8 +114,8 @@ print("sas")
 
 
 async def main():
-    kek = "д. dfжаница"
-    sas = re.search("д\.\s+[А-ЯЁA-Z]", kek)
+    kek = ""
+    ere = kek in "dasdasd"
     print()
 
     await sas()

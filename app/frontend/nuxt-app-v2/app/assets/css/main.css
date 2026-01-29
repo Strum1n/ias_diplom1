@@ -7,3 +7,6 @@
 .no-scroll{
   scrollbar-width: none;
 }
+button{
+  cursor: pointer;
+}

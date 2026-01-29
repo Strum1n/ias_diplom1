@@ -66,7 +66,7 @@ const items = ref([
   {
     label: "Аналитика",
     icon: "icon-park-solid:analysis",
-    to: "/board",
+    to: "/kek",
   },
   {
     label: "Карта",
@@ -78,7 +78,7 @@ const items = ref([
     label: "сас",
     icon: "uiw:map",
     // badge: '3.8k',
-    to: "/kek",
+    to: "/board",
   },
 ]);
 </script>

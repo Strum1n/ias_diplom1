@@ -12,16 +12,7 @@
     <div class="filters-section">
       <div class="filter-group">
         <label>Тип недвижимости:</label>
-        <USelect
-          v-model="propertyType"
-          :items="propertyTypesItems"
-          class="w-48"
-          value-key="value"
-          :icon="icon"
-          :ui="{
-            trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
-          }">
-        </USelect>
+        <USelect v-model="propertyType" :items="propertyTypesItems" class="w-48" value-key="value"> </USelect>
       </div>
 
       <div class="filter-group">
@@ -486,14 +477,38 @@ const sortedOffers = computed(() => {
       return filtered.sort((a, b) => a.price - b.price);
     case "price:desc":
       return filtered.sort((a, b) => b.price - a.price);
-    case "creation_date_source:desc":
-      return filtered.sort((a, b) => new Date(b.update_date).getTime() - new Date(a.update_date).getTime());
+    case "price_per_square_meter:asc":
+      return filtered.sort((a, b) => {
+        const pricePerMeterA = a.price_per_square_meter || a.price / (a.total_area || 1);
+        const pricePerMeterB = b.price_per_square_meter || b.price / (b.total_area || 1);
+        return pricePerMeterA - pricePerMeterB;
+      });
+    case "price_per_square_meter:desc":
+      return filtered.sort((a, b) => {
+        const pricePerMeterA = a.price_per_square_meter || a.price / (a.total_area || 1);
+        const pricePerMeterB = b.price_per_square_meter || b.price / (b.total_area || 1);
+        return pricePerMeterB - pricePerMeterA;
+      });
+    case "total_area:asc":
+      return filtered.sort((a, b) => (a.total_area || 0) - (b.total_area || 0));
+    case "total_area:desc":
+      return filtered.sort((a, b) => (b.total_area || 0) - (a.total_area || 0));
     case "creation_date_source:asc":
-      return filtered.sort((a, b) => new Date(a.update_date).getTime() - new Date(b.update_date).getTime());
+      return filtered.sort((a, b) => {
+        const dateA = a.creation_date_source || a.update_date || a.created_at;
+        const dateB = b.creation_date_source || b.update_date || b.created_at;
+        return new Date(dateA).getTime() - new Date(dateB).getTime();
+      });
+    case "creation_date_source:desc":
+      return filtered.sort((a, b) => {
+        const dateA = a.creation_date_source || a.update_date || a.created_at;
+        const dateB = b.creation_date_source || b.update_date || b.created_at;
+        return new Date(dateB).getTime() - new Date(dateA).getTime();
+      });
     case "views_count:asc":
-      return filtered.sort((a, b) => a.views_count - b.views_count);
+      return filtered.sort((a, b) => (a.views_count || 0) - (b.views_count || 0));
     case "views_count:desc":
-      return filtered.sort((a, b) => b.views_count - a.views_count);
+      return filtered.sort((a, b) => (b.views_count || 0) - (a.views_count || 0));
     default:
       return filtered;
   }

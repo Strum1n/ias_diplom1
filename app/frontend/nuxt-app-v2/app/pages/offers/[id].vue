@@ -133,7 +133,7 @@
                 </div>
                 <div v-if="offer.renovation_type">
                   <p v-if="offer.is_new_house">Отделка:</p>
-                  <span v-else>Ремонт:</span>
+                  <p v-else>Ремонт:</p>
                   <span>{{ offer.renovation_type?.name }}</span>
                 </div>
               </div>
@@ -358,7 +358,7 @@
                 <h3 class="mt-2 mb-2">Контакты:</h3>
 
                 <div v-if="offer.contact_phone" class="phone-number">{{ formatPhone(offer.contact_phone) }}</div>
-                <div v-else>Временный номер, проверьте в источнике</div>
+                <div class="phone-number font-semibold!" v-else>Временный номер, проверьте в источнике</div>
 
                 <div class="seller-info">
                   <div class="seller-type">{{ offer.seller.seller_type?.name }}</div>
@@ -369,16 +369,16 @@
                     <UIcon size="18" name="i-heroicons-link"></UIcon>
                     Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}.RU</a>
                   </p>
-                  <div
-                    class="flex flex-col gap-1"
-                    v-if="offer.identical_urls && offer.identical_urls[0] && offer.identical_urls[0].includes('avito') && offer.source != 'avito'">
+                  <div class="flex flex-col gap-1" v-if="offer.identical_urls && offer.identical_urls[0] && !offer.identical_urls[0].includes(offer.source)">
                     <p>В других источниках:</p>
-                    <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">Avito.ru</a>
+                    <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">
+                      {{ offer.identical_urls[0].match(/([\w-]+)\.ru/)?.[1] || offer.identical_urls[0] }}.ru
+                    </a>
                   </div>
                 </div>
               </div>
             </div>
-            <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-[var(--ui-border)]">
+            <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-default">
               <h3>История цен</h3>
               <VChart class="mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
               <div v-else>Нет данных по истории цен</div>
@@ -429,7 +429,7 @@
               <h3 class="mt-2 mb-2">Контакты:</h3>
 
               <div v-if="offer.contact_phone" class="phone-number">{{ formatPhone(offer.contact_phone) }}</div>
-              <div v-else>Временный номер, проверьте в источнике</div>
+              <div class="phone-number font-semibold!" v-else>Временный номер, проверьте в источнике</div>
 
               <div class="seller-info">
                 <div class="seller-type">{{ offer.seller.seller_type?.name }}</div>
@@ -440,16 +440,16 @@
                   <UIcon size="18" name="i-heroicons-link"></UIcon>
                   Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}.RU</a>
                 </p>
-                <div
-                  class="flex flex-col gap-1"
-                  v-if="offer.identical_urls && offer.identical_urls[0] && offer.identical_urls[0].includes('avito') && offer.source != 'avito'">
+                <div class="flex flex-col gap-1" v-if="offer.identical_urls && offer.identical_urls[0] && !offer.identical_urls[0].includes(offer.source)">
                   <p>В других источниках:</p>
-                  <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">Avito.ru</a>
+                  <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black">
+                    {{ offer.identical_urls[0].match(/([\w-]+)\.ru/)?.[1] || offer.identical_urls[0] }}.ru
+                  </a>
                 </div>
               </div>
             </div>
           </div>
-          <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-[var(--ui-border)]">
+          <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-default">
             <h3>История цен</h3>
             <VChart class="mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
             <div v-else>Нет данных по истории цен</div>
@@ -833,7 +833,7 @@ const getCategoryColor = (category: string) => {
 
 <style scoped>
 @reference "tailwindcss";
-
+@reference "@nuxt/ui";
 :deep(.info-card) span.iconify {
   @apply cursor-pointer;
 }
@@ -847,7 +847,7 @@ const getCategoryColor = (category: string) => {
 }
 
 .info-card {
-  @apply ring ring-[var(--ui-border)] rounded-lg h-max p-7 gap-3;
+  @apply ring ring-default rounded-lg h-max p-7 gap-3;
 }
 
 .info-card h3:first-of-type {
@@ -864,7 +864,7 @@ const getCategoryColor = (category: string) => {
 }
 
 .category-item p {
-  @apply text-[var(--ui-text-muted)];
+  @apply text-muted;
 }
 
 .info-grid {
@@ -872,11 +872,11 @@ const getCategoryColor = (category: string) => {
 }
 
 .info-grid div {
-  @apply flex justify-between items-center py-2 border-b-1 border-b-[var(--ui-border)];
+  @apply flex justify-between items-center py-2 border-b-1 border-b-default;
 }
 
 .info-grid p {
-  @apply text-[var(--ui-text-muted)] font-medium;
+  @apply text-muted! font-medium;
 }
 .info-grid h3 {
   @apply my-1!;
@@ -913,7 +913,7 @@ const getCategoryColor = (category: string) => {
 }
 
 .hint {
-  @apply absolute p-2 bg-white ring ring-[var(--ui-border)] rounded-lg whitespace-nowrap transform translate-x-[8px] -translate-y-1/2 left-2.5;
+  @apply absolute p-2 bg-white ring ring-default rounded-lg whitespace-nowrap transform translate-x-[8px] -translate-y-1/2 left-2.5;
 }
 
 .marker {
@@ -929,7 +929,7 @@ const getCategoryColor = (category: string) => {
 }
 
 .infrastructure-item span {
-  @apply text-[var(--ui-text-muted)] mb-0.5 text-sm;
+  @apply text-muted mb-0.5 text-sm;
 }
 
 .favorite-heart {
@@ -950,11 +950,11 @@ const getCategoryColor = (category: string) => {
 }
 
 .price-per-meter span {
-  @apply text-[var(--ui-text-muted)];
+  @apply text-muted;
 }
 
 .price-per-meter {
-  @apply mt-2 text-[#38a169] flex justify-between;
+  @apply text-[#38a169] flex justify-between;
 }
 
 .seller-info {
@@ -966,7 +966,7 @@ const getCategoryColor = (category: string) => {
 }
 
 .seller-type {
-  @apply text-[var(--ui-text-muted)] text-sm;
+  @apply text-muted text-sm;
 }
 
 .phone-number {
@@ -979,7 +979,7 @@ const getCategoryColor = (category: string) => {
 
 .views-section,
 price-history-section {
-  @apply p-6! rounded-lg ring ring-[var(--ui-border)] p-6 mt-5;
+  @apply p-6! rounded-lg ring ring-default p-6 mt-5;
 }
 
 .views-stats {
@@ -991,7 +991,7 @@ price-history-section {
 }
 
 .stat-item p {
-  @apply text-[var(--ui-text-muted)];
+  @apply text-muted;
 }
 
 .stat-item span {

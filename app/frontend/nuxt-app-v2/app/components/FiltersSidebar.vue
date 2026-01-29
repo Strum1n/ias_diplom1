@@ -355,6 +355,21 @@
           </div>
         </div>
 
+        <div class="filter-section">
+          <h4>Источник</h4>
+          <div class="button-group">
+            <UButton
+              v-for="option in sourceOptions"
+              :key="option.value"
+              :variant="filters.source.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.source.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('source', option.value)"
+              size="sm">
+              {{ option.label }}
+            </UButton>
+          </div>
+        </div>
+
         <!-- Удобство для пожилых -->
         <div class="filter-section">
           <h4>Удобство для пожилых</h4>
@@ -489,6 +504,7 @@ interface Filters {
   water_supply_type: number[];
   land_type: number[];
   seller_name: string | null;
+  source: string[];
 }
 
 // Emits
@@ -595,6 +611,7 @@ const filters = reactive<Filters>({
   water_supply_type: [],
   land_type: [],
   seller_name: null,
+  source: [],
 });
 
 // Опции фильтров
@@ -602,6 +619,11 @@ const priceCategoryOptions = [
   { label: "Выше рынка", value: "expensive" },
   { label: "Рыночная цена", value: "normal" },
   { label: "Ниже рынка", value: "cheap" },
+];
+
+const sourceOptions = [
+  { label: "Cian.ru", value: "cian" },
+  { label: "Avito.ru", value: "avito" },
 ];
 
 const elderlyCategoryOptions = [

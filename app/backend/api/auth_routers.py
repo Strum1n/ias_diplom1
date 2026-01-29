@@ -41,8 +41,11 @@ async def login_for_access_token(
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
-    access_token = create_access_token(data={"sub": user.email}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    refresh_token = create_refresh_token(data={"sub": user.email}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+    # Создаем payload с email и role_id
+    token_data = {"sub": user.email, "role": user.role.name}
+
+    access_token = create_access_token(data=token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    refresh_token = create_refresh_token(data=token_data, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
 
     response = JSONResponse(content={"access_token": access_token, "token_type": "bearer"})
     # HttpOnly cookie для refresh_token
@@ -131,7 +134,7 @@ async def register_user(user_data: UserRequest, session: AsyncSession = Depends(
     session.add(new_user)
     await session.commit()
     await session.refresh(new_user)
-    await send_welcome_email(user_data.user_name)
+    await send_welcome_email(user_data.email)
     return {
         "message": "User registered successfully",
         "user_id": new_user.id,

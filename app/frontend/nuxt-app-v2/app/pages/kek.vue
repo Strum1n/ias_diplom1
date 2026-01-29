@@ -29,7 +29,7 @@
         <ul
           v-click-outside="handleClickOutside"
           v-if="autocompleteResults.settlement.length > 0 && autocompleteResults.settlement[0] != draftFilters.settlement"
-          class="absolute rounded-sm ring-1 ring-[var(--ui-border)] max-h-50 overflow-auto z-10 bg-white w-full mt-1 text-sm">
+          class="absolute rounded-sm ring-1 ring-default max-h-50 overflow-auto z-10 bg-white w-full mt-1 text-sm">
           <li
             v-for="(item, index) in autocompleteResults.settlement"
             :key="index"
@@ -94,36 +94,48 @@
       <UButton color="info" icon="i-material-symbols:add-ad-rounded" variant="soft" class="h-10" @click="addComparison"> Добавить к сравнению </UButton>
       <UButton color="error" variant="soft" icon="i-f7:clear-fill" class="h-10" @click="comparisons = []"> Очистить сравнение </UButton>
     </div>
-
+    <div class="flex mt-5 items-center text-black font-semibold text-xl justify-center w-full">
+      <UIcon name="tabler:filter" class="size-5" />
+      <span>: {{ appliedFiltersLabel }}</span>
+    </div>
     <div class="flex py-5 gap-4.5 justify-between">
       <div class="stat-card">
         <h3>Всего объектов</h3>
-        <div v-if="loadingOneObject">
-          <USkeleton class="h-20 w-150" />
+
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-8" name="ic:round-maps-home-work"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
         </div>
         <div v-else class="stat-card-info">
-          <UIcon class="size-8" name=""> </UIcon> <span>{{ OneObjectData?.total_count }}</span>
+          <UIcon class="size-8" name="ic:round-maps-home-work"> </UIcon> <span>{{ OneObjectData?.total_count }}</span>
         </div>
       </div>
       <div class="stat-card">
         <h3>Средняя цена</h3>
-        <div v-if="loadingOneObject">🔄</div>
-        <div class="stat-card-info">
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-8" name="solar:money-bag-bold"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
           <UIcon class="size-8" name="solar:money-bag-bold"> </UIcon> <span>{{ OneObjectData?.statistics.averages.average_price }} ₽</span>
         </div>
       </div>
       <div class="stat-card">
         <h3>Средняя площадь</h3>
-        <div v-if="loadingOneObject">🔄</div>
-        <div class="stat-card-info">
+
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-8" name="bx:area"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
           <UIcon class="size-8" name="bx:area"> </UIcon> <span>{{ OneObjectData?.statistics.averages.average_area }}</span>
         </div>
       </div>
 
       <div class="stat-card">
         <h3>Новых сегодня</h3>
-        <div v-if="loadingOneObject">🔄</div>
-        <div class="stat-card-info">
+
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-8" name="material-symbols:fiber-new"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
           <UIcon class="size-8" name="material-symbols:fiber-new"> </UIcon> <span>{{ OneObjectData?.offers_today }}</span>
         </div>
       </div>
@@ -131,88 +143,74 @@
 
     <div class="flex gap-4">
       <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
-        <VChartFull :option="priceHistoryChartOption" :init-options="{ height: 400 }" autoresize />
-        <!-- <div v-else class="text-gray-500 text-center py-20">Загрузка истории цен...</div> -->
+        <VChartFull v-if="priceHistoryData" :option="priceHistoryChartOption" :init-options="{ height: 400 }" autoresize />
+        <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
       </div>
 
       <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
-        <VChartFull :option="viewsHistoryChartOption" autoresize :init-options="{ height: 400 }" />
-        <!-- 
-        <div v-else class="text-gray-500 text-center py-20">Загрузка истории просмотров...</div> -->
+        <VChartFull v-if="viewsHistoryData" :option="viewsHistoryChartOption" autoresize :init-options="{ height: 400 }" />
+        <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
       </div>
     </div>
 
     <div class="flex mt-5 gap-4 flex-row justify-between">
-      <div class="w-[73%] flex flex-col gap-4">
-        <div class="ring ring-default rounded-lg p-4">
-          <USelect
-            v-model="appliedFilters.chartType"
-            :items="[
-              { label: 'Количество объектов', value: 'offers' },
-              { label: 'Категории цен', value: 'priceCategories' },
-              { label: 'Средняя цена за м²', value: 'avgPricePerMeter' },
-              { label: 'Среднее кол-во просмотров за день', value: 'avgDailyViewsCount' },
-              { label: 'Boxplot по площади', value: 'areaBoxplot' },
-              { label: 'Boxplot по цене', value: 'priceBoxplot' },
-            ]"
-            placeholder="Тип графика"
-            class="w-fit" />
-          <div class="relative mt-4">
-            {{ chartContainerHeight }}
-
-            {{ loadingSettlements }}
-            <UButton v-if="canDrillUp" icon="i-heroicons-arrow-left" color="neutral" variant="soft" @click="drillUp"> Назад </UButton>
-
-            <VChartFull :option="chartOption" autoresize :init-options="{ height: 500 }" @click="handleChartClick" />
-            <!-- <div v-else-if="loadingSettlements">Загрузка...</div> -->
-            <div v-if="!loadingSettlements && settlementsData?.length === 0" class="text-center top-50 left-144 absolute text-gray-400 mt-2">
-              Нет данных для выбранного уровня
-            </div>
+      <div class="ring w-[70%] ring-default relative rounded-lg">
+        <USelect v-model="appliedFilters.chartType" :items="chartTypeOptions" placeholder="Тип графика" class="w-fit z-10 absolute top-5 left-5" />
+        <!-- <UButton v-if="canDrillUp" icon="i-heroicons-arrow-left" color="neutral" variant="soft" @click="drillUp"> Назад </UButton> -->
+        <div>
+          <VChartFull class="p-2" v-if="settlementsData" :option="chartOption" autoresize :init-options="chartInitOptions" @click="handleChartClick" />
+          <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
+          <div v-if="!loadingSettlements && settlementsData?.length === 0" class="text-center top-50 left-144 absolute text-gray-400 mt-2">
+            Нет данных для выбранного уровня
           </div>
         </div>
-
-        <div class="flex flex-col gap-5">
-          <h3 class="text-xl font-[550]">Популярные объявления</h3>
-          <div
-            v-for="offer in OneObjectData?.top_offers_by_views"
-            :key="offer.id"
-            class="ring ring-[#f8fafc] rounded-lg h-fit p-0! bg-[#f8fafc] cursor-pointer hover:bg-[#e9eef4] hover:ring-[#e9eef4] transition-all"
-            @click="openOffer(offer)">
-            <div class="flex h-fit">
-              <div class="relative">
-                <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-60 h-31" />
-                <div v-else class="h-33 w-51 flex items-center justify-center">
-                  <UIcon name="i-heroicons-photo" class="size-10 text-gray-400 text-2xl" />
-                </div>
-                <UBadge v-if="offer.is_new_house == true" color="info" variant="solid" class="absolute top-3 left-2"> Новостройка </UBadge>
+      </div>
+      <div class="w-[30%]">
+        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize :init-options="chartInitOptions" />
+      </div>
+    </div>
+    <div class="flex mt-5 gap-4">
+      <div class="flex w-[70%] flex-col gap-5">
+        <h3 class="text-xl font-[550]">Популярные объявления</h3>
+        <div
+          v-for="offer in OneObjectData?.top_offers_by_views"
+          :key="offer.id"
+          class="ring ring-[#f8fafc] rounded-lg h-fit p-0! bg-[#f8fafc] cursor-pointer hover:bg-[#e9eef4] hover:ring-[#e9eef4] transition-all"
+          @click="openOffer(offer)">
+          <div class="flex h-fit">
+            <div class="relative">
+              <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-65 h-44.5" />
+              <div v-else class="h-33 w-51 flex items-center justify-center">
+                <UIcon name="i-heroicons-photo" class="size-10 text-gray-400 text-2xl" />
               </div>
-              <div class="pl-4 flex justify-between w-full">
-                <div class="relative py-3">
-                  <div class="flex flex-col gap-1">
-                    <h3 class="font-bold text-base">
-                      {{ offer.title || "Без названия" }}
-                    </h3>
-                    <div class="text-base">
-                      <UIcon name="tabler:map-pin" class="size-4" />
-                      {{ offer.address?.full_address }}
-                    </div>
+              <UBadge v-if="offer.is_new_house == true" color="info" variant="solid" class="absolute top-3 left-2"> Новостройка </UBadge>
+            </div>
+            <div class="pl-4 flex justify-between w-full">
+              <div class="relative py-5">
+                <div class="flex flex-col gap-1">
+                  <h3 class="font-bold text-base">
+                    {{ offer.title || "Без названия" }}
+                  </h3>
+                  <div class="text-base">
+                    <UIcon name="tabler:map-pin" class="size-4" />
+                    {{ offer.address?.full_address }}
                   </div>
-
-                  <span class="text-sm absolute bottom-4"
-                    >Опубликовано:
-                    {{
-                      new Date(offer.creation_date_source).toLocaleString("ru-RU", {
-                        timeZone: "Europe/Moscow",
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    }}</span
-                  >
                 </div>
-                <div class="flex flex-col items-end p-3 gap-1">
+
+                <span class="text-sm absolute bottom-4"
+                  >Опубликовано:
+                  {{
+                    new Date(offer.creation_date_source).toLocaleString("ru-RU", {
+                      timeZone: "Europe/Moscow",
+                      year: "numeric",
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  }}</span
+                >
+                <div class="flex flex-col items-end p-5 gap-1">
                   <div class="flex gap-2">
                     <UBadge v-if="offer.price_category" :color="getCategoryColor(offer.price_category)" variant="solid" class="category-badge">
                       {{ getCategoryLabel(offer.price_category) }}
@@ -226,11 +224,9 @@
           </div>
         </div>
       </div>
-      <div class="flex grow flex-col gap-4">
-        <VChartFull class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize :init-options="{ height: 400 }" />
-
-        <VChartFull class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize :init-options="{ height: 400 }" />
-        <VChartFull class="ring rounded-lg ring-[var(--ui-border)] p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize :init-options="{ height: 400 }" />
+      <div class="flex grow w-[30%] flex-col gap-4">
+        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize :init-options="pieChartInitOptions" />
+        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize :init-options="pieChartInitOptions" />
       </div>
     </div>
   </div>
@@ -241,10 +237,6 @@ const { getCategoryColor } = useCategoryColor();
 const { getCategoryLabel } = useCategoryLabel();
 const { formatPrice } = usePriceFormat();
 
-const chartContainerHeight = computed(() => {
-  const totalGraphs = 1 + comparisons.value.length;
-  return Math.max(400, chartTopOffset + totalGraphs * (chartGridHeight + chartGap));
-});
 interface SettlementData {
   region?: string;
   settlement?: string;
@@ -290,7 +282,7 @@ interface TopOffer {
   url: string;
   price: number;
   price_per_square: number;
-  is_new_house: number;
+  is_new_house: boolean;
   images_urls: string[];
 }
 
@@ -357,13 +349,27 @@ interface ComparisonItem {
   id: number;
   label: string;
   filters: typeof appliedFilters;
-  priceHistory: PriceHistory[];
-  viewsHistory: ViewsHistoryData[];
   settlementsData: SettlementData[];
-  stats: OneObjectStats;
+  priceHistory: any;
+  viewsHistory: any;
+  stats: any;
 }
 const comparisons = ref<ComparisonItem[]>([]);
 let comparisonId = 0;
+
+const appliedFiltersLabel = computed(() => {
+  const label = buildLabel(appliedFilters);
+  return label || "Все объекты";
+});
+
+const chartTypeOptions = ref([
+  { label: "Количество объектов", value: "offers" },
+  { label: "Категории цен", value: "priceCategories" },
+  { label: "Средняя цена за м²", value: "avgPricePerMeter" },
+  { label: "Среднее кол-во просмотров за день", value: "avgDailyViewsCount" },
+  { label: "Boxplot по площади", value: "areaBoxplot" },
+  { label: "Boxplot по цене", value: "priceBoxplot" },
+]);
 
 async function addComparison() {
   const filtersSnapshot = JSON.parse(JSON.stringify(draftFilters));
@@ -385,7 +391,7 @@ async function addComparison() {
     filters: filtersSnapshot,
     priceHistory,
     viewsHistory,
-    settlementsData: settlements.results,
+    settlements: settlements.results,
     stats: one_stats,
   });
 }
@@ -394,7 +400,7 @@ type PricePoint = {
   date: string;
   avg_price: number;
 };
-
+const currentLabel = computed(() => buildLabel(appliedFilters));
 function aggregateByMonth(data?: PricePoint[]) {
   if (!data?.length) return [];
 
@@ -426,18 +432,18 @@ function aggregateByMonth(data?: PricePoint[]) {
 }
 
 const priceHistoryChartOption = computed(() => {
-  // 🔹 агрегируем основной ряд
+  // 🔹 основной ряд
   const baseMonthly = aggregateByMonth(priceHistoryData.value);
 
-  // 🔹 агрегируем сравнения
+  // 🔹 сравнения
   const comparisonMonthly = comparisons.value.map((c) => ({
-    ...c,
+    label: c.label,
     monthly: aggregateByMonth(c.priceHistory),
   }));
 
   const series = [
     {
-      name: "Текущий выбор",
+      name: currentLabel.value,
       type: "line",
       smooth: true,
       showSymbol: false,
@@ -448,16 +454,11 @@ const priceHistoryChartOption = computed(() => {
       type: "line",
       smooth: true,
       showSymbol: false,
-      data: baseMonthly.map((i) => [i.date, i.avg_price]),
+      data: c.monthly.map((i) => [i.date, i.avg_price]), // ✅ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ
     })),
   ];
 
-  const xAxisData = baseMonthly.map((i) =>
-    i.date.toLocaleDateString("ru-RU", {
-      month: "short",
-      year: "numeric",
-    }),
-  );
+  const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price);
 
   return {
     title: {
@@ -466,7 +467,7 @@ const priceHistoryChartOption = computed(() => {
     },
     tooltip: {
       trigger: "axis",
-      valueFormatter: (v: number) => (v ? `${v.toLocaleString()} ₽` : "—"),
+      valueFormatter: (v: number) => (v !== null && v !== undefined ? `${formatPrice(v)} ₽` : "—"),
     },
     dataZoom: {
       type: "inside",
@@ -481,9 +482,14 @@ const priceHistoryChartOption = computed(() => {
       bottom: 65,
       top: 65,
     },
-    xAxis: { type: "time" },
+    xAxis: {
+      type: "time",
+    },
     yAxis: {
       type: "value",
+      axisLabel: {
+        formatter: (v: number) => formatPrice(v),
+      },
     },
     series,
   };
@@ -492,7 +498,7 @@ const priceHistoryChartOption = computed(() => {
 const viewsHistoryChartOption = computed(() => {
   const series = [
     {
-      name: "Текущий выбор",
+      name: currentLabel.value,
       type: "line",
       smooth: true,
       showSymbol: false,
@@ -511,7 +517,7 @@ const viewsHistoryChartOption = computed(() => {
 
   return {
     title: {
-      text: "История просмотров",
+      text: "История просмотров за последние 10 дней",
       left: "center",
     },
     tooltip: {
@@ -553,19 +559,69 @@ function buildParams(filters: typeof appliedFilters) {
   };
 }
 
-function buildLabel(filters: typeof appliedFilters) {
-  return [
-    filters.region,
-    filters.settlement,
-    filters.district,
-    filters.microdistrict,
-    filters.is_new_house === true ? "Новостройки" : filters.is_new_house === false ? "Вторичка" : "Вся ",
-  ]
-    .filter(Boolean)
-    .join(" / ");
+function getGroupByLabel(groupBy: string) {
+  switch (groupBy) {
+    case "region":
+      return "Области";
+    case "settlement":
+      return "Населённые пункты";
+    case "district":
+      return "Районы";
+    case "microdistrict":
+      return "Микрорайоны";
+    case "street":
+      return "Улицы";
+    default:
+      return groupBy;
+  }
 }
 
-const draftFilters = reactive<Record<AutocompleteField, string>>({
+function buildLabel(filters: {
+  groupBy?: string;
+  region?: string;
+  settlement?: string;
+  district?: string;
+  microdistrict?: string;
+  is_new_house?: boolean | null;
+  settlementTypes?: string[];
+}) {
+  const parts: string[] = [];
+
+  // 🔹 уровень группировки
+  if (filters.groupBy) {
+    parts.push(getGroupByLabel(filters.groupBy));
+  }
+
+  // 🔹 география
+  if (filters.region) parts.push(filters.region);
+  if (filters.settlement) parts.push(filters.settlement);
+  if (filters.district) parts.push(filters.district);
+  if (filters.microdistrict) parts.push(filters.microdistrict);
+
+  // 🔹 тип недвижимости
+  if (filters.is_new_house === true) parts.push("Новостройки");
+  else if (filters.is_new_house === false) parts.push("Вторичка");
+  else parts.push("Все объект");
+
+  // 🔹 тип населённого пункта
+  if (filters.settlementTypes?.length) {
+    parts.push(filters.settlementTypes.join(", "));
+  }
+
+  return parts.join(" · ");
+}
+
+interface DraftFilters {
+  groupBy: string;
+  region: string;
+  settlement: string;
+  district: string;
+  microdistrict: string;
+  settlementTypes: string[];
+  is_new_house?: boolean;
+}
+
+const draftFilters = reactive<DraftFilters>({
   groupBy: "region",
   region: "",
   settlement: "",
@@ -610,12 +666,13 @@ async function drillDown(categoryName: string) {
 
     appliedFilters[drillLevels[currentIndex]] = categoryName;
 
-    await refreshSettlementsData();
+    refreshSettlementsData();
 
     if (settlementsData.value?.length && settlementsData.value.length > 0) {
-      await refreshOneObjectData();
-      await refreshPriceHistoryData();
-      await refreshViewsHistoryData();
+      refreshOneObjectData();
+      // await refreshPriceHistoryData();
+
+      refreshViewsHistoryData();
       return;
     }
   }
@@ -639,10 +696,10 @@ async function drillUpTo(targetLevel: (typeof drillLevels)[number]) {
       }
     });
 
-    await refreshSettlementsData();
-    await refreshOneObjectData();
-    await refreshPriceHistoryData();
-    await refreshViewsHistoryData();
+    refreshSettlementsData();
+    refreshOneObjectData();
+    // await refreshPriceHistoryData();
+    refreshViewsHistoryData();
   }
 
   appliedFilters.groupBy = targetLevel;
@@ -654,10 +711,10 @@ async function drillUpTo(targetLevel: (typeof drillLevels)[number]) {
     }
   });
 
-  await refreshSettlementsData();
-  await refreshOneObjectData();
-  await refreshPriceHistoryData();
-  await refreshViewsHistoryData();
+  refreshSettlementsData();
+  refreshOneObjectData();
+  // await refreshPriceHistoryData();
+  refreshViewsHistoryData();
 }
 
 async function drillUp() {
@@ -678,12 +735,12 @@ async function drillUp() {
       }
     });
 
-    await refreshSettlementsData();
+    refreshSettlementsData();
 
     if (settlementsData.value?.length) {
-      await refreshOneObjectData();
-      await refreshPriceHistoryData();
-      await refreshViewsHistoryData();
+      refreshOneObjectData();
+      // await refreshPriceHistoryData();
+      refreshViewsHistoryData();
       return;
     }
   }
@@ -785,7 +842,7 @@ const {
   pending: loadingOneObject,
   error: OneObjectError,
   refresh: refreshOneObjectData,
-} = await useAsyncData<OneObjectStats>("stats", () => {
+} = await useAsyncData<OneObjectStats>("stats", async () => {
   return $api("/analysis/stats", {
     params: {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
@@ -803,8 +860,8 @@ const {
   pending: loadingViewsHistory,
   error: viewsHistoryError,
   refresh: refreshViewsHistoryData,
-} = await useAsyncData<ViewsHistoryData>("views-history", () => {
-  const response = $api("/analysis/last-10-days-views-history", {
+} = await useAsyncData<ViewsHistoryData>("views-history", async () => {
+  return $api("/analysis/last-10-days-views-history", {
     params: {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
       region_name: appliedFilters.region || undefined,
@@ -814,8 +871,6 @@ const {
       is_new_house: appliedFilters.is_new_house,
     },
   });
-
-  return response;
 });
 
 const {
@@ -823,8 +878,8 @@ const {
   pending: loadingPriceHistory,
   error: priceHistoryError,
   refresh: refreshPriceHistoryData,
-} = await useAsyncData<PriceHistory[]>("price-history", () => {
-  const response = $api("/analysis/average-prices-history", {
+} = await useAsyncData<PriceHistory[]>("price-history", async () => {
+  return $api("/analysis/average-prices-history", {
     params: {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
       region_name: appliedFilters.region || undefined,
@@ -834,8 +889,6 @@ const {
       is_new_house: appliedFilters.is_new_house,
     },
   });
-
-  return response;
 });
 
 function getPieCenters(count: number): string[][] {
@@ -865,30 +918,68 @@ function getPieRadius(count: number): string {
   return `${Math.min(maxRadiusX, maxRadiusY)}%`;
 }
 
+function getVerticalPieCentersPx(
+  count: number,
+  startY = 250, // фиксированная позиция первого pie
+  step = 350, // расстояние между pie
+): { center: [string, number]; titleTop: number }[] {
+  return Array.from({ length: count }, (_, idx) => ({
+    center: ["50%", startY + idx * step],
+    titleTop: startY + idx * step - 168,
+  }));
+}
+
 const propertyTypesPieOption = computed(() => {
   const chartsData = [
-    { label: "Текущий выбор", data: OneObjectData.value?.statistics.property_types ?? {} },
-    ...comparisons.value.filter((c) => c.stats).map((c) => ({ label: c.label, data: c.stats.statistics.property_types })),
+    {
+      label: currentLabel.value,
+      data: OneObjectData.value?.statistics.property_types ?? {},
+    },
+    ...comparisons.value
+      .filter((c) => c.stats)
+      .map((c) => ({
+        label: c.label,
+        data: c.stats.statistics.property_types,
+      })),
   ];
 
-  const centers = getPieCenters(chartsData.length);
-  const radius = getPieRadius(chartsData.length);
+  const layout = getVerticalPieCentersPx(chartsData.length);
+  const radius = 90; // px — стабильно и предсказуемо
+
+  const titles = chartsData.map((chart, idx) => ({
+    text: chart.label || "—",
+    left: "50%",
+    top: layout[idx].titleTop,
+    textAlign: "center",
+    textStyle: {
+      fontSize: 13,
+      fontWeight: 500,
+      color: "#111827",
+    },
+  }));
 
   const series = chartsData.map((chart, idx) => ({
     name: chart.label,
     type: "pie",
     radius,
-    center: centers[idx],
-    data: Object.entries(chart.data).map(([name, value]) => ({ name, value })),
-    emphasis: {
-      itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: "rgba(0,0,0,0.3)" },
-    },
+    center: layout[idx].center,
+    data: Object.entries(chart.data).map(([name, value]) => ({
+      name,
+      value,
+    })),
   }));
 
   return {
-    title: { text: "Типы недвижимости", left: "center" },
-    tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
-    legend: { bottom: 0 },
+    title: [
+      {
+        text: "Типы недвижимости",
+        left: "center",
+        top: 20,
+      },
+      ...titles,
+    ],
+    tooltip: { trigger: "item" },
+    legend: {},
     series,
   };
 });
@@ -896,33 +987,61 @@ const propertyTypesPieOption = computed(() => {
 const apartmentsByRoomsPieOption = computed(() => {
   const chartsData = [
     {
-      label: "Текущий выбор",
+      label: currentLabel.value,
       data: OneObjectData.value?.statistics.apartments_by_rooms.rooms ?? {},
     },
-    ...comparisons.value.filter((c) => c.stats).map((c) => ({ label: c.label, data: c.stats.statistics.apartments_by_rooms.rooms })),
+    ...comparisons.value
+      .filter((c) => c.stats)
+      .map((c) => ({
+        label: c.label,
+        data: c.stats.statistics.apartments_by_rooms.rooms,
+      })),
   ];
 
-  const centers = getPieCenters(chartsData.length);
-  const radius = getPieRadius(chartsData.length);
+  const layout = getVerticalPieCentersPx(chartsData.length);
+  const radius = 90; // px — фиксированный и предсказуемый радиус
+
+  const titles = chartsData.map((chart, idx) => ({
+    text: chart.label || "—",
+    left: "50%",
+    top: layout[idx].titleTop,
+    textAlign: "center",
+    textStyle: {
+      fontSize: 13,
+      fontWeight: 500,
+      color: "#111827",
+    },
+  }));
 
   const series = chartsData.map((chart, idx) => ({
     name: chart.label,
     type: "pie",
     radius,
-    center: centers[idx],
+    center: layout[idx].center,
     data: Object.entries(chart.data).map(([name, value]) => ({
       name: name.replace("_rooms", " к.").replace("studio", "Студия").replace("open_plan", "Свободная планировка"),
       value,
     })),
     emphasis: {
-      itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: "rgba(0,0,0,0.3)" },
+      itemStyle: {
+        shadowBlur: 10,
+        shadowOffsetX: 0,
+        shadowColor: "rgba(0,0,0,0.3)",
+      },
     },
   }));
 
   return {
-    title: { text: "Квартиры по комнатам", left: "center" },
+    title: [
+      {
+        text: "Квартиры по комнатам",
+        left: "center",
+        top: 20,
+      },
+      ...titles,
+    ],
     tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
-    legend: { bottom: 0 },
+    legend: {},
     series,
   };
 });
@@ -930,7 +1049,7 @@ const apartmentsByRoomsPieOption = computed(() => {
 const flatTypePieOption = computed(() => {
   const chartsData = [
     {
-      label: "Текущий выбор",
+      label: currentLabel.value,
       data: {
         Новостройки: OneObjectData.value?.statistics.apartments_by_rooms.flat_type.new_houses ?? 0,
         Вторичка: OneObjectData.value?.statistics.apartments_by_rooms.flat_type.secondary ?? 0,
@@ -947,25 +1066,47 @@ const flatTypePieOption = computed(() => {
       })),
   ];
 
-  const centers = getPieCenters(chartsData.length);
-  const radius = getPieRadius(chartsData.length);
+  const layout = getVerticalPieCentersPx(chartsData.length);
+  const outerRadius = 90; // px, фиксированный внешний радиус
+
+  const titles = chartsData.map((chart, idx) => ({
+    text: chart.label || "—",
+    left: "50%",
+    top: layout[idx].titleTop,
+    textAlign: "center",
+    textStyle: {
+      fontSize: 13,
+      fontWeight: 500,
+      color: "#111827",
+    },
+  }));
 
   const series = chartsData.map((chart, idx) => ({
     name: chart.label,
     type: "pie",
-
-    radius: [`25%`, radius], // внутренний радиус 40%, внешний как раньше
-    center: centers[idx],
+    radius: [`25%`, `${outerRadius}px`], // внутренний радиус 25%, внешний фиксированный
+    center: layout[idx].center,
     data: Object.entries(chart.data).map(([name, value]) => ({ name, value })),
     emphasis: {
-      itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: "rgba(0,0,0,0.3)" },
+      itemStyle: {
+        shadowBlur: 10,
+        shadowOffsetX: 0,
+        shadowColor: "rgba(0,0,0,0.3)",
+      },
     },
   }));
 
   return {
-    title: { text: "Новостройки vs Вторичка", left: "center" },
+    title: [
+      {
+        text: "Кол-во Новостроек и Вторички",
+        left: "center",
+        top: 20,
+      },
+      ...titles,
+    ],
     tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
-    legend: { bottom: 0 },
+    legend: {},
     series,
   };
 });
@@ -1045,45 +1186,91 @@ function buildSeriesForFilters(filtersSnapshot: typeof appliedFilters, settlemen
   }
 }
 
-const chartGridHeight = 220;
-const chartTopOffset = 40;
-const chartGap = 100;
+const chartMainTitle = computed(() => {
+  return chartTypeOptions.value.find((o) => o.value === appliedFilters.chartType)?.label ?? "";
+});
+
+const chartContainerHeight = computed(() => {
+  return CHART_TOP_START + comparisons.value.length * CHART_BLOCK_HEIGHT + 400;
+});
+
+const chartInitOptions = computed(() => ({
+  height: chartContainerHeight.value,
+}));
+
+const pieChartInitOptions = computed(() => ({
+  height: chartContainerHeight.value,
+}));
+
+const CHART_BLOCK_HEIGHT = 360; // полный блок (title + grid + отступ)
+const CHART_TITLE_HEIGHT = 24; // высота тайтла
+const CHART_GRID_HEIGHT = 220;
+const CHART_TOP_START = 80;
 
 const chartOption = computed(() => {
   const grids: any[] = [];
   const xAxes: any[] = [];
   const yAxes: any[] = [];
   const series: any[] = [];
+  const titles: any[] = [];
+
+  /* ---------- MAIN TITLE ---------- */
+  titles.push({
+    text: chartMainTitle.value, // ← название ВСЕГО графика
+    left: "center",
+    top: 20,
+    textStyle: {
+      fontSize: 16,
+      fontWeight: 600,
+      color: "#111827",
+    },
+  });
 
   const allGraphs = [
-    { settlements: settlementsData.value, filters: appliedFilters },
+    {
+      settlements: settlementsData.value ?? [],
+      filters: appliedFilters,
+      label: appliedFiltersLabel.value,
+    },
     ...comparisons.value.map((c) => ({
-      settlements: c.settlementsData,
+      settlements: c.settlements ?? [],
       filters: { ...c.filters, chartType: appliedFilters.chartType },
       label: c.label,
     })),
   ];
 
   allGraphs.forEach((graph, idx) => {
-    const top = chartTopOffset + idx * (chartGridHeight + chartGap);
+    const blockTop = CHART_TOP_START + idx * CHART_BLOCK_HEIGHT;
+
+    /* ---------- PER-GRAPH TITLE ---------- */
+    if (graph.label) {
+      titles.push({
+        text: graph.label,
+        left: "50%",
+        top: blockTop,
+        textAlign: "center",
+        textStyle: {
+          fontSize: 13,
+          fontWeight: 500,
+          color: "#111827",
+        },
+      });
+    }
+
+    const gridTop = blockTop + CHART_TITLE_HEIGHT + 8;
 
     grids.push({
-      top,
+      top: gridTop,
       left: 0,
-      right: 40,
-      height: chartGridHeight,
+      right: 20,
+      height: CHART_GRID_HEIGHT,
     });
-
-    const categories = graph.settlements.map((i) => getCategoryLabelData(i, graph.filters.groupBy));
 
     xAxes.push({
       type: "category",
       gridIndex: idx,
-      data: categories,
-      axisLabel: {
-        rotate: 30,
-      },
-
+      data: graph.settlements.map((i) => getCategoryLabelData(i, graph.filters.groupBy)),
+      axisLabel: { rotate: 30 },
       boundaryGap: true,
     });
 
@@ -1097,7 +1284,7 @@ const chartOption = computed(() => {
         ...s,
         xAxisIndex: idx,
         yAxisIndex: idx,
-        name: graph.label ? `${s.name} — ${graph.label}` : s.name,
+        name: s.name,
       })),
     );
   });
@@ -1105,18 +1292,18 @@ const chartOption = computed(() => {
   const dataZoom = allGraphs.map((_, idx) => ({
     type: "inside",
     xAxisIndex: idx,
-
     zoomOnMouseWheel: true,
     moveOnMouseMove: true,
     preventDefaultMouseMove: true,
   }));
 
   return {
+    title: titles,
     tooltip: {
       trigger: "axis",
       axisPointer: { type: "shadow" },
     },
-    legend: { top: 0 },
+    legend: {},
     grid: grids,
     xAxis: xAxes,
     yAxis: yAxes,
@@ -1136,7 +1323,7 @@ const autocompleteResults = reactive({
 
 const { data: autocompleteData, refresh: refreshAutocomplete } = await useAsyncData(
   "autocomplete-filterss",
-  () =>
+  async () =>
     $api("/offers/autocomplete-filters", {
       params: {
         query: draftFilters[selectedFilterType.value],
@@ -1147,6 +1334,10 @@ const { data: autocompleteData, refresh: refreshAutocomplete } = await useAsyncD
 );
 
 async function applyFilters() {
+  viewsHistoryData.value = undefined;
+  settlementsData.value = undefined;
+  OneObjectData.value = undefined;
+  priceHistoryData.value = undefined;
   appliedFilters.groupBy = draftFilters.groupBy;
 
   appliedFilters.region = draftFilters.region;
@@ -1156,10 +1347,10 @@ async function applyFilters() {
   appliedFilters.settlementTypes = [...draftFilters.settlementTypes];
   appliedFilters.is_new_house = draftFilters.is_new_house;
 
-  await refreshSettlementsData();
-  await refreshOneObjectData();
-  await refreshPriceHistoryData();
-  await refreshViewsHistoryData();
+  refreshSettlementsData();
+  refreshOneObjectData();
+  refreshPriceHistoryData();
+  refreshViewsHistoryData();
 
   Object.values(autocompleteResults).forEach((arr) => arr.splice(0));
 }
@@ -1241,14 +1432,15 @@ const colorPalette = ["#FF5733", "#33FF57", "#3357FF", "#F2E205", "#9C27B0", "#F
 </script>
 <style scoped>
 @reference "tailwindcss";
+@reference "@nuxt/ui";
 .stat-card {
-  @apply ring ring-[var(--ui-border)] flex flex-col items-center rounded-lg p-4 px-20 text-2xl grow w-1/4;
+  @apply ring ring-default flex flex-col items-center rounded-lg p-4 px-20 text-2xl grow w-1/4;
 }
 .stat-card span {
   @apply font-bold;
 }
 .stat-card h3 {
-  @apply text-[var(--ui-text-muted)];
+  @apply text-muted;
 }
 .stat-card-info {
   @apply flex mt-1.5 justify-center items-center gap-2;
