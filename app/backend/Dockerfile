@@ -1,22 +1,18 @@
-FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+FROM python:3.14
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /origin/app/backend
 
-WORKDIR /app
+COPY requirements.txt /origin/app/backend
 
-# Сначала копируем только requirements (для кэша)
-COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /origin/app/backend/requirements.txt
 
-# Копируем весь код
-COPY . .
 
-# CMD с корректным путём к main.py
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+COPY . /origin/app/backend
+
+WORKDIR /origin/
+
+ENV PYTHONPATH=/origin
+
+CMD ["fastapi", "run", "app/backend/main.py", "--port", "80"]

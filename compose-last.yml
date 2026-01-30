@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgis/postgis:18-3.6
+    env_file: .env
+    container_name: postgres_db
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/postgres_db
+      - ./dump2.sql:/docker-entrypoint-initdb.d/dump.sql
+
+
+  backend:
+    image: myimage  # тут имя твоего docker image для бэка
+    container_name: backend_app
+    restart: always
+    env_file: prod1.env
+    depends_on:
+      - db
+    ports:
+      - "8000:80"
+    # Если твой бэк зависит от PYTHONPATH
+    environment:
+      PYTHONPATH: /origin
+
+
+volumes:
+  db_data:

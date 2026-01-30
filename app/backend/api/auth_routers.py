@@ -43,7 +43,8 @@ async def login_for_access_token(
 
     access_token = create_access_token(data=token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     refresh_token = create_refresh_token(data=token_data, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
-
+    if isinstance(access_token, bytes):
+        access_token = access_token.decode("utf-8")
     response = JSONResponse(content={"access_token": access_token, "token_type": "bearer"})
     # HttpOnly cookie для refresh_token
     response.set_cookie(

@@ -488,7 +488,9 @@ async function addComparison() {
     stats: one_stats,
   });
 }
-
+function removeComparison(id: number) {
+  comparisons.value = comparisons.value.filter((c) => c.id !== id);
+}
 type PricePoint = {
   date: string;
   avg_price: number;
@@ -920,8 +922,14 @@ const breadcrumbsGraphic = computed(() => {
 function handleChartClick(params: any) {
   if (!params || params.componentType !== "series") return;
 
-  // ❌ разрешаем drill ТОЛЬКО для верхнего графика
-  if (params.seriesId !== "drill-root") return;
+  const seriesIndex = params.seriesIndex;
+  if (seriesIndex == null) return;
+
+  const seriesItem = chartOption.value.series[seriesIndex];
+  const gridIndex = seriesItem?.xAxisIndex ?? 0;
+
+  // ✅ drill ТОЛЬКО с основного графика
+  if (gridIndex !== 0) return;
 
   if (!params.name) return;
 
@@ -1320,6 +1328,7 @@ const chartOption = computed(() => {
   const yAxes: any[] = [];
   const series: any[] = [];
   const titles: any[] = [];
+  const graphics: any[] = [];
 
   /* ---------- MAIN TITLE ---------- */
   titles.push({
@@ -1362,6 +1371,25 @@ const chartOption = computed(() => {
           color: "#111827",
         },
       });
+
+      // ❌ кнопка удаления ТОЛЬКО для сравнений
+      if (idx > 0) {
+        const comparisonId = comparisons.value[idx - 1].id;
+
+        graphics.push({
+          type: "text",
+          left: "95%",
+          top: blockTop,
+          style: {
+            text: "✕",
+            fontSize: 14,
+            fontWeight: 600,
+            fill: "#ef4444",
+            cursor: "pointer",
+          },
+          onclick: () => removeComparison(comparisonId),
+        });
+      }
     }
 
     const gridTop = blockTop + CHART_TITLE_HEIGHT + 8;
@@ -1392,7 +1420,6 @@ const chartOption = computed(() => {
         xAxisIndex: idx,
         yAxisIndex: idx,
         name: idx === 0 ? s.name : `${s.name} · ${graph.label}`, // ✅
-        id: idx === 0 ? "drill-root" : undefined, // ✅ КЛЮЧ
         cursor: idx === 0 ? "pointer" : "default",
       })),
     );
@@ -1408,6 +1435,7 @@ const chartOption = computed(() => {
 
   return {
     title: titles,
+    graphic: graphics, // 👈 ВАЖНО
     tooltip: {
       trigger: "axis",
       axisPointer: { type: "shadow" },

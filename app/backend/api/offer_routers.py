@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import selectinload
 from sqlmodel import and_, asc, desc, select, text
+from app.backend.auth_utils.auth import oauth2_scheme
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.backend.api.response_models import (
     OfferResponseFull,
@@ -432,6 +433,7 @@ async def export_offers_csv(
 
 @offer_router.get("", response_model=OfferResponseWithPagination)
 async def get_offers(
+    token: Annotated[str, Depends(oauth2_scheme)],
     session: AsyncSession = Depends(get_async_session),
     limit: int = Query(50, ge=1, le=100000),
     offset: int = Query(0, ge=0),
