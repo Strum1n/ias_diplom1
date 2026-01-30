@@ -1,12 +1,10 @@
 import csv
 import io
 from typing import Annotated, Literal
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import selectinload
 from sqlmodel import and_, asc, desc, select, text
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from app.backend.api.response_models import (
     OfferResponseFull,
     OfferResponseWithPagination,

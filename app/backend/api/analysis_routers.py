@@ -1,17 +1,13 @@
 import json
 import logging
-from datetime import date, timedelta
+from datetime import date
 from typing import Dict, Literal
-
 import numpy as np
-from fastapi import APIRouter, Depends, Form, HTTPException, Query
-from fastapi.params import Body
-from pydantic import confloat
-from sqlalchemy import Integer, case, column, table
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import case
 from sqlalchemy.orm import joinedload
-from sqlmodel import Numeric, and_, case, cast, func, or_, select, text, true
+from sqlmodel import Numeric, and_, case, cast, func, select, text
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from app.backend.db.config import get_async_session
 from app.backend.db.models import *
 from app.backend.fuzzy_logic.fuzzy_evaluator import FuzzyEvaluator

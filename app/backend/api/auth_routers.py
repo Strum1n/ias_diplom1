@@ -1,13 +1,10 @@
 from datetime import timedelta
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from jwt import PyJWTError, decode
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from app.backend.api.response_models import UserRequest
 from app.backend.auth_utils.auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
