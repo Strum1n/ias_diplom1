@@ -1,7 +1,9 @@
 <template>
   <div class="flex gap-5 mx-auto p-5">
-    <FiltersSidebar ref="filtersRef" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
-    <main class="w-full">
+    <div class="w-[22%]">
+      <FiltersSidebar ref="filtersRef" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
+    </div>
+    <main class="flex-1">
       <div class="mb-4">
         <AddressAutocomplete @address-selected="handleAddressSearch" @search-triggered="handleAddressSearch" />
       </div>

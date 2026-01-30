@@ -828,7 +828,7 @@ defineExpose({
 }
 
 .filters-content {
-  @apply ring-1 ring-(--ui-border) rounded-lg  max-h-[89vh] flex flex-col w-124 sticky top-16;
+  @apply ring-1 ring-(--ui-border) rounded-lg  max-h-[89vh] flex flex-col w-full  sticky top-16;
 }
 
 .filter-section:first-of-type {

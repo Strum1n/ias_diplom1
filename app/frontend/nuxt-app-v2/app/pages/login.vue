@@ -12,8 +12,6 @@
 
       <UForm @submit="handleSubmit" :state="form" :validate="validate" class="login-form">
         <div class="form-field">
-          {{ isAuthenticated }}
-          {{ accessToken }}
           <UFormField label="Email" name="email">
             <UInput v-model="form.email" type="email" placeholder="your@email.com" />
           </UFormField>
@@ -29,7 +27,7 @@
           <UButton type="submit" class="button-submit" color="primary" :loading="loading"> Войти </UButton>
         </div>
       </UForm>
-      <p class="error-text">{{ error }}</p>
+
       <div v-if="error" class="error-message">
         <p class="error-text">{{ error }}</p>
       </div>
@@ -49,7 +47,7 @@ import type { FormError } from "@nuxt/ui";
 import { useRoute } from "vue-router";
 import { useAuth } from "~/composables/useAuth";
 
-const { logout, loading, accessToken, error, handleLogin, isAuthenticated } = useAuth();
+const { handleLogin, loading, error } = useAuth();
 const route = useRoute();
 
 // Показываем сообщение об успешной регистрации

@@ -372,6 +372,7 @@ def topsis_endpoint(
 async def get_offers_by_location(
     region_name: Optional[str] = Query(None, description="Название области"),
     settlement_name: Optional[str] = Query(None, description="Название поселения"),
+    municipality_name: Optional[str] = Query(None, description="Название муниципального образования"),
     district_name: Optional[str] = Query(None, description="Название района"),
     microdistrict_name: Optional[str] = Query(None, description="Название микрорайона"),
     street_name: Optional[str] = Query(None, description="Название улицы"),
@@ -389,6 +390,7 @@ async def get_offers_by_location(
     location_filters = [
         (Region.short_name, region_name),
         (Settlement.short_name, settlement_name),
+        (Municipality.short_name, municipality_name),
         (District.short_name, district_name),
         (Microdistrict.short_name, microdistrict_name),
         (Street.short_name, street_name),
@@ -414,6 +416,7 @@ async def get_offers_by_location(
         .join(PropertyType, Offer.property_type_id == PropertyType.id)
         .join(Region, Address.region_id == Region.id, isouter=True)
         .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(Municipality, Address.municipality_id == Municipality.id, isouter=True)
         .join(SettlementType, Settlement.settlement_type_id == SettlementType.id, isouter=True)
         .join(District, Address.district_id == District.id, isouter=True)
         .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
@@ -525,6 +528,7 @@ async def get_offers_by_location(
         .join(PropertyType, Offer.property_type_id == PropertyType.id)
         .join(Region, Address.region_id == Region.id, isouter=True)
         .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(Municipality, Address.municipality_id == Municipality.id, isouter=True)
         .join(SettlementType, Settlement.settlement_type_id == SettlementType.id, isouter=True)
         .join(District, Address.district_id == District.id, isouter=True)
         .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
@@ -609,9 +613,10 @@ async def get_offers_by_location(
 
 @analysis_router.get("/group-stats")
 async def get_grouped_stats(
-    group_by: Literal["region", "settlement", "district", "microdistrict", "street"] = Query(...),
+    group_by: Literal["region", "municipality", "settlement", "district", "microdistrict", "street"] = Query(...),
     region_name: Optional[str] = Query(None),
     settlement_name: Optional[str] = Query(None),
+    municipality_name: Optional[str] = Query(None, description="Название муниципального образования"),
     district_name: Optional[str] = Query(None),
     microdistrict_name: Optional[str] = Query(None),
     street_name: Optional[str] = Query(None),
@@ -622,6 +627,7 @@ async def get_grouped_stats(
     group_map = {
         "region": Region.short_name,
         "settlement": Settlement.short_name,
+        "municipality": Municipality.short_name,
         "district": District.short_name,
         "microdistrict": Microdistrict.short_name,
         "street": Street.short_name,
@@ -637,6 +643,8 @@ async def get_grouped_stats(
         filters.append(Region.short_name == region_name)
     if settlement_name:
         filters.append(Settlement.short_name == settlement_name)
+    if municipality_name:
+        filters.append(Municipality.short_name == municipality_name)
     if district_name:
         filters.append(District.short_name == district_name)
     if microdistrict_name:
@@ -676,6 +684,7 @@ async def get_grouped_stats(
         .join(Address, Offer.address_id == Address.id)
         .join(Region, Address.region_id == Region.id, isouter=True)
         .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
+        .join(Municipality, Address.municipality_id == Municipality.id, isouter=True)
         .join(SettlementType, Settlement.settlement_type_id == SettlementType.id, isouter=True)
         .join(District, Address.district_id == District.id, isouter=True)
         .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
@@ -686,6 +695,7 @@ async def get_grouped_stats(
     null_guard = {
         "region": Region.id,
         "settlement": Settlement.id,
+        "municipality": Municipality.id,
         "district": District.id,
         "microdistrict": Microdistrict.id,
         "street": Street.id,
@@ -1154,6 +1164,7 @@ async def get_views_last_10_days(
     session: AsyncSession = Depends(get_async_session),
     region_name: Optional[str] = Query(None),
     settlement_name: Optional[str] = Query(None),
+    municipality_name: Optional[str] = Query(None),
     district_name: Optional[str] = Query(None),
     microdistrict_name: Optional[str] = Query(None),
     street_name: Optional[str] = Query(None),
@@ -1176,6 +1187,10 @@ async def get_views_last_10_days(
     if settlement_name:
         conditions.append("s.short_name = :settlement_name")
         params["settlement_name"] = settlement_name
+
+    if municipality_name:
+        conditions.append("m.short_name = :municipality_name")
+        params["municipality_name"] = municipality_name
 
     if district_name:
         conditions.append("d.short_name = :district_name")
@@ -1207,6 +1222,7 @@ async def get_views_last_10_days(
         JOIN address a ON o.address_id = a.id
         LEFT JOIN region r ON a.region_id = r.id
         LEFT JOIN settlement s ON a.settlement_id = s.id
+        LEFT JOIN municipality m ON a.municipality_id = m.id
         LEFT JOIN settlement_type stt ON s.settlement_type_id = stt.id
         LEFT JOIN district d ON a.district_id = d.id
         LEFT JOIN street st ON a.street_id = st.id
@@ -1227,6 +1243,7 @@ async def get_views_last_10_days(
 async def get_average_prices_history(
     region_name: Optional[str] = Query(None),
     settlement_name: Optional[str] = Query(None),
+    municipality_name: Optional[str] = Query(None),
     district_name: Optional[str] = Query(None),
     microdistrict_name: Optional[str] = Query(None),
     street_name: Optional[str] = Query(None),
@@ -1235,7 +1252,7 @@ async def get_average_prices_history(
     is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
     # Проверяем, были ли переданы параметры
-    if not any([region_name, settlement_name, district_name, street_name, microdistrict_name, settlement_type_names, is_new_house]):
+    if not any([region_name, settlement_name, municipality_name, district_name, street_name, microdistrict_name, settlement_type_names, is_new_house]):
         # Если параметры не переданы, используем материализованное представление
         query = text("""
         SELECT 
@@ -1257,6 +1274,9 @@ async def get_average_prices_history(
         if settlement_name is not None:
             filters.append("s.short_name = :settlement_name")
             params["settlement_name"] = settlement_name
+        if municipality_name is not None:
+            filters.append("m.short_name = :municipality_name")
+            params["municipality_name"] = municipality_name
         if district_name is not None:
             filters.append("d.short_name = :district_name")
             params["district_name"] = district_name
@@ -1291,6 +1311,7 @@ async def get_average_prices_history(
                 a.id AS address_id, 
                 r.short_name AS region, 
                 s.short_name AS settlement,
+                m.short_name AS municipality,
                 d.short_name AS district,
                 md.short_name AS microdistrict,  
                 st.short_name AS street,
@@ -1300,6 +1321,7 @@ async def get_average_prices_history(
             JOIN address a ON a.id = o.address_id
             LEFT JOIN region r ON a.region_id = r.id
             LEFT JOIN settlement s ON a.settlement_id = s.id
+            LEFT JOIN municipality m ON a.municipality_id = m.id
             LEFT JOIN settlement_type stt ON s.settlement_type_id = stt.id
             LEFT JOIN district d ON a.district_id = d.id
             LEFT JOIN microdistrict md ON a.microdistrict_id = md.id

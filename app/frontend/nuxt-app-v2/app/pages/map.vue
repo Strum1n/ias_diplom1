@@ -1,6 +1,6 @@
 <template>
-  <div class="page-layout">
-    <div class="sidebar-container">
+  <div class="flex gap-5 mx-auto p-5 max-h-full">
+    <div class="w-[22%]">
       <FiltersSidebar @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>
 
@@ -9,9 +9,15 @@
         <AddressAutocomplete @address-selected="handleAddressSearch" @search-triggered="handleAddressSearch" />
       </div>
 
-      <UBadge v-if="addressForSearch" size="lg" class="mb-3 max-w-fit py-0" color="info">
+      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-3 text-sm" color="info">
         {{ addressForSearch }}
-        <UButton trailing-icon="heroicons:x-mark-16-solid" class="px-0 pt-2" color="info" @click="clearAddressSearch" size="md"></UButton>
+        <UButton
+          trailing-icon="heroicons:x-mark-16-solid"
+          variant="outline"
+          class="px-0 ring-[#e9f2ff] pt-2 border-0 bg-transparent"
+          color="info"
+          @click="clearAddressSearch"
+          size="md"></UButton>
       </UBadge>
 
       <div v-if="offersError" class="error-message">
@@ -194,55 +200,6 @@ const clearAddressSearch = () => {
   refreshOffers();
 };
 
-// const loadOffersForMap = async () => {
-//     console.log("Пробуем загружать офферы")
-//     console.log("Текущие фильтры:", currentFilters.value)
-
-//     console.log("Загружаем офферы для карты")
-//     error.value = null
-//     loading.value = true
-
-//     try {
-//         const query: Record<string, any> = {
-//             limit: 1000000
-//         }
-
-//         if (currentFilters.value && Object.keys(currentFilters.value).length > 0) {
-//             Object.entries(currentFilters.value).forEach(([key, value]) => {
-//                 if (value == null || value === '' || (Array.isArray(value) && value.length === 0)) return
-
-//                 if (Array.isArray(value)) {
-//                     query[key] = value.filter(item => item != null && item !== '')
-//                 } else if (typeof value === 'boolean') {
-//                     if (value === true) {
-//                         query[key] = String(value)
-//                     }
-//                 } else if (typeof value === 'object' && !Array.isArray(value)) {
-//                     query[key] = JSON.stringify(value)
-//                 } else {
-//                     query[key] = String(value)
-//                 }
-//             })
-//         }
-
-//         console.log('Запрос офферов для карты с параметрами:', query)
-
-//         const response = await $api<Offer[]>('/offers/offers_for_map', {
-//             query
-//         })
-
-//         offers.value = response || []
-//         console.log(`Загружено ${offers.value.length} офферов для карты`)
-
-//     } catch (err: any) {
-//         console.error('Ошибка загрузки предложений для карты:', err)
-//         error.value = err.message || 'Ошибка загрузки предложений'
-//         offers.value = []
-//     } finally {
-//         loading.value = false
-//     }
-// }
-
 const isFullscreen = ref(false);
 
 const toggleFullscreen = () => {
@@ -400,6 +357,7 @@ onBeforeUnmount(() => {
 
 .map-container {
   display: flex;
+
   justify-content: center;
   align-items: center;
   flex: 1 1 auto;
@@ -411,7 +369,7 @@ onBeforeUnmount(() => {
 }
 
 .sidebar-container {
-  min-height: 0;
+  width: 22.9%;
 }
 
 .offer-card {

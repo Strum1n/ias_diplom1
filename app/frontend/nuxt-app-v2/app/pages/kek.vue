@@ -5,7 +5,8 @@
         v-model="draftFilters.groupBy"
         :items="[
           { label: 'Области', value: 'region' },
-          { label: 'Поселения', value: 'settlement' },
+          { label: 'Муниципалитеты', value: 'municipality' },
+          { label: 'Населённые пункты', value: 'settlement' },
           { label: 'Районы', value: 'district' },
           { label: 'Микрорайоны', value: 'microdistrict' },
           { label: 'Улицы', value: 'street' },
@@ -23,7 +24,21 @@
           </li>
         </ul>
       </div>
-
+      <div v-if="visibleInputs.includes('municipality')" class="relative">
+        <UInput v-model="draftFilters.municipality" placeholder="Муниципалитет" @update:model-value="(v) => handleInputChange('municipality', v)" />
+        <ul
+          v-click-outside="handleClickOutside"
+          v-if="autocompleteResults.municipality.length > 0 && autocompleteResults.municipality[0] != draftFilters.municipality"
+          class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+          <li
+            v-for="(item, index) in autocompleteResults.municipality"
+            :key="index"
+            @click="selectResult('municipality', item)"
+            class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+            {{ item }}
+          </li>
+        </ul>
+      </div>
       <div v-if="visibleInputs.includes('settlement')" class="relative">
         <UInput v-model="draftFilters.settlement" placeholder="Населённый пункт" @update:model-value="(v) => handleInputChange('settlement', v)" />
         <ul
@@ -80,7 +95,7 @@
           class="mb-4 mt-2" />
       </div>
       <div>
-        <span class="font-[550]">Тип квартиры</span>
+        <span class="font-[550]">Вид недвижимости</span>
         <URadioGroup
           class="mt-2"
           v-model="draftFilters.is_new_house"
@@ -90,11 +105,13 @@
             { label: 'Вторичка', value: false },
           ]" />
       </div>
-      <UButton color="primary" variant="solid" class="h-10" @click="applyFilters"> Применить фильтры </UButton>
-      <UButton color="info" icon="i-material-symbols:add-ad-rounded" variant="soft" class="h-10" @click="addComparison"> Добавить к сравнению </UButton>
-      <UButton color="error" variant="soft" icon="i-f7:clear-fill" class="h-10" @click="comparisons = []"> Очистить сравнение </UButton>
+      <UButton color="primary" variant="solid" class="h-fit p-2" @click="applyFilters"> Применить фильтры </UButton>
+      <UButton color="info" icon="i-material-symbols:add-ad-rounded" variant="soft" class="h-fit p-2" @click="addComparison"> Добавить к сравнению </UButton>
+      <UButton color="error" variant="soft" icon="i-f7:clear-fill" class="h-fit p-2" @click="comparisons = []"> Очистить сравнение </UButton>
     </div>
-    <div class="flex mt-5 items-center text-black font-semibold text-xl justify-center w-full">
+    <div
+      v-if="appliedFilters.municipality || appliedFilters.region || appliedFilters.settlement || appliedFilters.district || appliedFilters.microdistrict"
+      class="flex mt-5 items-center text-black font-semibold text-xl justify-center w-full">
       <UIcon name="tabler:filter" class="size-5" />
       <span>: {{ appliedFiltersLabel }}</span>
     </div>
@@ -154,9 +171,18 @@
     </div>
 
     <div class="flex mt-5 gap-4 flex-row justify-between">
-      <div class="ring w-[70%] ring-default relative rounded-lg">
+      <div class="ring w-[75%] ring-default relative rounded-lg">
         <USelect v-model="appliedFilters.chartType" :items="chartTypeOptions" placeholder="Тип графика" class="w-fit z-10 absolute top-5 left-5" />
-        <!-- <UButton v-if="canDrillUp" icon="i-heroicons-arrow-left" color="neutral" variant="soft" @click="drillUp"> Назад </UButton> -->
+        <UButton v-if="canDrillUp" class="absolute top-20.5 z-10 left-12" icon="i-heroicons-arrow-left" color="neutral" variant="ghost" @click="drillUp"> Назад </UButton>
+        <UButton
+          v-if="canDrillUp && appliedFilters.groupBy != 'street'"
+          class="absolute top-20.5 z-10 right-12"
+          trailing-icon="i-heroicons-arrow-right"
+          color="neutral"
+          variant="ghost"
+          @click="drillDownBtn">
+          Вперед
+        </UButton>
         <div>
           <VChartFull class="p-2" v-if="settlementsData" :option="chartOption" autoresize :init-options="chartInitOptions" @click="handleChartClick" />
           <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
@@ -165,66 +191,76 @@
           </div>
         </div>
       </div>
-      <div class="w-[30%]">
+      <div class="w-[25%]">
         <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize :init-options="chartInitOptions" />
       </div>
     </div>
+
     <div class="flex mt-5 gap-4">
-      <div class="flex w-[70%] flex-col gap-5">
-        <h3 class="text-xl font-[550]">Популярные объявления</h3>
-        <div
-          v-for="offer in OneObjectData?.top_offers_by_views"
-          :key="offer.id"
-          class="ring ring-[#f8fafc] rounded-lg h-fit p-0! bg-[#f8fafc] cursor-pointer hover:bg-[#e9eef4] hover:ring-[#e9eef4] transition-all"
-          @click="openOffer(offer)">
-          <div class="flex h-fit">
-            <div class="relative">
-              <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-65 h-44.5" />
-              <div v-else class="h-33 w-51 flex items-center justify-center">
-                <UIcon name="i-heroicons-photo" class="size-10 text-gray-400 text-2xl" />
-              </div>
-              <UBadge v-if="offer.is_new_house == true" color="info" variant="solid" class="absolute top-3 left-2"> Новостройка </UBadge>
-            </div>
-            <div class="pl-4 flex justify-between w-full">
-              <div class="relative py-5">
-                <div class="flex flex-col gap-1">
-                  <h3 class="font-bold text-base">
-                    {{ offer.title || "Без названия" }}
-                  </h3>
-                  <div class="text-base">
-                    <UIcon name="tabler:map-pin" class="size-4" />
-                    {{ offer.address?.full_address }}
-                  </div>
+      <div class="flex w-[75%] flex-col">
+        <p class="text-xl font-semibold">Популярные объявления</p>
+        <div class="flex flex-col gap-5 mt-4" v-for="block in topOffersBlocks" :key="block.label">
+          <h3 class="text-lg text-center">
+            {{ block.label }}
+          </h3>
+
+          <div
+            v-for="offer in block.offers"
+            :key="offer.id"
+            class="ring ring-[#f8fafc] rounded-lg h-fit p-0 bg-[#f8fafc] cursor-pointer hover:bg-[#e9eef4] hover:ring-[#e9eef4] transition-all"
+            @click="openOffer(offer)">
+            <div class="flex h-fit">
+              <div class="relative">
+                <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-61 h-42" />
+
+                <div v-else class="h-33 w-51 flex items-center justify-center">
+                  <UIcon name="i-heroicons-photo" class="size-10 text-gray-400" />
                 </div>
 
-                <span class="text-sm absolute bottom-4"
-                  >Опубликовано:
-                  {{
-                    new Date(offer.creation_date_source).toLocaleString("ru-RU", {
-                      timeZone: "Europe/Moscow",
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  }}</span
-                >
-                <div class="flex flex-col items-end p-5 gap-1">
-                  <div class="flex gap-2">
-                    <UBadge v-if="offer.price_category" :color="getCategoryColor(offer.price_category)" variant="solid" class="category-badge">
-                      {{ getCategoryLabel(offer.price_category) }}
-                    </UBadge>
-                    <span class="font-bold">{{ formatPrice(offer.price) }}</span>
+                <UBadge v-if="offer.is_new_house" color="neutral" class="absolute top-3 left-2"> Новостройка </UBadge>
+              </div>
+
+              <div class="pl-4 flex justify-between w-full">
+                <div class="relative py-5 w-full justify-between flex px-5">
+                  <div class="flex flex-col gap-1">
+                    <h3 class="font-bold text-base text-nowrap">
+                      {{ offer.title || "Без названия" }}
+                    </h3>
+                    <div class="text-base">
+                      <UIcon name="tabler:map-pin" class="size-4" />
+                      {{ offer.address?.full_address }}
+                    </div>
+                    <span class="text-sm absolute bottom-4"
+                      >Опубликовано:
+                      {{
+                        new Date(offer.creation_date_source).toLocaleString("ru-RU", {
+                          timeZone: "Europe/Moscow",
+                          year: "numeric",
+                          month: "numeric",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      }}</span
+                    >
                   </div>
-                  <div class="text-xs">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
+
+                  <div class="flex flex-col items-end mr-0 gap-1">
+                    <div class="flex items-center justify-center gap-2">
+                      <UBadge v-if="offer.price_category" :color="getCategoryColor(offer.price_category)" variant="solid" class="flex text-nowrap justify-center">
+                        {{ getCategoryLabel(offer.price_category) }}
+                      </UBadge>
+                      <span class="font-bold text-base text-nowrap">{{ formatPrice(offer.price) }}</span>
+                    </div>
+                    <div class="text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="flex grow w-[30%] flex-col gap-4">
+      <div class="flex grow w-[25%] flex-col gap-4">
         <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize :init-options="pieChartInitOptions" />
         <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize :init-options="pieChartInitOptions" />
       </div>
@@ -239,6 +275,7 @@ const { formatPrice } = usePriceFormat();
 
 interface SettlementData {
   region?: string;
+  municipality?: string;
   settlement?: string;
   district?: string;
   microdistrict?: string;
@@ -333,6 +370,29 @@ interface OneObjectStats {
   top_offers_by_views: TopOffer[];
 }
 
+const topOffersBlocks = computed(() => {
+  const blocks = [];
+
+  if (OneObjectData.value?.top_offers_by_views?.length) {
+    blocks.push({
+      label: buildLabelWithoutGroupBy(appliedFilters),
+      offers: OneObjectData.value.top_offers_by_views,
+    });
+  }
+
+  comparisons.value.forEach((c) => {
+    const offers = c.stats?.top_offers_by_views;
+    if (offers?.length) {
+      blocks.push({
+        label: buildLabelWithoutGroupBy(c.filters),
+        offers,
+      });
+    }
+  });
+
+  return blocks;
+});
+
 interface ViewsHistoryData {
   date: string;
   views: number;
@@ -343,11 +403,12 @@ interface PriceHistory {
   avg_price: number | null;
 }
 
-type AutocompleteField = "region" | "settlement" | "district" | "microdistrict";
+type AutocompleteField = "region" | "municipality" | "settlement" | "district" | "microdistrict";
 
 interface ComparisonItem {
   id: number;
   label: string;
+  labelWithoutGroup: string;
   filters: typeof appliedFilters;
   settlementsData: SettlementData[];
   priceHistory: any;
@@ -357,9 +418,39 @@ interface ComparisonItem {
 const comparisons = ref<ComparisonItem[]>([]);
 let comparisonId = 0;
 
+function buildLabelWithoutGroupBy(filters: {
+  region?: string;
+  municipality?: string;
+  settlement?: string;
+  district?: string;
+  microdistrict?: string;
+  is_new_house?: boolean | null;
+  settlementTypes?: string[];
+}) {
+  const parts: string[] = [];
+
+  // 🔹 география
+  if (filters.region) parts.push(filters.region);
+  if (filters.municipality) parts.push(filters.municipality);
+  if (filters.settlement) parts.push(filters.settlement);
+  if (filters.district) parts.push(filters.district);
+  if (filters.microdistrict) parts.push(filters.microdistrict);
+
+  // 🔹 тип недвижимости
+  if (filters.is_new_house === true) parts.push("Новостройки");
+  else if (filters.is_new_house === false) parts.push("Вторичка");
+
+  // 🔹 тип населённого пункта
+  if (filters.settlementTypes?.length) {
+    parts.push(filters.settlementTypes.join(", "));
+  }
+
+  return parts.join(" · ");
+}
+
 const appliedFiltersLabel = computed(() => {
   const label = buildLabel(appliedFilters);
-  return label || "Все объекты";
+  return label;
 });
 
 const chartTypeOptions = ref([
@@ -377,17 +468,19 @@ async function addComparison() {
   const [priceHistory, viewsHistory, settlements, one_stats] = await Promise.all([
     $api("/analysis/average-prices-history", { params: buildParams(filtersSnapshot) }),
     $api("/analysis/last-10-days-views-history", { params: buildParams(filtersSnapshot) }),
-    $api("/analysis/group-stats", { params: { ...buildParams(filtersSnapshot), group_by: appliedFilters.groupBy } }),
+    $api("/analysis/group-stats", { params: { ...buildParams(filtersSnapshot), group_by: draftFilters.groupBy } }),
     $api("/analysis/stats", { params: buildParams(filtersSnapshot) }),
   ]);
   draftFilters.region = "";
+  draftFilters.municipality = "";
   draftFilters.settlement = "";
-  draftFilters.region = "";
+  draftFilters.district = "";
   draftFilters.microdistrict = "";
 
   comparisons.value.push({
     id: ++comparisonId,
     label: buildLabel(filtersSnapshot),
+    labelWithoutGroup: buildLabelWithoutGroupBy(filtersSnapshot) || "",
     filters: filtersSnapshot,
     priceHistory,
     viewsHistory,
@@ -437,20 +530,20 @@ const priceHistoryChartOption = computed(() => {
 
   // 🔹 сравнения
   const comparisonMonthly = comparisons.value.map((c) => ({
-    label: c.label,
+    label: c.labelWithoutGroup || "",
     monthly: aggregateByMonth(c.priceHistory),
   }));
 
   const series = [
     {
-      name: currentLabel.value,
+      name: buildLabelWithoutGroupBy(appliedFilters),
       type: "line",
       smooth: true,
       showSymbol: false,
       data: baseMonthly.map((i) => [i.date, i.avg_price]),
     },
     ...comparisonMonthly.map((c) => ({
-      name: c.label,
+      name: c.labelWithoutGroup || "",
       type: "line",
       smooth: true,
       showSymbol: false,
@@ -498,14 +591,14 @@ const priceHistoryChartOption = computed(() => {
 const viewsHistoryChartOption = computed(() => {
   const series = [
     {
-      name: currentLabel.value,
+      name: buildLabelWithoutGroupBy(appliedFilters),
       type: "line",
       smooth: true,
       showSymbol: false,
       data: viewsHistoryData.value?.map((i) => i.views),
     },
     ...comparisons.value.map((c) => ({
-      name: c.label,
+      name: c.labelWithoutGroup || "",
       type: "line",
       smooth: true,
       showSymbol: false,
@@ -552,6 +645,7 @@ function buildParams(filters: typeof appliedFilters) {
   return {
     settlement_type_names: filters.settlementTypes.length ? filters.settlementTypes : undefined,
     region_name: filters.region || undefined,
+    municipality_name: filters.municipality || undefined,
     settlement_name: filters.settlement || undefined,
     district_name: filters.district || undefined,
     microdistrict_name: filters.microdistrict || undefined,
@@ -563,10 +657,13 @@ function getGroupByLabel(groupBy: string) {
   switch (groupBy) {
     case "region":
       return "Области";
+    case "municipality": // <- добавить
+      return "Муниципалитеты";
     case "settlement":
       return "Населённые пункты";
     case "district":
       return "Районы";
+
     case "microdistrict":
       return "Микрорайоны";
     case "street":
@@ -579,6 +676,7 @@ function getGroupByLabel(groupBy: string) {
 function buildLabel(filters: {
   groupBy?: string;
   region?: string;
+  municipality?: string;
   settlement?: string;
   district?: string;
   microdistrict?: string;
@@ -594,6 +692,7 @@ function buildLabel(filters: {
 
   // 🔹 география
   if (filters.region) parts.push(filters.region);
+  if (filters.municipality) parts.push(filters.municipality);
   if (filters.settlement) parts.push(filters.settlement);
   if (filters.district) parts.push(filters.district);
   if (filters.microdistrict) parts.push(filters.microdistrict);
@@ -601,7 +700,6 @@ function buildLabel(filters: {
   // 🔹 тип недвижимости
   if (filters.is_new_house === true) parts.push("Новостройки");
   else if (filters.is_new_house === false) parts.push("Вторичка");
-  else parts.push("Все объект");
 
   // 🔹 тип населённого пункта
   if (filters.settlementTypes?.length) {
@@ -614,8 +712,10 @@ function buildLabel(filters: {
 interface DraftFilters {
   groupBy: string;
   region: string;
+  municipality: string;
   settlement: string;
   district: string;
+
   microdistrict: string;
   settlementTypes: string[];
   is_new_house?: boolean;
@@ -624,6 +724,7 @@ interface DraftFilters {
 const draftFilters = reactive<DraftFilters>({
   groupBy: "region",
   region: "",
+  municipality: "",
   settlement: "",
   district: "",
   microdistrict: "",
@@ -636,8 +737,8 @@ const appliedFilters = reactive({
   groupBy: "region",
   chartType: "offers",
   settlementTypes: [] as string[],
-
   region: "",
+  municipality: "",
   settlement: "",
   district: "",
   microdistrict: "",
@@ -645,7 +746,7 @@ const appliedFilters = reactive({
 
 const { $api } = useNuxtApp();
 
-const drillLevels = ["region", "settlement", "district", "microdistrict", "street"];
+const drillLevels = ["region", "municipality", "settlement", "district", "microdistrict", "street"];
 
 const openOffer = (offer) => {
   const router = useRouter();
@@ -670,7 +771,7 @@ async function drillDown(categoryName: string) {
 
     if (settlementsData.value?.length && settlementsData.value.length > 0) {
       refreshOneObjectData();
-      // await refreshPriceHistoryData();
+      refreshPriceHistoryData();
 
       refreshViewsHistoryData();
       return;
@@ -698,7 +799,7 @@ async function drillUpTo(targetLevel: (typeof drillLevels)[number]) {
 
     refreshSettlementsData();
     refreshOneObjectData();
-    // await refreshPriceHistoryData();
+    refreshPriceHistoryData();
     refreshViewsHistoryData();
   }
 
@@ -713,43 +814,53 @@ async function drillUpTo(targetLevel: (typeof drillLevels)[number]) {
 
   refreshSettlementsData();
   refreshOneObjectData();
-  // await refreshPriceHistoryData();
+  refreshPriceHistoryData();
   refreshViewsHistoryData();
 }
 
 async function drillUp() {
   const currentIndex = drillLevels.indexOf(appliedFilters.groupBy as (typeof drillLevels)[number]);
 
-  if (currentIndex <= 0) return;
+  if (currentIndex <= 0) return; // если уже на верхнем уровне, выходим
 
-  for (let i = currentIndex - 1; i >= 0; i--) {
-    const level = drillLevels[i];
+  const nextLevel = drillLevels[currentIndex - 1]; // уровень выше
+  appliedFilters.groupBy = nextLevel;
 
-    appliedFilters.groupBy = level;
-
-    appliedFilters[level] = "";
-
-    drillLevels.forEach((l, idx) => {
-      if (idx > i) {
-        appliedFilters[l] = "";
-      }
-    });
-
-    refreshSettlementsData();
-
-    if (settlementsData.value?.length) {
-      refreshOneObjectData();
-      // await refreshPriceHistoryData();
-      refreshViewsHistoryData();
-      return;
+  // сбрасываем текущее значение уровня, с которого поднимаемся, и все уровни ниже
+  drillLevels.forEach((level, idx) => {
+    if (idx >= currentIndex - 1) {
+      appliedFilters[level] = "";
     }
-  }
+  });
+
+  // обновляем данные
+  refreshSettlementsData();
+  refreshOneObjectData();
+  refreshPriceHistoryData();
+  refreshViewsHistoryData();
+}
+
+async function drillDownBtn() {
+  const currentIndex = drillLevels.indexOf(appliedFilters.groupBy as (typeof drillLevels)[number]);
+
+  if (currentIndex >= drillLevels.length - 1) return; // если уже на самом нижнем уровне, выходим
+
+  const nextLevel = drillLevels[currentIndex + 1]; // уровень ниже
+  appliedFilters.groupBy = nextLevel;
+
+  // обновляем данные
+  refreshSettlementsData();
+  refreshOneObjectData();
+  refreshPriceHistoryData();
+  refreshViewsHistoryData();
 }
 
 function getLevelLabel(level: (typeof drillLevels)[number]) {
   switch (level) {
     case "region":
       return "Области";
+    case "municipality": // <- добавить
+      return "Муниципалитеты";
     case "settlement":
       return "Населённые пункты";
     case "district":
@@ -807,11 +918,12 @@ const breadcrumbsGraphic = computed(() => {
 });
 
 function handleChartClick(params: any) {
-  if (!params?.name || !params?.componentType) return;
+  if (!params || params.componentType !== "series") return;
 
-  if (params.componentType === "graphic") return;
+  // ❌ разрешаем drill ТОЛЬКО для верхнего графика
+  if (params.seriesId !== "drill-root") return;
 
-  if (params.componentType !== "series") return;
+  if (!params.name) return;
 
   drillDown(params.name);
 }
@@ -828,6 +940,7 @@ const {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
       is_new_house: appliedFilters.is_new_house,
       region_name: appliedFilters.region || undefined,
+      municipality_name: appliedFilters.municipality || undefined,
       settlement_name: appliedFilters.settlement || undefined,
       district_name: appliedFilters.district || undefined,
       microdistrict_name: appliedFilters.microdistrict || undefined,
@@ -847,6 +960,7 @@ const {
     params: {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
       region_name: appliedFilters.region || undefined,
+      municipality_name: appliedFilters.municipality || undefined,
       settlement_name: appliedFilters.settlement || undefined,
       district_name: appliedFilters.district || undefined,
       microdistrict_name: appliedFilters.microdistrict || undefined,
@@ -865,6 +979,7 @@ const {
     params: {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
       region_name: appliedFilters.region || undefined,
+      municipality_name: appliedFilters.municipality || undefined,
       settlement_name: appliedFilters.settlement || undefined,
       district_name: appliedFilters.district || undefined,
       microdistrict_name: appliedFilters.microdistrict || undefined,
@@ -883,6 +998,7 @@ const {
     params: {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
       region_name: appliedFilters.region || undefined,
+      municipality_name: appliedFilters.municipality || undefined,
       settlement_name: appliedFilters.settlement || undefined,
       district_name: appliedFilters.district || undefined,
       microdistrict_name: appliedFilters.microdistrict || undefined,
@@ -918,27 +1034,29 @@ function getPieRadius(count: number): string {
   return `${Math.min(maxRadiusX, maxRadiusY)}%`;
 }
 
-function getVerticalPieCentersPx(
-  count: number,
-  startY = 250, // фиксированная позиция первого pie
-  step = 350, // расстояние между pie
-): { center: [string, number]; titleTop: number }[] {
-  return Array.from({ length: count }, (_, idx) => ({
-    center: ["50%", startY + idx * step],
-    titleTop: startY + idx * step - 168,
-  }));
+function getVerticalPieCentersPx(count: number): { center: [string, number]; titleTop: number }[] {
+  return Array.from({ length: count }, (_, idx) => {
+    const blockTop = CHART_TOP_START + idx * CHART_BLOCK_HEIGHT;
+
+    const centerY = blockTop + CHART_TITLE_HEIGHT + 8 + CHART_GRID_HEIGHT / 2;
+
+    return {
+      center: ["50%", centerY],
+      titleTop: blockTop,
+    };
+  });
 }
 
 const propertyTypesPieOption = computed(() => {
   const chartsData = [
     {
-      label: currentLabel.value,
+      label: buildLabelWithoutGroupBy(appliedFilters),
       data: OneObjectData.value?.statistics.property_types ?? {},
     },
     ...comparisons.value
       .filter((c) => c.stats)
       .map((c) => ({
-        label: c.label,
+        label: c.labelWithoutGroup,
         data: c.stats.statistics.property_types,
       })),
   ];
@@ -947,7 +1065,7 @@ const propertyTypesPieOption = computed(() => {
   const radius = 90; // px — стабильно и предсказуемо
 
   const titles = chartsData.map((chart, idx) => ({
-    text: chart.label || "—",
+    text: chart.label,
     left: "50%",
     top: layout[idx].titleTop,
     textAlign: "center",
@@ -979,6 +1097,7 @@ const propertyTypesPieOption = computed(() => {
       ...titles,
     ],
     tooltip: { trigger: "item" },
+    label: { formatter: "{d}%" },
     legend: {},
     series,
   };
@@ -987,13 +1106,13 @@ const propertyTypesPieOption = computed(() => {
 const apartmentsByRoomsPieOption = computed(() => {
   const chartsData = [
     {
-      label: currentLabel.value,
+      label: buildLabelWithoutGroupBy(appliedFilters),
       data: OneObjectData.value?.statistics.apartments_by_rooms.rooms ?? {},
     },
     ...comparisons.value
       .filter((c) => c.stats)
       .map((c) => ({
-        label: c.label,
+        label: c.labelWithoutGroup,
         data: c.stats.statistics.apartments_by_rooms.rooms,
       })),
   ];
@@ -1002,7 +1121,7 @@ const apartmentsByRoomsPieOption = computed(() => {
   const radius = 90; // px — фиксированный и предсказуемый радиус
 
   const titles = chartsData.map((chart, idx) => ({
-    text: chart.label || "—",
+    text: chart.label,
     left: "50%",
     top: layout[idx].titleTop,
     textAlign: "center",
@@ -1022,13 +1141,6 @@ const apartmentsByRoomsPieOption = computed(() => {
       name: name.replace("_rooms", " к.").replace("studio", "Студия").replace("open_plan", "Свободная планировка"),
       value,
     })),
-    emphasis: {
-      itemStyle: {
-        shadowBlur: 10,
-        shadowOffsetX: 0,
-        shadowColor: "rgba(0,0,0,0.3)",
-      },
-    },
   }));
 
   return {
@@ -1040,7 +1152,8 @@ const apartmentsByRoomsPieOption = computed(() => {
       },
       ...titles,
     ],
-    tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
+    tooltip: { trigger: "item" },
+    label: { formatter: "{d}%" },
     legend: {},
     series,
   };
@@ -1049,7 +1162,7 @@ const apartmentsByRoomsPieOption = computed(() => {
 const flatTypePieOption = computed(() => {
   const chartsData = [
     {
-      label: currentLabel.value,
+      label: buildLabelWithoutGroupBy(appliedFilters),
       data: {
         Новостройки: OneObjectData.value?.statistics.apartments_by_rooms.flat_type.new_houses ?? 0,
         Вторичка: OneObjectData.value?.statistics.apartments_by_rooms.flat_type.secondary ?? 0,
@@ -1058,7 +1171,7 @@ const flatTypePieOption = computed(() => {
     ...comparisons.value
       .filter((c) => c.stats)
       .map((c) => ({
-        label: c.label,
+        label: c.labelWithoutGroup,
         data: {
           Новостройки: c.stats.statistics.apartments_by_rooms.flat_type.new_houses,
           Вторичка: c.stats.statistics.apartments_by_rooms.flat_type.secondary,
@@ -1070,7 +1183,7 @@ const flatTypePieOption = computed(() => {
   const outerRadius = 90; // px, фиксированный внешний радиус
 
   const titles = chartsData.map((chart, idx) => ({
-    text: chart.label || "—",
+    text: chart.label,
     left: "50%",
     top: layout[idx].titleTop,
     textAlign: "center",
@@ -1087,25 +1200,19 @@ const flatTypePieOption = computed(() => {
     radius: [`25%`, `${outerRadius}px`], // внутренний радиус 25%, внешний фиксированный
     center: layout[idx].center,
     data: Object.entries(chart.data).map(([name, value]) => ({ name, value })),
-    emphasis: {
-      itemStyle: {
-        shadowBlur: 10,
-        shadowOffsetX: 0,
-        shadowColor: "rgba(0,0,0,0.3)",
-      },
-    },
   }));
 
   return {
     title: [
       {
-        text: "Кол-во Новостроек и Вторички",
+        text: "Новосторйки и вторичка",
         left: "center",
         top: 20,
       },
       ...titles,
     ],
-    tooltip: { trigger: "item", formatter: "{b}: {c} ({d}%)" },
+    tooltip: { trigger: "item" },
+    label: { formatter: "{d}%" },
     legend: {},
     series,
   };
@@ -1202,9 +1309,9 @@ const pieChartInitOptions = computed(() => ({
   height: chartContainerHeight.value,
 }));
 
-const CHART_BLOCK_HEIGHT = 360; // полный блок (title + grid + отступ)
-const CHART_TITLE_HEIGHT = 24; // высота тайтла
-const CHART_GRID_HEIGHT = 220;
+const CHART_BLOCK_HEIGHT = 380; // полный блок (title + grid + отступ)
+const CHART_TITLE_HEIGHT = 50; // высота тайтла
+const CHART_GRID_HEIGHT = 180;
 const CHART_TOP_START = 80;
 
 const chartOption = computed(() => {
@@ -1261,8 +1368,8 @@ const chartOption = computed(() => {
 
     grids.push({
       top: gridTop,
-      left: 0,
-      right: 20,
+      left: 80,
+      right: 40,
       height: CHART_GRID_HEIGHT,
     });
 
@@ -1284,7 +1391,9 @@ const chartOption = computed(() => {
         ...s,
         xAxisIndex: idx,
         yAxisIndex: idx,
-        name: s.name,
+        name: idx === 0 ? s.name : `${s.name} · ${graph.label}`, // ✅
+        id: idx === 0 ? "drill-root" : undefined, // ✅ КЛЮЧ
+        cursor: idx === 0 ? "pointer" : "default",
       })),
     );
   });
@@ -1316,6 +1425,7 @@ const selectedFilterType = ref("");
 
 const autocompleteResults = reactive({
   region: [],
+  municipality: [],
   settlement: [],
   district: [],
   microdistrict: [],
@@ -1341,6 +1451,7 @@ async function applyFilters() {
   appliedFilters.groupBy = draftFilters.groupBy;
 
   appliedFilters.region = draftFilters.region;
+  appliedFilters.municipality = draftFilters.municipality;
   appliedFilters.settlement = draftFilters.settlement;
   appliedFilters.district = draftFilters.district;
   appliedFilters.microdistrict = draftFilters.microdistrict;
@@ -1373,6 +1484,9 @@ watchEffect(() => {
       case "region":
         autocompleteResults.region = autocompleteData.value.results;
         break;
+      case "municipality":
+        autocompleteResults.municipality = autocompleteData.value.results;
+        break;
       case "settlement":
         autocompleteResults.settlement = autocompleteData.value.results;
         break;
@@ -1390,14 +1504,16 @@ const visibleInputs = computed(() => {
   switch (draftFilters.groupBy) {
     case "region":
       return [];
-    case "settlement":
+    case "municipality": // <- добавить
       return ["region"];
+    case "settlement":
+      return ["region", "municipality"];
     case "district":
-      return ["region", "settlement"];
+      return ["region", "municipality", "settlement"];
     case "microdistrict":
-      return ["region", "settlement", "district"];
+      return ["region", "municipality", "settlement", "district"];
     case "street":
-      return ["region", "settlement", "district", "microdistrict"];
+      return ["region", "municipality", "settlement", "district", "microdistrict"];
     default:
       return [];
   }
@@ -1408,7 +1524,7 @@ watch(
   (newGroupBy) => {
     const visible = visibleInputs.value;
 
-    ["region", "settlement", "district", "microdistrict"].forEach((level) => {
+    ["region", "municipality", "settlement", "district", "microdistrict"].forEach((level) => {
       if (!visible.includes(level)) {
         draftFilters[level] = "";
       }
@@ -1427,8 +1543,6 @@ function selectResult(type: AutocompleteField, item: string) {
   draftFilters[type] = item;
   Object.values(autocompleteResults).forEach((arr) => arr.splice(0));
 }
-
-const colorPalette = ["#FF5733", "#33FF57", "#3357FF", "#F2E205", "#9C27B0", "#FFC107"];
 </script>
 <style scoped>
 @reference "tailwindcss";

@@ -899,7 +899,7 @@ async def get_types_for_filter(session: AsyncSession = Depends(get_async_session
 @offer_router.get("/autocomplete-filters")
 async def autocomplete(
     query: str = Query(..., min_length=2),
-    type: Literal["region", "settlement", "street", "district", "microdistrict"] = Query(...),
+    type: Literal["region", "municipality", "settlement", "street", "district", "microdistrict"] = Query(...),
     session: AsyncSession = Depends(get_async_session),
 ):
     query_like = f"%{query}%"
@@ -907,6 +907,8 @@ async def autocomplete(
     # Выбираем таблицу в зависимости от type
     if type == "region":
         stmt = select(Region.short_name).where(Region.short_name.ilike(query_like))
+    elif type == "municipality":
+        stmt = select(Municipality.short_name).where(Municipality.short_name.ilike(query_like))
     elif type == "settlement":
         stmt = select(Settlement.short_name).where(Settlement.short_name.ilike(query_like))
     elif type == "district":

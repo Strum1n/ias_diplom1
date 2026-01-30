@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr:true,
-  modules: ['@nuxt/ui', // '@nuxtjs/mdc',
+  modules: ['@nuxt/ui',  '@nuxtjs/mdc',
   'vue-yandex-maps/nuxt', 'nuxt-auth-utils', 'nuxt-echarts', '@nuxtjs/mdc'],
   fonts: {
     provider: 'bunny'
@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     renderer: "canvas",
   },
   devServer: {
-    host: '192.168.0.168',
+    host: '127.0.0.1',
     port: 3000
   },
   yandexMaps: {
@@ -31,9 +31,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
-    apiBase: 'http://192.168.0.168:8000',
+    apiBase: 'http://localhost:8000',
     public: {
-      apiBase: '/api',
+      apiBase: 'http://localhost:8000',
     },
   }
 

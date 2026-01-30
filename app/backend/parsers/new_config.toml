@@ -21,11 +21,11 @@ price_filter_btn_selector = "[data-testid=\"price\"]"
 next_btn_selector = "nav[data-name=\"Pagination\"] > :nth-child(3):is(a), [data-testid=\"listing.pagination\"] > :nth-child(9):not(:disabled)"
 min_price_selector = "[placeholder=\"от\"]"
 max_price_selector = "[placeholder=\"до\"]"
-min_price = 13800001
+min_price = 16400001
 items_on_page = 28
 offer_urls_selector = ".x31de4314--_416c6--media, .x09f03c75--e726a9--content__title > a"
-max_price = 14400000
+max_price = 16900000
 max_available_page = 54
 filter_btn_selector = "[data-name=\"SummaryHeader\"], [data-testid=\"listing.offers-count\"]"
 price_step = 100000
-p = 43
+p = 40

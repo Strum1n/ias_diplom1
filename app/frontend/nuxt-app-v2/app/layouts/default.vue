@@ -74,12 +74,6 @@ const items = ref([
     // badge: '3.8k',
     to: "/map",
   },
-  {
-    label: "сас",
-    icon: "uiw:map",
-    // badge: '3.8k',
-    to: "/board",
-  },
 ]);
 </script>
 
