@@ -1,6 +1,4 @@
 import { jwtDecode } from 'jwt-decode'
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 
 interface LoginResponse {
   access_token: string
@@ -17,8 +15,7 @@ export function useAuth() {
 
   const accessToken = useCookie<string | null>('access_token', {
     path: '/',
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
   })
 
   const loading = ref(false)
@@ -50,8 +47,8 @@ export function useAuth() {
       const body = new URLSearchParams()
       body.append('username', username)
       body.append('password', password)
-
-      const res: LoginResponse = await $fetch(`${config.public.apiBase}/auth/login`, {
+      
+      const res: LoginResponse = await $fetch(`http://localhost:8000/auth/login`, {
         method: 'POST',
         body,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

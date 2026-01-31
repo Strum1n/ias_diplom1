@@ -195,7 +195,7 @@ async def captcha_solver(page: zendriver.Tab):
 
         distance = get_simple_distance("background_with_puzzle.png", "background.png")
         await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(30, 40))
-        await page.sleep(5)
+        await page.sleep(7)
         print("Капча возможно пройдена")
         return
     except Exception as e:

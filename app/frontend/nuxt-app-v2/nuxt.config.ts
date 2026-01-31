@@ -20,6 +20,10 @@ export default defineNuxtConfig({
     ],
     renderer: "canvas",
   },
+  experimental: {
+    asyncContext: true
+  },
+  debug: process.env.NODE_ENV !== 'production',
   devServer: {
     host: '127.0.0.1',
     port: 3000
@@ -31,9 +35,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
-    apiBase: 'http://localhost:8000',
     public: {
-      apiBase: 'http://localhost:8000',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '/apiback',
     },
   }
 

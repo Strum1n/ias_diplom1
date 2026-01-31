@@ -15,4 +15,6 @@ WORKDIR /origin/
 
 ENV PYTHONPATH=/origin
 
-CMD ["fastapi", "run", "app/backend/main.py", "--port", "80"]
+EXPOSE 8000
+
+CMD ["fastapi", "run", "app/backend/main.py", "--port", "8000"]

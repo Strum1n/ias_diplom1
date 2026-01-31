@@ -1,18 +1,18 @@
 [avito]
 domen_url = "https://www.avito.ru"
-url = "https://www.avito.ru/moskva/kvartiry/prodam-ASgBAgICAUSSA8YQ?f=ASgBAgECAkSSA8YQsLMU_qGPAwFFxpoMEnsiZnJvbSI6MTAsInRvIjowfQ&localPriority=0"
+url = "https://www.avito.ru/moskva/kvartiry/prodam-ASgBAgICAUSSA8YQ?f=ASgBAgICAkSSA8YQsLMU_qGPAw&localPriority=0"
 price_filter_btn_selector = ""
 filter_btn_selector = "[data-marker=\"search-filters/submit-button\"]"
 next_btn_selector = "[data-marker=\"pagination-button/nextPage\"]"
 min_price_selector = "[data-marker=\"price-from/input\"]"
 max_price_selector = "[data-marker=\"price-to/input\"]"
 offer_urls_selector = "[data-marker=\"catalog-serp\"] [data-marker=\"item-photo-sliderLink\"]"
-min_price = 10
+min_price = 3400001
 max_price = 3400000
 price_step = 100000
 items_on_page = 50
 max_available_page = 100
-p = 67
+p = 25
 
 [cian]
 domen_url = "https://www.cian.ru"

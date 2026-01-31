@@ -7,7 +7,7 @@ export const useCategoryLabel = () => {
     switch (category) {
       case "high":
         return "Высокая"
-      case "normal":
+      case "medium":
         return "Средняя"
       case "low":
         return "Низкая"

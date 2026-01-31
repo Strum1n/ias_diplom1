@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:22 AS build
 WORKDIR /app
 
 # Copy package.json and package-lock.json
@@ -15,16 +15,18 @@ RUN npm run build
 
 
 # -------- Stage 2: runtime --------
-FROM node:22-alpine
+FROM node:22
 WORKDIR /app
+
 
 # Only `.output` folder is needed from the build stage
 COPY --from=build /app/.output/ ./
 
 # Change the port and host
-ENV PORT=80
+
+ENV PORT=3000
 ENV HOST=0.0.0.0
 
-EXPOSE 80
+EXPOSE 3000
 
 CMD ["node", "/app/server/index.mjs"]

@@ -46,7 +46,7 @@ app.add_middleware(
 # )
 
 
-@app.get("/items/")
+@app.get("/api")
 async def read_items(token: Annotated[str, Depends(oauth2_scheme)]):
     return {"token": token}
 

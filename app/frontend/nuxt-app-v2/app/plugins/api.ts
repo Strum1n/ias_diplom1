@@ -1,8 +1,9 @@
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin(async () => {
+    //  #для прода всегда это
     const config = useRuntimeConfig()
     const baseURL = process.server
-    ? config.apiBase
-    : config.public.apiBase
+    ? config.public.apiBase
+     : 'http://localhost:8000'
   const api = $fetch.create({
     baseURL: baseURL,
     credentials: 'include',
