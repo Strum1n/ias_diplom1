@@ -253,8 +253,8 @@
         <!-- Результаты анализа ELECTRE -->
         <div v-if="electreResults" class="results-section electre-results">
           <div class="method-header">
-            <h3>Результаты анализа ELECTRE</h3>
-            <button @click="electreResults = null" class="close-method-button" title="Закрыть результаты ELECTRE">×</button>
+            <h3>Результаты метода ELECTRE</h3>
+            <button @click="electreResults = null" class="close-method-button">×</button>
           </div>
           <p class="results-description">Метод ELECTRE выявляет недоминируемые объекты (ядро) и показывает сравнительные преимущества.</p>
 
@@ -324,8 +324,10 @@
 
         <!-- Результаты анализа TOPSIS -->
         <div v-if="topsisResults" class="topsis-results">
-          <h3>Результаты сравнения методом TOPSIS</h3>
-          <button @click="topsisResults = null" class="close-method-button" title="Закрыть результаты TOPSIS">×</button>
+          <div class="method-header">
+            <h3>Результаты метода TOPSIS</h3>
+            <button @click="topsisResults = null" class="close-method-button">×</button>
+          </div>
           <div class="ranking-section">
             <h4 class="mb-2">Ранжирование объектов</h4>
             <div class="ranking-list">

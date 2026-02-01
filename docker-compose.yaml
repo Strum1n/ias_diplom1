@@ -7,16 +7,16 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/postgres_db
-      - ./dump2.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ./dump3.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
       - app-network
     environment:
-      POSTGRES_USER=postgres
-      POSTGRES_PASSWORD=1
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
       
 
   backend:
-    build: ./app/backend  
+    image: back-image
     container_name: backend_app
     restart: always
     env_file: prod1.env

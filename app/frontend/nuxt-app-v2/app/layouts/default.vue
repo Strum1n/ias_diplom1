@@ -66,7 +66,7 @@ const items = ref([
   {
     label: "Аналитика",
     icon: "icon-park-solid:analysis",
-    to: "/kek",
+    to: "/dashboard",
   },
   {
     label: "Карта",
