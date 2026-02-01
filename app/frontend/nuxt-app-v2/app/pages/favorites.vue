@@ -58,7 +58,7 @@
                 <div class="title-container">
                   <div class="flex gap-2">
                     <UBadge v-if="offer.transport_access_score" :color="getCategoryColor(offer.transport_access_category)"
-                      >Траспорт {{ offer.transport_access_score?.toFixed(2) }}</UBadge
+                      >Транспорт {{ offer.transport_access_score?.toFixed(2) }}</UBadge
                     >
                     <UBadge v-if="offer.elderly_score" :color="getCategoryColor(offer.elderly_category)">Для пожилых {{ offer.elderly_score?.toFixed(2) }} </UBadge>
                     <UBadge v-if="offer.family_score" :color="getCategoryColor(offer.family_category)">Для семьи {{ offer.family_score?.toFixed(2) }} </UBadge>
@@ -251,7 +251,7 @@
         </div>
 
         <!-- Результаты анализа ELECTRE -->
-        <div v-if="selectedMethod === 'electre' && electreResults" class="results-section electre-results">
+        <div v-if="electreResults" class="results-section electre-results">
           <div class="method-header">
             <h3>Результаты анализа ELECTRE</h3>
             <button @click="electreResults = null" class="close-method-button" title="Закрыть результаты ELECTRE">×</button>
@@ -323,9 +323,9 @@
         </div>
 
         <!-- Результаты анализа TOPSIS -->
-        <div v-else-if="selectedMethod === 'topsis' && topsisResults" class="topsis-results">
+        <div v-if="topsisResults" class="topsis-results">
           <h3>Результаты сравнения методом TOPSIS</h3>
-
+          <button @click="topsisResults = null" class="close-method-button" title="Закрыть результаты TOPSIS">×</button>
           <div class="ranking-section">
             <h4 class="mb-2">Ранжирование объектов</h4>
             <div class="ranking-list">
@@ -355,8 +355,8 @@
               </div>
             </div>
           </div>
-          <VChart v-if="radarSeries.length" :option="radarOption" autoresize class="radar-chart" />
         </div>
+        <VChart v-if="radarSeries.length && (electreResults || topsisResults)" :option="radarOption" autoresize class="radar-chart" />
       </div>
     </div>
   </UContainer>

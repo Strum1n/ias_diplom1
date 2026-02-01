@@ -1116,7 +1116,7 @@ async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1
 
 
 async def main():
-    await offers_urls_bypass("avito")
+    await offers_urls_bypass("cian")
 
 
 if __name__ == "__main__":
