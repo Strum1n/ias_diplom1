@@ -16,7 +16,7 @@ services:
       
 
   backend:
-    image: back-image
+    build: ./app/backend
     container_name: backend_app
     restart: always
     env_file: prod1.env
@@ -30,7 +30,7 @@ services:
       - app-network
   
   frontend:
-    image: image-front
+    image: ./app/frontend
     container_name: frontend_app
     restart: always
     

@@ -1,5 +1,5 @@
 
-FROM python:3.14
+FROM python:3.14-slim
 
 WORKDIR /origin/app/backend
 
@@ -9,7 +9,7 @@ COPY requirements.txt /origin/app/backend
 RUN pip install --no-cache-dir --upgrade -r /origin/app/backend/requirements.txt
 
 
-COPY . /origin/app/backend
+COPY . /origin/app/backen
 
 WORKDIR /origin/
 
