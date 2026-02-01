@@ -30,7 +30,7 @@ services:
       - app-network
   
   frontend:
-    image: ./app/frontend
+    build: ./app/frontend/nuxt-app-v2
     container_name: frontend_app
     restart: always
     
