@@ -2,7 +2,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const { isAuthenticated } = useAuth()
 
   // Страницы, доступные без авторизации
-  const publicPages = ['/', '/login', '/register']
+  const publicPages = ['/', '/login', '/register','/map-mobile','/offers/index-mobile','/sas']
 
   // Если авторизован → нельзя на /login и /register
   if (isAuthenticated.value && (to.path === '/login' || to.path === '/register')) {

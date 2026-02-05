@@ -87,7 +87,7 @@ if __name__ == "__main__":
             [1.3, 60, 50],
         ]
     )
-    weights = [3, 2, 1]
+    weights = [1, 1, 100]
     is_min = [True, True, True]
 
     kernel, dominance, outranking = electre(evaluations, weights, is_min)

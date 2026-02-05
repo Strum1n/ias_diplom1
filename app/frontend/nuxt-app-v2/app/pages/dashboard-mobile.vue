@@ -1,237 +1,265 @@
 <template>
-  <div class="p-5 min-h-screen">
-    <div class="rounded-lg ring p-5 pb-0 ring-default flex gap-4">
-      <USelect
-        v-model="draftFilters.groupBy"
-        :items="[
-          { label: 'Области', value: 'region' },
-          { label: 'Муниципалитеты', value: 'municipality' },
-          { label: 'Населённые пункты', value: 'settlement' },
-          { label: 'Районы', value: 'district' },
-          { label: 'Микрорайоны', value: 'microdistrict' },
-          { label: 'Улицы', value: 'street' },
-        ]"
-        placeholder="Группировка"
-        class="w-40 h-8" />
-      <div v-if="visibleInputs.includes('region')" class="relative">
-        <UInput v-model="draftFilters.region" placeholder="Область" @update:model-value="(v) => handleInputChange('region', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.region.length > 0 && autocompleteResults.region[0] != draftFilters.region"
-          class="w-64 absolute z-10 bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          <li v-for="(item, index) in autocompleteResults.region" :key="index" @click="selectResult('region', item)" class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-      <div v-if="visibleInputs.includes('municipality')" class="relative">
-        <UInput v-model="draftFilters.municipality" placeholder="Муниципалитет" @update:model-value="(v) => handleInputChange('municipality', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.municipality.length > 0 && autocompleteResults.municipality[0] != draftFilters.municipality"
-          class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          <li
-            v-for="(item, index) in autocompleteResults.municipality"
-            :key="index"
-            @click="selectResult('municipality', item)"
-            class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-      <div v-if="visibleInputs.includes('settlement')" class="relative">
-        <UInput v-model="draftFilters.settlement" placeholder="Населённый пункт" @update:model-value="(v) => handleInputChange('settlement', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.settlement.length > 0 && autocompleteResults.settlement[0] != draftFilters.settlement"
-          class="absolute rounded-sm ring-1 ring-default max-h-50 overflow-auto z-10 bg-white w-full mt-1 text-sm">
-          <li
-            v-for="(item, index) in autocompleteResults.settlement"
-            :key="index"
-            @click="selectResult('settlement', item)"
-            class="px-3 py-2 cursor-pointer bg-white border-b border-[var(--ui-border-muted)] px-3 py-2 hover:bg-[var(--ui-color-neutral-100)">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="visibleInputs.includes('district')" class="relative">
-        <UInput v-model="draftFilters.district" placeholder="Район" @update:model-value="(v) => handleInputChange('district', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.district.length > 0 && autocompleteResults.district[0] != draftFilters.district"
-          class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          <li v-for="(item, index) in autocompleteResults.district" :key="index" @click="selectResult('district', item)" class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="visibleInputs.includes('microdistrict')" class="relative">
-        <UInput v-model="draftFilters.microdistrict" placeholder="Микрорайон" @update:model-value="(v) => handleInputChange('microdistrict', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.microdistrict.length > 0 && autocompleteResults.microdistrict[0] != draftFilters.microdistrict"
-          class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          <li
-            v-for="(item, index) in autocompleteResults.microdistrict"
-            :key="index"
-            @click="selectResult('microdistrict', item)"
-            class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-      <div>
-        <span class="font-[550]">Тип населенного пункта</span>
-        <UCheckboxGroup
-          v-model="draftFilters.settlementTypes"
+  <div class="p-3 md:p-5 min-h-screen">
+    <div class="rounded-lg ring p-3 md:p-5 pb-0 ring-default flex flex-col md:flex-row gap-3 md:gap-4">
+      <div class="flex flex-col md:flex-row gap-3 md:gap-4 w-full">
+        <USelect
+          v-model="draftFilters.groupBy"
           :items="[
-            { label: 'Город', value: 'город' },
-            { label: 'Деревня', value: 'деревня' },
-            { label: 'Посёлок', value: 'поселок' },
-            { label: 'Село', value: 'село' },
+            { label: 'Области', value: 'region' },
+            { label: 'Муниципалитеты', value: 'municipality' },
+            { label: 'Населённые пункты', value: 'settlement' },
+            { label: 'Районы', value: 'district' },
+            { label: 'Микрорайоны', value: 'microdistrict' },
+            { label: 'Улицы', value: 'street' },
           ]"
-          class="mb-4 mt-2" />
-      </div>
-      <div>
-        <span class="font-[550]">Вид недвижимости</span>
-        <URadioGroup
-          class="mt-2"
-          v-model="draftFilters.is_new_house"
-          :items="[
-            { label: 'Все', value: undefined },
-            { label: 'Новостройки', value: true },
-            { label: 'Вторичка', value: false },
-          ]" />
-      </div>
-      <UButton color="primary" variant="solid" class="h-fit p-2" @click="applyFilters"> Применить фильтры </UButton>
-      <UButton color="info" icon="i-material-symbols:add-ad-rounded" variant="soft" class="h-fit p-2" @click="addComparison"> Добавить к сравнению </UButton>
-      <UButton color="error" variant="soft" icon="i-f7:clear-fill" class="h-fit p-2" @click="comparisons = []"> Очистить сравнение </UButton>
-    </div>
-    <div
-      v-if="appliedFilters.municipality || appliedFilters.region || appliedFilters.settlement || appliedFilters.district || appliedFilters.microdistrict"
-      class="flex mt-5 items-center text-black font-semibold text-xl justify-center w-full">
-      <UIcon name="tabler:filter" class="size-5" />
-      <span>: {{ appliedFiltersLabel }}</span>
-    </div>
-    <div class="flex py-5 gap-4.5 justify-between">
-      <div class="stat-card">
-        <h3>Всего объектов</h3>
+          placeholder="Группировка"
+          class="w-full md:w-40 h-8" />
 
-        <div v-if="loadingOneObject" class="stat-card-info">
-          <UIcon class="size-8" name="ic:round-maps-home-work"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
-        </div>
-        <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="ic:round-maps-home-work"> </UIcon> <span>{{ OneObjectData?.total_count }}</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <h3>Средняя цена</h3>
-        <div v-if="loadingOneObject" class="stat-card-info">
-          <UIcon class="size-8" name="solar:money-bag-bold"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
-        </div>
-        <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="solar:money-bag-bold"> </UIcon>
-          <span>{{ new Intl.NumberFormat("ru-RU").format(OneObjectData?.statistics.averages.average_price) }} ₽</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <h3>Средняя площадь</h3>
+        <div class="grid grid-cols-1 md:flex gap-2 md:gap-4">
+          <div v-if="visibleInputs.includes('region')" class="relative">
+            <UInput v-model="draftFilters.region" placeholder="Область" @update:model-value="(v) => handleInputChange('region', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.region.length > 0 && autocompleteResults.region[0] != draftFilters.region"
+              class="w-full md:w-64 absolute z-10 bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+              <li v-for="(item, index) in autocompleteResults.region" :key="index" @click="selectResult('region', item)" class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
 
-        <div v-if="loadingOneObject" class="stat-card-info">
-          <UIcon class="size-8" name="bx:area"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
-        </div>
-        <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="bx:area"> </UIcon> <span>{{ OneObjectData?.statistics.averages.average_area }}</span>
-        </div>
-      </div>
+          <div v-if="visibleInputs.includes('municipality')" class="relative">
+            <UInput v-model="draftFilters.municipality" placeholder="Муниципалитет" @update:model-value="(v) => handleInputChange('municipality', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.municipality.length > 0 && autocompleteResults.municipality[0] != draftFilters.municipality"
+              class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+              <li
+                v-for="(item, index) in autocompleteResults.municipality"
+                :key="index"
+                @click="selectResult('municipality', item)"
+                class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
 
-      <div class="stat-card">
-        <h3>Новых сегодня</h3>
+          <div v-if="visibleInputs.includes('settlement')" class="relative">
+            <UInput v-model="draftFilters.settlement" placeholder="Населённый пункт" @update:model-value="(v) => handleInputChange('settlement', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.settlement.length > 0 && autocompleteResults.settlement[0] != draftFilters.settlement"
+              class="absolute rounded-sm ring-1 ring-default max-h-50 overflow-auto z-10 bg-white w-full mt-1 text-sm">
+              <li
+                v-for="(item, index) in autocompleteResults.settlement"
+                :key="index"
+                @click="selectResult('settlement', item)"
+                class="px-3 py-2 cursor-pointer bg-white border-b border-[var(--ui-border-muted)] px-3 py-2 hover:bg-[var(--ui-color-neutral-100)]">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
 
-        <div v-if="loadingOneObject" class="stat-card-info">
-          <UIcon class="size-8" name="material-symbols:fiber-new"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
-        </div>
-        <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="material-symbols:fiber-new"> </UIcon> <span>{{ OneObjectData?.offers_today }}</span>
-        </div>
-      </div>
-    </div>
+          <div v-if="visibleInputs.includes('district')" class="relative">
+            <UInput v-model="draftFilters.district" placeholder="Район" @update:model-value="(v) => handleInputChange('district', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.district.length > 0 && autocompleteResults.district[0] != draftFilters.district"
+              class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+              <li
+                v-for="(item, index) in autocompleteResults.district"
+                :key="index"
+                @click="selectResult('district', item)"
+                class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
 
-    <div class="flex gap-4">
-      <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
-        <VChartFull v-if="priceHistoryData" :option="priceHistoryChartOption" :init-options="{ height: 400 }" autoresize />
-        <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
-      </div>
-
-      <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
-        <VChartFull v-if="viewsHistoryData" :option="viewsHistoryChartOption" autoresize :init-options="{ height: 400 }" />
-        <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
-      </div>
-    </div>
-
-    <div class="flex mt-5 gap-4 flex-row justify-between">
-      <div class="ring w-[75%] ring-default relative rounded-lg">
-        <USelect v-model="appliedFilters.chartType" :items="chartTypeOptions" placeholder="Тип графика" class="w-fit z-10 absolute top-5 left-5" />
-        <UButton v-if="canDrillUp" class="absolute top-20.5 z-10 left-12" icon="i-heroicons-arrow-left" color="neutral" variant="ghost" @click="drillUp"> Назад </UButton>
-        <UButton
-          v-if="canDrillUp && appliedFilters.groupBy != 'street'"
-          class="absolute top-20.5 z-10 right-12"
-          trailing-icon="i-heroicons-arrow-right"
-          color="neutral"
-          variant="ghost"
-          @click="drillDownBtn">
-          Вперед
-        </UButton>
-        <div>
-          <VChartFull class="p-2" v-if="settlementsData" :option="chartOption" autoresize :init-options="chartInitOptions" @click="handleChartClick" />
-          <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
-          <div v-if="!loadingSettlements && settlementsData?.length === 0" class="text-center top-50 left-144 absolute text-gray-400 mt-2">
-            Нет данных для выбранного уровня
+          <div v-if="visibleInputs.includes('microdistrict')" class="relative">
+            <UInput v-model="draftFilters.microdistrict" placeholder="Микрорайон" @update:model-value="(v) => handleInputChange('microdistrict', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.microdistrict.length > 0 && autocompleteResults.microdistrict[0] != draftFilters.microdistrict"
+              class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+              <li
+                v-for="(item, index) in autocompleteResults.microdistrict"
+                :key="index"
+                @click="selectResult('microdistrict', item)"
+                class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+                {{ item }}
+              </li>
+            </ul>
           </div>
         </div>
       </div>
-      <div class="w-[25%]">
-        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize :init-options="chartInitOptions" />
+
+      <div class="flex md:flex gap-8 md:gap-6 w-full md:w-auto">
+        <div class="md:w-auto">
+          <span class="font-[550] text-sm md:text-base">Тип населенного пункта</span>
+          <UCheckboxGroup
+            v-model="draftFilters.settlementTypes"
+            :items="[
+              { label: 'Город', value: 'город' },
+              { label: 'Деревня', value: 'деревня' },
+              { label: 'Посёлок', value: 'поселок' },
+              { label: 'Село', value: 'село' },
+            ]"
+            class="mb-2 mt-1 flex flex-wrap gap-2" />
+        </div>
+
+        <div class="md:w-auto">
+          <span class="font-[550] text-sm md:text-base">Вид недвижимости</span>
+          <URadioGroup
+            class="mt-1"
+            v-model="draftFilters.is_new_house"
+            :items="[
+              { label: 'Все', value: undefined },
+              { label: 'Новостройки', value: true },
+              { label: 'Вторичка', value: false },
+            ]" />
+        </div>
+      </div>
+
+      <div class="flex flex-col mb-2 sm:flex-row gap-2 md:gap-4 mt-2 md:mt-0">
+        <UButton color="primary" variant="solid" class="h-fit p-2 text-sm md:text-base" @click="applyFilters"> Применить фильтры </UButton>
+        <UButton color="info" icon="i-material-symbols:add-ad-rounded" variant="soft" class="h-fit p-2 text-sm md:text-base" @click="addComparison">
+          Добавить к сравнению
+        </UButton>
+        <UButton color="error" variant="soft" icon="i-f7:clear-fill" class="h-fit p-2 text-sm md:text-base" @click="comparisons = []"> Очистить сравнение </UButton>
       </div>
     </div>
 
-    <div class="flex mt-5 gap-4">
-      <div class="flex w-[75%] flex-col">
-        <p class="text-xl font-semibold">Популярные объявления</p>
-        <div class="flex flex-col gap-5 mt-4" v-for="block in topOffersBlocks" :key="block.label">
-          <h3 class="text-lg text-center">
+    <div
+      v-if="appliedFilters.municipality || appliedFilters.region || appliedFilters.settlement || appliedFilters.district || appliedFilters.microdistrict"
+      class="flex mt-4 md:mt-5 items-center text-black font-semibold text-lg md:text-xl justify-center w-full">
+      <UIcon name="tabler:filter" class="size-4 md:size-5" />
+      <span class="ml-1">: {{ appliedFiltersLabel }}</span>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4.5 py-4 md:py-5">
+      <div class="stat-card">
+        <h3 class="text-xs md:text-sm">Всего объектов</h3>
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="ic:round-maps-home-work"> </UIcon>
+          <span><UIcon class="size-6 md:size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="ic:round-maps-home-work"> </UIcon>
+          <span class="text-lg md:text-2xl">{{ OneObjectData?.total_count }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3 class="text-xs md:text-sm">Средняя цена</h3>
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="solar:money-bag-bold"> </UIcon>
+          <span><UIcon class="size-6 md:size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="solar:money-bag-bold"> </UIcon>
+          <span class="text-lg md:text-2xl">{{ OneObjectData?.statistics.averages.average_price }} ₽</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3 class="text-xs md:text-sm">Средняя площадь</h3>
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="bx:area"> </UIcon>
+          <span><UIcon class="size-6 md:size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="bx:area"> </UIcon>
+          <span class="text-lg md:text-2xl">{{ OneObjectData?.statistics.averages.average_area }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3 class="text-xs md:text-sm">Новых сегодня</h3>
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="material-symbols:fiber-new"> </UIcon>
+          <span><UIcon class="size-6 md:size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="material-symbols:fiber-new"> </UIcon>
+          <span class="text-lg md:text-2xl">{{ OneObjectData?.offers_today }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-4">
+      <div class="rounded-lg ring ring-default p-3 md:p-4 w-full">
+        <VChartFull v-if="priceHistoryData" :option="priceHistoryChartOption" :init-options="{ height: 300 }" autoresize />
+        <div v-else class="flex h-full justify-center items-center"><UIcon size="50 md:size-70" name="codex:loader"></UIcon></div>
+      </div>
+
+      <div class="rounded-lg ring ring-default p-3 md:p-4 w-full">
+        <VChartFull v-if="viewsHistoryData" :option="viewsHistoryChartOption" autoresize :init-options="{ height: 300 }" />
+        <div v-else class="flex h-full justify-center items-center"><UIcon size="50 md:size-70" name="codex:loader"></UIcon></div>
+      </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row mt-4 md:mt-5 gap-4 justify-between">
+      <div class="ring w-full lg:w-[75%] ring-default relative rounded-lg">
+        <div class="absolute top-3 left-3 right-3 flex justify-between z-10">
+          <USelect v-model="appliedFilters.chartType" :items="chartTypeOptions" placeholder="Тип графика" class="w-40 md:w-fit" />
+          <div class="flex gap-2">
+            <UButton v-if="canDrillUp" icon="i-heroicons-arrow-left" color="neutral" variant="ghost" size="xs" @click="drillUp"> </UButton>
+            <UButton
+              v-if="canDrillUp && appliedFilters.groupBy != 'street'"
+              trailing-icon="i-heroicons-arrow-right"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              @click="drillDownBtn">
+            </UButton>
+          </div>
+        </div>
+
+        <div class="pt-12 md:pt-16">
+          <VChartFull class="p-2" v-if="settlementsData" :option="chartOption" autoresize :init-options="{ height: 350 }" @click="handleChartClick" />
+          <div v-else class="flex h-full justify-center items-center"><UIcon size="50 md:size-70" name="codex:loader"></UIcon></div>
+          <div v-if="!loadingSettlements && settlementsData?.length === 0" class="text-center text-gray-400 mt-2 px-4">Нет данных для выбранного уровня</div>
+        </div>
+      </div>
+
+      <div class="w-full lg:w-[25%]">
+        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize :init-options="{ height: 350 }" />
+      </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row mt-4 md:mt-5 gap-4">
+      <div class="flex w-full lg:w-[75%] flex-col">
+        <p class="text-lg md:text-xl font-semibold">Популярные объявления</p>
+        <div class="flex flex-col gap-3 md:gap-5 mt-3 md:mt-4" v-for="block in topOffersBlocks" :key="block.label">
+          <h3 class="text-base md:text-lg text-center">
             {{ block.label }}
           </h3>
-
           <div
             v-for="offer in block.offers"
             :key="offer.id"
             class="ring ring-[#f8fafc] rounded-lg h-fit p-0 bg-[#f8fafc] cursor-pointer hover:bg-[#e9eef4] hover:ring-[#e9eef4] transition-all"
             @click="openOffer(offer)">
-            <div class="flex h-fit">
-              <div class="relative">
-                <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-61 h-42" />
-
-                <div v-else class="h-33 w-51 flex items-center justify-center">
-                  <UIcon name="i-heroicons-photo" class="size-10 text-gray-400" />
+            <div class="flex flex-col sm:flex-row h-fit">
+              <div class="relative sm:w-1/3">
+                <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-full h-40 sm:h-42" />
+                <div v-else class="h-40 sm:h-33 flex items-center justify-center">
+                  <UIcon name="i-heroicons-photo" class="size-8 md:size-10 text-gray-400" />
                 </div>
-
-                <UBadge v-if="offer.is_new_house" color="neutral" class="absolute top-3 left-2"> Новостройка </UBadge>
+                <UBadge v-if="offer.is_new_house" color="neutral" class="absolute top-2 left-2 text-xs"> Новостройка </UBadge>
               </div>
 
-              <div class="pl-4 flex justify-between w-full">
-                <div class="relative py-5 w-full justify-between flex px-5">
-                  <div class="flex flex-col gap-1">
-                    <h3 class="font-bold text-base text-nowrap">
+              <div class="sm:pl-4 flex justify-between w-full sm:w-2/3">
+                <div class="relative py-3 sm:py-5 w-full justify-between flex flex-col sm:flex-row px-3 sm:px-5">
+                  <div class="flex flex-col gap-1 sm:gap-1">
+                    <h3 class="font-bold text-sm md:text-base">
                       {{ offer.title || "Без названия" }}
                     </h3>
-                    <div class="text-base">
-                      <UIcon name="tabler:map-pin" class="size-4" />
-                      {{ offer.address?.full_address }}
+                    <div class="text-sm md:text-base">
+                      <UIcon name="tabler:map-pin" class="size-3 md:size-4" />
+                      <span class="truncate block">{{ offer.address?.full_address }}</span>
                     </div>
-                    <span class="text-sm absolute bottom-4"
+                    <span class="text-xs md:text-sm mt-2 sm:absolute sm:bottom-4"
                       >Опубликовано:
                       {{
                         new Date(offer.creation_date_source).toLocaleString("ru-RU", {
@@ -246,14 +274,14 @@
                     >
                   </div>
 
-                  <div class="flex flex-col items-end mr-0 gap-1">
+                  <div class="flex flex-col items-end mr-0 gap-1 mt-2 sm:mt-0">
                     <div class="flex items-center justify-center gap-2">
-                      <UBadge v-if="offer.price_category" :color="getCategoryColor(offer.price_category)" variant="solid" class="flex text-nowrap justify-center">
+                      <UBadge v-if="offer.price_category" :color="getCategoryColor(offer.price_category)" variant="solid" class="flex text-xs md:text-sm">
                         {{ getCategoryLabel(offer.price_category) }}
                       </UBadge>
-                      <span class="font-bold text-base text-nowrap">{{ formatPrice(offer.price) }}</span>
+                      <span class="font-bold text-sm md:text-base">{{ formatPrice(offer.price) }}</span>
                     </div>
-                    <div class="text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
+                    <div class="text-xs md:text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
                   </div>
                 </div>
               </div>
@@ -261,9 +289,10 @@
           </div>
         </div>
       </div>
-      <div class="flex grow w-[25%] flex-col gap-4">
-        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize :init-options="pieChartInitOptions" />
-        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize :init-options="pieChartInitOptions" />
+
+      <div class="flex flex-col gap-4 w-full lg:w-[25%]">
+        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize :init-options="{ height: 300 }" />
+        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize :init-options="{ height: 300 }" />
       </div>
     </div>
   </div>
@@ -281,22 +310,18 @@ interface SettlementData {
   district?: string;
   microdistrict?: string;
   street?: string;
-
   offers_count: number;
-
   averages: {
     average_price: number;
     average_price_per_square_meter: number;
     average_area: number;
     average_views_count: number;
   };
-
   price_categories: {
     cheap: number;
     normal: number;
     expensive: number;
   };
-
   area_boxplot?: {
     min: number;
     q1: number;
@@ -304,7 +329,6 @@ interface SettlementData {
     q3: number;
     max: number;
   };
-
   price_boxplot?: {
     min: number;
     q1: number;
@@ -334,7 +358,6 @@ interface OneObjectStats {
       average_area: number | null;
       average_views_count: number | null;
     };
-
     area_boxplot: {
       min: number | null;
       q1: number | null;
@@ -342,7 +365,6 @@ interface OneObjectStats {
       q3: number | null;
       max: number | null;
     };
-
     price_boxplot: {
       min: number | null;
       q1: number | null;
@@ -350,19 +372,15 @@ interface OneObjectStats {
       q3: number | null;
       max: number | null;
     };
-
     price_categories: {
       cheap: number;
       normal: number;
       expensive: number;
     };
-
     property_types: Record<string, number>;
-
     apartments_by_rooms: {
       rooms: Record<string, number>;
     };
-
     flat_type: {
       new_houses: number;
       secondary: number;
@@ -373,14 +391,12 @@ interface OneObjectStats {
 
 const topOffersBlocks = computed(() => {
   const blocks = [];
-
   if (OneObjectData.value?.top_offers_by_views?.length) {
     blocks.push({
       label: buildLabelWithoutGroupBy(appliedFilters),
       offers: OneObjectData.value.top_offers_by_views,
     });
   }
-
   comparisons.value.forEach((c) => {
     const offers = c.stats?.top_offers_by_views;
     if (offers?.length) {
@@ -390,7 +406,6 @@ const topOffersBlocks = computed(() => {
       });
     }
   });
-
   return blocks;
 });
 
@@ -429,29 +444,21 @@ function buildLabelWithoutGroupBy(filters: {
   settlementTypes?: string[];
 }) {
   const parts: string[] = [];
-
-  // 🔹 география
   if (filters.region) parts.push(filters.region);
   if (filters.municipality) parts.push(filters.municipality);
   if (filters.settlement) parts.push(filters.settlement);
   if (filters.district) parts.push(filters.district);
   if (filters.microdistrict) parts.push(filters.microdistrict);
-
-  // 🔹 тип недвижимости
   if (filters.is_new_house === true) parts.push("Новостройки");
   else if (filters.is_new_house === false) parts.push("Вторичка");
-
-  // 🔹 тип населённого пункта
   if (filters.settlementTypes?.length) {
     parts.push(filters.settlementTypes.join(", "));
   }
-
   return parts.join(" · ");
 }
 
 const appliedFiltersLabel = computed(() => {
-  const label = buildLabel(appliedFilters);
-  return label;
+  return buildLabel(appliedFilters);
 });
 
 const chartTypeOptions = ref([
@@ -465,7 +472,6 @@ const chartTypeOptions = ref([
 
 async function addComparison() {
   const filtersSnapshot = JSON.parse(JSON.stringify(draftFilters));
-
   const [priceHistory, viewsHistory, settlements, one_stats] = await Promise.all([
     $api("/analysis/average-prices-history", { params: buildParams(filtersSnapshot) }),
     $api("/analysis/last-10-days-views-history", { params: buildParams(filtersSnapshot) }),
@@ -477,7 +483,6 @@ async function addComparison() {
   draftFilters.settlement = "";
   draftFilters.district = "";
   draftFilters.microdistrict = "";
-
   comparisons.value.push({
     id: ++comparisonId,
     label: buildLabel(filtersSnapshot),
@@ -489,23 +494,22 @@ async function addComparison() {
     stats: one_stats,
   });
 }
+
 function removeComparison(id: number) {
   comparisons.value = comparisons.value.filter((c) => c.id !== id);
 }
+
 type PricePoint = {
   date: string;
   avg_price: number;
 };
-const currentLabel = computed(() => buildLabel(appliedFilters));
+
 function aggregateByMonth(data?: PricePoint[]) {
   if (!data?.length) return [];
-
   const map = new Map<string, { sum: number; count: number; date: Date }>();
-
   for (const item of data) {
     const d = new Date(item.date);
     const key = `${d.getFullYear()}-${d.getMonth()}`;
-
     if (!map.has(key)) {
       map.set(key, {
         sum: 0,
@@ -513,12 +517,10 @@ function aggregateByMonth(data?: PricePoint[]) {
         date: new Date(d.getFullYear(), d.getMonth(), 1),
       });
     }
-
     const acc = map.get(key)!;
     acc.sum += item.avg_price;
     acc.count += 1;
   }
-
   return Array.from(map.values())
     .sort((a, b) => a.date.getTime() - b.date.getTime())
     .map((i) => ({
@@ -528,15 +530,11 @@ function aggregateByMonth(data?: PricePoint[]) {
 }
 
 const priceHistoryChartOption = computed(() => {
-  // 🔹 основной ряд
   const baseMonthly = aggregateByMonth(priceHistoryData.value);
-
-  // 🔹 сравнения
   const comparisonMonthly = comparisons.value.map((c) => ({
     label: c.labelWithoutGroup || "",
     monthly: aggregateByMonth(c.priceHistory),
   }));
-
   const series = [
     {
       name: buildLabelWithoutGroupBy(appliedFilters),
@@ -550,12 +548,10 @@ const priceHistoryChartOption = computed(() => {
       type: "line",
       smooth: true,
       showSymbol: false,
-      data: c.monthly.map((i) => [i.date, i.avg_price]), // ✅ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ
+      data: c.monthly.map((i) => [i.date, i.avg_price]),
     })),
   ];
-
   const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price);
-
   return {
     title: {
       text: "История средней цены",
@@ -608,9 +604,7 @@ const viewsHistoryChartOption = computed(() => {
       data: c.viewsHistory.map((i) => i.views),
     })),
   ];
-
   const xAxisData = viewsHistoryData.value?.map((i) => new Date(i.date).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" })) ?? [];
-
   return {
     title: {
       text: "История просмотров за последние 10 дней",
@@ -621,7 +615,6 @@ const viewsHistoryChartOption = computed(() => {
     },
     dataZoom: {
       type: "inside",
-
       zoomOnMouseWheel: true,
       moveOnMouseMove: true,
       preventDefaultMouseMove: true,
@@ -660,13 +653,12 @@ function getGroupByLabel(groupBy: string) {
   switch (groupBy) {
     case "region":
       return "Области";
-    case "municipality": // <- добавить
+    case "municipality":
       return "Муниципалитеты";
     case "settlement":
       return "Населённые пункты";
     case "district":
       return "Районы";
-
     case "microdistrict":
       return "Микрорайоны";
     case "street":
@@ -687,28 +679,19 @@ function buildLabel(filters: {
   settlementTypes?: string[];
 }) {
   const parts: string[] = [];
-
-  // 🔹 уровень группировки
   if (filters.groupBy) {
     parts.push(getGroupByLabel(filters.groupBy));
   }
-
-  // 🔹 география
   if (filters.region) parts.push(filters.region);
   if (filters.municipality) parts.push(filters.municipality);
   if (filters.settlement) parts.push(filters.settlement);
   if (filters.district) parts.push(filters.district);
   if (filters.microdistrict) parts.push(filters.microdistrict);
-
-  // 🔹 тип недвижимости
   if (filters.is_new_house === true) parts.push("Новостройки");
   else if (filters.is_new_house === false) parts.push("Вторичка");
-
-  // 🔹 тип населённого пункта
   if (filters.settlementTypes?.length) {
     parts.push(filters.settlementTypes.join(", "));
   }
-
   return parts.join(" · ");
 }
 
@@ -718,7 +701,6 @@ interface DraftFilters {
   municipality: string;
   settlement: string;
   district: string;
-
   microdistrict: string;
   settlementTypes: string[];
   is_new_house?: boolean;
@@ -758,85 +740,37 @@ const openOffer = (offer) => {
 
 async function drillDown(categoryName: string) {
   const currentIndex = drillLevels.indexOf(appliedFilters.groupBy as (typeof drillLevels)[number]);
-  console.log("Сработал дрилл даун");
   for (let i = currentIndex + 1; i < drillLevels.length; i++) {
     const nextLevel = drillLevels[i];
-
     appliedFilters.groupBy = nextLevel;
-
     drillLevels.slice(i + 1).forEach((level) => {
       appliedFilters[level] = "";
     });
-
     appliedFilters[drillLevels[currentIndex]] = categoryName;
-
     refreshSettlementsData();
-
     if (settlementsData.value?.length && settlementsData.value.length > 0) {
       refreshOneObjectData();
       refreshPriceHistoryData();
-
       refreshViewsHistoryData();
       return;
     }
   }
-
-  console.log("Нет данных на следующих уровнях");
 }
+
 const canDrillUp = computed(() => {
   return appliedFilters.groupBy != "region";
 });
 
-async function drillUpTo(targetLevel: (typeof drillLevels)[number]) {
-  const targetIndex = drillLevels.indexOf(targetLevel);
-  if (targetIndex < 0) return;
-
-  if (!appliedFilters[targetLevel]) {
-    appliedFilters.groupBy = targetLevel;
-
-    drillLevels.forEach((level, idx) => {
-      if (idx > targetIndex) {
-        appliedFilters[level] = "";
-      }
-    });
-
-    refreshSettlementsData();
-    refreshOneObjectData();
-    refreshPriceHistoryData();
-    refreshViewsHistoryData();
-  }
-
-  appliedFilters.groupBy = targetLevel;
-  appliedFilters[targetLevel] = "";
-
-  drillLevels.forEach((level, idx) => {
-    if (idx > targetIndex) {
-      appliedFilters[level] = "";
-    }
-  });
-
-  refreshSettlementsData();
-  refreshOneObjectData();
-  refreshPriceHistoryData();
-  refreshViewsHistoryData();
-}
-
 async function drillUp() {
   const currentIndex = drillLevels.indexOf(appliedFilters.groupBy as (typeof drillLevels)[number]);
-
-  if (currentIndex <= 0) return; // если уже на верхнем уровне, выходим
-
-  const nextLevel = drillLevels[currentIndex - 1]; // уровень выше
+  if (currentIndex <= 0) return;
+  const nextLevel = drillLevels[currentIndex - 1];
   appliedFilters.groupBy = nextLevel;
-
-  // сбрасываем текущее значение уровня, с которого поднимаемся, и все уровни ниже
   drillLevels.forEach((level, idx) => {
     if (idx >= currentIndex - 1) {
       appliedFilters[level] = "";
     }
   });
-
-  // обновляем данные
   refreshSettlementsData();
   refreshOneObjectData();
   refreshPriceHistoryData();
@@ -845,102 +779,33 @@ async function drillUp() {
 
 async function drillDownBtn() {
   const currentIndex = drillLevels.indexOf(appliedFilters.groupBy as (typeof drillLevels)[number]);
-
-  if (currentIndex >= drillLevels.length - 1) return; // если уже на самом нижнем уровне, выходим
-
-  const nextLevel = drillLevels[currentIndex + 1]; // уровень ниже
+  if (currentIndex >= drillLevels.length - 1) return;
+  const nextLevel = drillLevels[currentIndex + 1];
   appliedFilters.groupBy = nextLevel;
-
-  // обновляем данные
   refreshSettlementsData();
   refreshOneObjectData();
   refreshPriceHistoryData();
   refreshViewsHistoryData();
 }
 
-function getLevelLabel(level: (typeof drillLevels)[number]) {
-  switch (level) {
-    case "region":
-      return "Области";
-    case "municipality": // <- добавить
-      return "Муниципалитеты";
-    case "settlement":
-      return "Населённые пункты";
-    case "district":
-      return "Районы";
-    case "microdistrict":
-      return "Микрорайоны";
-    case "street":
-      return "Улицы";
-    default:
-      return level;
-  }
-}
-
 function getCategoryLabelData(item: SettlementData, groupBy: keyof SettlementData): string {
   return item[groupBy] ?? "—";
 }
 
-const breadcrumbs = computed(() => {
-  const currentIndex = drillLevels.indexOf(appliedFilters.groupBy as (typeof drillLevels)[number]);
-
-  return drillLevels
-    .slice(0, currentIndex + 1)
-    .filter((level, idx) => {
-      return appliedFilters[level] || idx === currentIndex;
-    })
-    .map((level) => ({
-      level,
-      label: appliedFilters[level] || getLevelLabel(level),
-      isCurrent: level === appliedFilters.groupBy,
-    }));
-});
-
-const breadcrumbsGraphic = computed(() => {
-  let left = 20;
-
-  return breadcrumbs.value.map((crumb, index) => {
-    const width = crumb.label.length * 7 + 10;
-
-    const graphicItem = {
-      type: "text",
-      left,
-      top: 10,
-      style: {
-        text: crumb.label,
-        fontSize: 12,
-        fill: crumb.isCurrent ? "#111827" : "#2563eb",
-        cursor: crumb.isCurrent ? "default" : "pointer",
-      },
-      onclick: crumb.isCurrent ? undefined : () => drillUpTo(crumb.level),
-    };
-
-    left += width;
-    return graphicItem;
-  });
-});
-
 function handleChartClick(params: any) {
   if (!params || params.componentType !== "series") return;
-
   const seriesIndex = params.seriesIndex;
   if (seriesIndex == null) return;
-
   const seriesItem = chartOption.value.series[seriesIndex];
   const gridIndex = seriesItem?.xAxisIndex ?? 0;
-
-  // ✅ drill ТОЛЬКО с основного графика
   if (gridIndex !== 0) return;
-
   if (!params.name) return;
-
   drillDown(params.name);
 }
 
 const {
   data: settlementsData,
   pending: loadingSettlements,
-  error: settlementsError,
   refresh: refreshSettlementsData,
 } = await useAsyncData<SettlementData[]>("group-stats", async () => {
   const response = await $api("/analysis/group-stats", {
@@ -955,14 +820,12 @@ const {
       microdistrict_name: appliedFilters.microdistrict || undefined,
     },
   });
-
   return response.results;
 });
 
 const {
   data: OneObjectData,
   pending: loadingOneObject,
-  error: OneObjectError,
   refresh: refreshOneObjectData,
 } = await useAsyncData<OneObjectStats>("stats", async () => {
   return $api("/analysis/stats", {
@@ -978,12 +841,7 @@ const {
   });
 });
 
-const {
-  data: viewsHistoryData,
-  pending: loadingViewsHistory,
-  error: viewsHistoryError,
-  refresh: refreshViewsHistoryData,
-} = await useAsyncData<ViewsHistoryData>("views-history", async () => {
+const { data: viewsHistoryData, refresh: refreshViewsHistoryData } = await useAsyncData<ViewsHistoryData>("views-history", async () => {
   return $api("/analysis/last-10-days-views-history", {
     params: {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
@@ -997,12 +855,7 @@ const {
   });
 });
 
-const {
-  data: priceHistoryData,
-  pending: loadingPriceHistory,
-  error: priceHistoryError,
-  refresh: refreshPriceHistoryData,
-} = await useAsyncData<PriceHistory[]>("price-history", async () => {
+const { data: priceHistoryData, refresh: refreshPriceHistoryData } = await useAsyncData<PriceHistory[]>("price-history", async () => {
   return $api("/analysis/average-prices-history", {
     params: {
       settlement_type_names: appliedFilters.settlementTypes.length > 0 ? appliedFilters.settlementTypes : undefined,
@@ -1016,39 +869,10 @@ const {
   });
 });
 
-function getPieCenters(count: number): string[][] {
-  const cols = Math.ceil(Math.sqrt(count)); // количество колонок
-  const rows = Math.ceil(count / cols); // количество строк
-  const centers: string[][] = [];
-
-  const xStep = 100 / cols;
-  const yStep = 100 / rows;
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const idx = row * cols + col;
-      if (idx >= count) break;
-      centers.push([`${(col + 0.5) * xStep}%`, `${(row + 0.5) * yStep}%`]);
-    }
-  }
-
-  return centers;
-}
-
-function getPieRadius(count: number): string {
-  const cols = Math.ceil(Math.sqrt(count));
-  const rows = Math.ceil(count / cols);
-  const maxRadiusX = (100 / cols / 2) * 0.9; // немного отступ
-  const maxRadiusY = (100 / rows / 2) * 0.9;
-  return `${Math.min(maxRadiusX, maxRadiusY)}%`;
-}
-
 function getVerticalPieCentersPx(count: number): { center: [string, number]; titleTop: number }[] {
   return Array.from({ length: count }, (_, idx) => {
     const blockTop = CHART_TOP_START + idx * CHART_BLOCK_HEIGHT;
-
     const centerY = blockTop + CHART_TITLE_HEIGHT + 8 + CHART_GRID_HEIGHT / 2;
-
     return {
       center: ["50%", centerY],
       titleTop: blockTop,
@@ -1069,10 +893,8 @@ const propertyTypesPieOption = computed(() => {
         data: c.stats.statistics.property_types,
       })),
   ];
-
   const layout = getVerticalPieCentersPx(chartsData.length);
-  const radius = 90; // px — стабильно и предсказуемо
-
+  const radius = 90;
   const titles = chartsData.map((chart, idx) => ({
     text: chart.label,
     left: "50%",
@@ -1084,7 +906,6 @@ const propertyTypesPieOption = computed(() => {
       color: "#111827",
     },
   }));
-
   const series = chartsData.map((chart, idx) => ({
     name: chart.label,
     type: "pie",
@@ -1095,7 +916,6 @@ const propertyTypesPieOption = computed(() => {
       value,
     })),
   }));
-
   return {
     title: [
       {
@@ -1125,10 +945,8 @@ const apartmentsByRoomsPieOption = computed(() => {
         data: c.stats.statistics.apartments_by_rooms.rooms,
       })),
   ];
-
   const layout = getVerticalPieCentersPx(chartsData.length);
-  const radius = 90; // px — фиксированный и предсказуемый радиус
-
+  const radius = 90;
   const titles = chartsData.map((chart, idx) => ({
     text: chart.label,
     left: "50%",
@@ -1140,7 +958,6 @@ const apartmentsByRoomsPieOption = computed(() => {
       color: "#111827",
     },
   }));
-
   const series = chartsData.map((chart, idx) => ({
     name: chart.label,
     type: "pie",
@@ -1151,7 +968,6 @@ const apartmentsByRoomsPieOption = computed(() => {
       value,
     })),
   }));
-
   return {
     title: [
       {
@@ -1187,10 +1003,8 @@ const flatTypePieOption = computed(() => {
         },
       })),
   ];
-
   const layout = getVerticalPieCentersPx(chartsData.length);
-  const outerRadius = 90; // px, фиксированный внешний радиус
-
+  const outerRadius = 90;
   const titles = chartsData.map((chart, idx) => ({
     text: chart.label,
     left: "50%",
@@ -1202,15 +1016,13 @@ const flatTypePieOption = computed(() => {
       color: "#111827",
     },
   }));
-
   const series = chartsData.map((chart, idx) => ({
     name: chart.label,
     type: "pie",
-    radius: [`25%`, `${outerRadius}px`], // внутренний радиус 25%, внешний фиксированный
+    radius: [`25%`, `${outerRadius}px`],
     center: layout[idx].center,
     data: Object.entries(chart.data).map(([name, value]) => ({ name, value })),
   }));
-
   return {
     title: [
       {
@@ -1318,8 +1130,8 @@ const pieChartInitOptions = computed(() => ({
   height: chartContainerHeight.value,
 }));
 
-const CHART_BLOCK_HEIGHT = 380; // полный блок (title + grid + отступ)
-const CHART_TITLE_HEIGHT = 50; // высота тайтла
+const CHART_BLOCK_HEIGHT = 380;
+const CHART_TITLE_HEIGHT = 50;
 const CHART_GRID_HEIGHT = 180;
 const CHART_TOP_START = 80;
 
@@ -1330,10 +1142,8 @@ const chartOption = computed(() => {
   const series: any[] = [];
   const titles: any[] = [];
   const graphics: any[] = [];
-
-  /* ---------- MAIN TITLE ---------- */
   titles.push({
-    text: chartMainTitle.value, // ← название ВСЕГО графика
+    text: chartMainTitle.value,
     left: "center",
     top: 20,
     textStyle: {
@@ -1342,7 +1152,6 @@ const chartOption = computed(() => {
       color: "#111827",
     },
   });
-
   const allGraphs = [
     {
       settlements: settlementsData.value ?? [],
@@ -1355,11 +1164,8 @@ const chartOption = computed(() => {
       label: c.label,
     })),
   ];
-
   allGraphs.forEach((graph, idx) => {
     const blockTop = CHART_TOP_START + idx * CHART_BLOCK_HEIGHT;
-
-    /* ---------- PER-GRAPH TITLE ---------- */
     if (graph.label) {
       titles.push({
         text: graph.label,
@@ -1372,11 +1178,8 @@ const chartOption = computed(() => {
           color: "#111827",
         },
       });
-
-      // ❌ кнопка удаления ТОЛЬКО для сравнений
       if (idx > 0) {
         const comparisonId = comparisons.value[idx - 1].id;
-
         graphics.push({
           type: "text",
           left: "95%",
@@ -1392,16 +1195,13 @@ const chartOption = computed(() => {
         });
       }
     }
-
     const gridTop = blockTop + CHART_TITLE_HEIGHT + 8;
-
     grids.push({
       top: gridTop,
       left: 80,
       right: 40,
       height: CHART_GRID_HEIGHT,
     });
-
     xAxes.push({
       type: "category",
       gridIndex: idx,
@@ -1409,23 +1209,20 @@ const chartOption = computed(() => {
       axisLabel: { rotate: 30 },
       boundaryGap: true,
     });
-
     yAxes.push({
       type: "value",
       gridIndex: idx,
     });
-
     series.push(
       ...buildSeriesForFilters({ ...graph.filters, chartType: appliedFilters.chartType }, graph.settlements, `stack-${idx}`).map((s) => ({
         ...s,
         xAxisIndex: idx,
         yAxisIndex: idx,
-        name: idx === 0 ? s.name : `${s.name} · ${graph.label}`, // ✅
+        name: idx === 0 ? s.name : `${s.name} · ${graph.label}`,
         cursor: idx === 0 ? "pointer" : "default",
       })),
     );
   });
-
   const dataZoom = allGraphs.map((_, idx) => ({
     type: "inside",
     xAxisIndex: idx,
@@ -1433,10 +1230,9 @@ const chartOption = computed(() => {
     moveOnMouseMove: true,
     preventDefaultMouseMove: true,
   }));
-
   return {
     title: titles,
-    graphic: graphics, // 👈 ВАЖНО
+    graphic: graphics,
     tooltip: {
       trigger: "axis",
       axisPointer: { type: "shadow" },
@@ -1478,7 +1274,6 @@ async function applyFilters() {
   OneObjectData.value = undefined;
   priceHistoryData.value = undefined;
   appliedFilters.groupBy = draftFilters.groupBy;
-
   appliedFilters.region = draftFilters.region;
   appliedFilters.municipality = draftFilters.municipality;
   appliedFilters.settlement = draftFilters.settlement;
@@ -1486,19 +1281,16 @@ async function applyFilters() {
   appliedFilters.microdistrict = draftFilters.microdistrict;
   appliedFilters.settlementTypes = [...draftFilters.settlementTypes];
   appliedFilters.is_new_house = draftFilters.is_new_house;
-
   refreshSettlementsData();
   refreshOneObjectData();
   refreshPriceHistoryData();
   refreshViewsHistoryData();
-
   Object.values(autocompleteResults).forEach((arr) => arr.splice(0));
 }
 
 function handleInputChange(type: AutocompleteField, value: string) {
   const trimmed = value.trim();
   draftFilters[type] = trimmed;
-
   if (trimmed) {
     selectedFilterType.value = type;
     refreshAutocomplete();
@@ -1533,7 +1325,7 @@ const visibleInputs = computed(() => {
   switch (draftFilters.groupBy) {
     case "region":
       return [];
-    case "municipality": // <- добавить
+    case "municipality":
       return ["region"];
     case "settlement":
       return ["region", "municipality"];
@@ -1552,7 +1344,6 @@ watch(
   () => draftFilters.groupBy,
   (newGroupBy) => {
     const visible = visibleInputs.value;
-
     ["region", "municipality", "settlement", "district", "microdistrict"].forEach((level) => {
       if (!visible.includes(level)) {
         draftFilters[level] = "";
@@ -1565,7 +1356,6 @@ function handleClickOutside() {
   Object.keys(autocompleteResults).forEach((key) => {
     autocompleteResults[key] = [];
   });
-  console.log(autocompleteResults);
 }
 
 function selectResult(type: AutocompleteField, item: string) {
@@ -1576,19 +1366,55 @@ function selectResult(type: AutocompleteField, item: string) {
 <style scoped>
 @reference "tailwindcss";
 @reference "@nuxt/ui";
+
 .stat-card {
-  @apply ring ring-default flex flex-col items-center rounded-lg p-4 px-20 text-2xl grow w-1/4;
+  @apply ring ring-default flex flex-col items-center rounded-lg p-3 md:p-4 px-4 md:px-20 text-lg text-nowrap md:text-2xl;
 }
+
 .stat-card span {
   @apply font-bold;
 }
+
 .stat-card h3 {
   @apply text-muted;
 }
+
 .stat-card-info {
   @apply flex mt-1.5 justify-center items-center gap-2;
 }
+
 .stat-card-info span {
-  @apply flex items-center  gap-2;
+  @apply flex items-center gap-2;
+}
+
+@media (max-width: 640px) {
+  .stat-card {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  :deep(.u-radio-group) {
+    font-size: 0.875rem;
+  }
+
+  :deep(.u-checkbox) {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-card {
+    min-height: 80px;
+  }
+
+  :deep(.echarts) {
+    min-height: 300px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stat-card {
+    min-height: 120px;
+  }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex gap-5 mx-auto p-5 max-h-full">
+  <div class="flex gap-5 mx-auto max-h-[92.9vh]! p-5">
     <div class="w-[22%]">
       <FiltersSidebar @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>

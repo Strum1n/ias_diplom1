@@ -1,19 +1,32 @@
 <template>
   <header v-if="showHeader" class="header">
-    <UContainer class="flex min-w-360 justify-between items-center gap-3 h-16">
+    <UContainer class="flex justify-between items-center gap-3 h-16 sm:min-w-full lg:min-w-360">
       <NuxtLink to="/" class="logo">
         <UIcon name="ic:round-maps-home-work" class="logo-icon" />
         <span>Real</span>
         <span class="text-primary">Estate</span>
       </NuxtLink>
 
-      <UNavigationMenu highlight class="text-xl" :items="items" />
+      <!-- Dropdown для мобильных -->
+      <div class="ml-0 mr-auto sm:hidden">
+        <UDropdownMenu
+          arrow
+          :items="items"
+          :ui="{
+            content: 'w-48',
+          }">
+          <UButton icon="i-lucide-menu" color="neutral" variant="outline" />
+        </UDropdownMenu>
+      </div>
 
-      <!-- Правая часть -->
+      <div class="hidden sm:block">
+        <UNavigationMenu highlight class="text-xl" :items="items" />
+      </div>
+
       <div class="right">
         <div class="auth">
           <template v-if="isAuthenticated">
-            <span class="user-email">
+            <span class="sm:inline text-sm font-semibold user-email">
               {{ userEmail }}
             </span>
 
@@ -21,7 +34,7 @@
           </template>
 
           <template v-else>
-            <UButton variant="soft" @click="navigateTo('/login')" size="sm">Войти</UButton>
+            <UButton variant="soft" @click="navigateTo('/login')" size="sm" class="hidden sm:inline-flex">Войти</UButton>
             <UButton variant="solid" @click="navigateTo('/register')" size="sm">Регистрация</UButton>
           </template>
         </div>
@@ -38,10 +51,8 @@ import { jwtDecode } from "jwt-decode";
 const route = useRoute();
 const { logout, loading, accessToken, isAuthenticated } = useAuth();
 
-// Скрываем хедер на страницах логина и регистрации
 const showHeader = computed(() => !["/login", "/register"].includes(route.path));
 
-// Извлекаем email (sub) из токена
 const userEmail = computed(() => {
   if (!accessToken.value) return "";
   try {
@@ -64,94 +75,57 @@ const items = ref([
     to: "/favorites",
   },
   {
+    label: "Карта",
+    icon: "uiw:map",
+    to: "/map",
+  },
+  {
     label: "Аналитика",
     icon: "icon-park-solid:analysis",
     to: "/dashboard",
-  },
-  {
-    label: "Карта",
-    icon: "uiw:map",
-    // badge: '3.8k',
-    to: "/map",
   },
 ]);
 </script>
 
 <style scoped>
-:deep a {
-  font-weight: 600;
+@reference "@nuxt/ui";
+@reference 'tailwindcss';
+:deep(a) {
+  @apply font-semibold;
 }
 
-/* HEADER */
 .header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: rgba(255, 255, 255, 0.92); /* Белый с прозрачностью 70% */
-  color: #111;
-
-  backdrop-filter: blur(6px) saturate(180%);
-  border-bottom: 1px solid var(--ui-border);
-}
-
-/* контейнер с вертикальным padding */
-.container {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-.header-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.left {
-  display: flex;
-  align-items: center;
-  gap: 2.5rem;
+  @apply sticky top-0 z-50 bg-white/92 text-[#111] backdrop-blur backdrop-saturate-180 border-b border-b-default;
 }
 
 .logo {
-  display: flex;
-  align-items: end;
-  font-size: 1.35rem;
-  font-weight: 700;
+  @apply flex items-end text-[1.35rem] font-bold;
 }
 
 .logo-icon {
-  width: 2rem;
-  height: 2rem;
-  color: var(--color-primary);
-}
-
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
+  @apply w-8 h-8 text-primary;
 }
 
 .right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  @apply flex items-center gap-4;
 }
 
 .auth {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  @apply flex items-center gap-3;
 }
 
-.user-email {
-  font-size: 0.875rem;
-  display: none;
-  font-weight: 550;
-}
+/* Адаптивные стили для мобильных устройств */
+@media (max-width: 640px) {
+  .auth {
+    @apply gap-2;
+  }
 
-@media (min-width: 640px) {
-  .user-email {
-    display: block;
+  .logo {
+    @apply text-[1.1rem];
+  }
+
+  .logo-icon {
+    @apply w-6 h-6;
   }
 }
 </style>

@@ -1,12 +1,12 @@
 import { defineNuxtConfig } from 'nuxt/config'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   ssr:true,
   modules: ['@nuxt/ui',  '@nuxtjs/mdc',
   'vue-yandex-maps/nuxt', 'nuxt-auth-utils', 'nuxt-echarts', '@nuxtjs/mdc'],
   fonts: {
-    provider: 'bunny'
+    provider: 'google'
   },
   echarts: {
     charts: ["BarChart", "BoxplotChart", "LineChart", "PieChart","RadarChart"],
@@ -35,6 +35,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
+    apiBase: process.env.NUXT_PUBLIC_API_BASE || '/apiback',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/apiback',
     },
