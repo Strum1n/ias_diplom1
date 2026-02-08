@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     ALGORITHM: str
     DB_URL: str
     APP_PASSWORD: str
+    OPEN_ROUTER_API_KEY: str
 
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="ignore")
 

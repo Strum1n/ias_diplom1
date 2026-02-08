@@ -1,28 +1,18 @@
 <template>
-  <div class="flex flex-col md:flex-row gap-2.5 mx-auto p-3 md:p-5 md:gap-5">
-    <div class="md:hidden">
-      <UButton icon="i-heroicons-funnel" @click="toggleFiltersSidebar" variant="outline" color="primary" class="w-full justify-center">
-        {{ showFilters ? "Скрыть фильтры" : "Показать фильтры" }}
-      </UButton>
-    </div>
-    <div
-      class="w-full md:w-[22%] md:max-h-full transition-all duration-300 ease-in-out"
-      :class="{
-        'max-h-0 overflow-hidden md:max-h-none md:overflow-visible': !showFilters,
-        'max-h-500 overflow-visible mb-4': showFilters,
-      }">
+  <div class="flex gap-5 mx-auto p-5">
+    <div class="w-[22%]">
       <FiltersSidebar ref="filtersRef" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>
-    <main class="flex-1 w-full">
+    <main class="flex-1">
       <div class="mb-4">
         <AddressAutocomplete @address-selected="handleAddressSearch" @search-triggered="handleAddressSearch" />
       </div>
-      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-2 md:px-3 text-xs md:text-sm" color="info">
-        <span class="truncate max-w-50 md:max-w-none">{{ addressForSearch }}</span>
+      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-3 text-sm" color="info">
+        {{ addressForSearch }}
         <UButton
           trailing-icon="heroicons:x-mark-16-solid"
           variant="outline"
-          class="px-0 ring-[#e9f2ff] pt-2 border-0 bg-transparent ml-1"
+          class="px-0 ring-[#e9f2ff] pt-2 border-0 bg-transparent"
           color="info"
           @click="clearAddressSearch"
           size="md"></UButton>
@@ -30,27 +20,24 @@
       <div v-if="offersError" class="error-message">
         {{ offersError }}
       </div>
-      <div class="flex flex-col sm:flex-row gap-3 sm:gap-8 text-sm items-start sm:items-center relative mb-5">
-        <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-          <span class="font-[550] whitespace-nowrap">Всего объявлений: {{ totalCount.toLocaleString("ru-RU") }}</span>
-          <span class="font-[550] text-primary whitespace-nowrap">Подходящих: {{ filteredCount.toLocaleString("ru-RU") }}</span>
-        </div>
-        <div class="flex items-center gap-4 w-full sm:w-auto">
-          <USelect
-            v-model="sortValue"
-            :items="sortFields"
-            class="w-full sm:w-48"
-            value-key="value"
-            :icon="icon"
-            :ui="{
-              trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
-            }">
-          </USelect>
-          <UButton icon="i-bx:export" @click="exportCsv()" class="sm:absolute sm:right-0" variant="outline" color="info" v-if="userRole == 'Админ'">
-            <span class="hidden sm:inline">Экспорт в CSV</span>
-          </UButton>
-        </div>
+
+      <div class="flex gap-8 text-sm items-center relative mb-5">
+        <span class="font-[550]">Всего объявлений: {{ totalCount.toLocaleString("ru-RU") }}</span>
+        <span class="font-[550] text-primary">Подходящих объявлений: {{ filteredCount.toLocaleString("ru-RU") }}</span>
+        <USelect
+          v-model="sortValue"
+          :items="sortFields"
+          class="w-48"
+          value-key="value"
+          :icon="icon"
+          :ui="{
+            trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
+          }">
+        </USelect>
+
+        <UButton icon="i-bx:export" @click="exportCsv()" class="absolute right-0" variant="outline" color="info" v-if="userRole == 'Админ'">Экспорт в CSV</UButton>
       </div>
+
       <div v-if="offersPending" class="flex justify-center mt-75">
         <UIcon size="70" name="codex:loader" class="loading-icon" />
       </div>
@@ -60,102 +47,102 @@
         <p>Попробуйте изменить параметры фильтрации</p>
       </div>
       <div v-else class="flex flex-col gap-4">
-        <div variant="outline" v-for="offer in offers" :key="offer.id" class="offer-card md:p-6!" @click="openOffer(offer)">
-          <div class="flex flex-col sm:flex-row h-auto sm:h-42 relative">
-            <button class="favorite-heart top-1! right-1! z-10 sm:-top-5! sm:-right-5!" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
-              <UIcon :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" class="heart-icon" />
-            </button>
-            <div class="w-full sm:w-65 relative mb-4 sm:mb-0 h-48 sm:h-auto">
-              <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover w-full h-full rounded-lg" />
-              <div v-else class="no-image w-full h-full">
+        <UCard variant="outline" v-for="offer in offers" :key="offer.id" class="offer-card" @click="openOffer(offer)">
+          <div class="flex h-42">
+            <div class="w-65 relative">
+              <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover w-full h-full" />
+              <div v-else class="no-image">
                 <UIcon name="i-heroicons-photo" class="text-gray-400 text-2xl" />
               </div>
-              <UBadge v-if="offer.is_new_house == true" color="neutral" variant="solid" class="absolute top-2 left-2 text-xs"> Новостройка </UBadge>
+              <UBadge v-if="offer.is_new_house == true" color="neutral" variant="solid" class="absolute top-2 left-2"> Новостройка </UBadge>
             </div>
-            <div class="offer-details w-full md:px-6!">
-              <div class="offer-header flex-col sm:flex-row">
-                <div class="offer-title-section w-full sm:flex-1">
-                  <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
-                    <UBadge v-if="offer.family_category" :color="getCategoryColor(offer.family_category)" variant="solid" class="category-badge text-xs">
+            <div class="offer-details">
+              <div class="offer-header">
+                <div class="offer-title-section">
+                  <div class="flex gap-2">
+                    <UBadge v-if="offer.family_category" :color="getCategoryColor(offer.family_category)" variant="solid" class="category-badge">
                       Семья: {{ getCategoryLabel(offer.family_category) }}
-                      <span v-if="offer.family_score !== null && offer.family_score !== undefined" class="hidden sm:inline"> ({{ offer.family_score.toFixed(2) }}) </span>
+                      <span v-if="offer.family_score !== null && offer.family_score !== undefined"> ({{ offer.family_score.toFixed(2) }}) </span>
                     </UBadge>
-                    <UBadge v-if="offer.elderly_category" :color="getCategoryColor(offer.elderly_category)" variant="solid" class="category-badge text-xs">
+                    <UBadge v-if="offer.elderly_category" :color="getCategoryColor(offer.elderly_category)" variant="solid" class="category-badge">
                       Пожилые: {{ getCategoryLabel(offer.elderly_category) }}
-                      <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined" class="hidden sm:inline"> ({{ offer.elderly_score.toFixed(2) }}) </span>
+                      <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined"> ({{ offer.elderly_score.toFixed(2) }}) </span>
                     </UBadge>
-                    <UBadge v-if="offer.transport_access_category" :color="getCategoryColor(offer.transport_access_category)" variant="solid" class="category-badge text-xs">
+                    <UBadge v-if="offer.transport_access_category" :color="getCategoryColor(offer.transport_access_category)" variant="solid" class="category-badge">
                       Транспорт:
                       {{ getCategoryLabel(offer.transport_access_category) }}
-                      <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined" class="hidden sm:inline">
-                        ({{ offer.transport_access_score.toFixed(2) }})
-                      </span>
+                      <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined"> ({{ offer.transport_access_score.toFixed(2) }}) </span>
                     </UBadge>
                   </div>
-                  <h3 class="offer-title text-base sm:text-lg">
+                  <h3 class="offer-title">
                     {{ offer.title || "Без названия" }}
                   </h3>
-                  <div class="offer-address mt-1">
-                    <UIcon name="tabler:map-pin" class="size-4 sm:size-5" />
-                    <span class="text-xs sm:text-sm">{{ offer.address?.full_address }}</span>
+                  <div class="offer-address">
+                    <UIcon name="tabler:map-pin" class="size-5" />
+                    {{ offer.address?.full_address }}
                   </div>
-                  <div class="offer-specs mt-3">
+                  <div class="offer-specs">
                     <div class="spec-item">
-                      <UIcon name="bx:area" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">{{ offer.total_area || "–" }} м²</span>
+                      <UIcon name="bx:area" class="size-6" />
+                      <span>{{ offer.total_area || "–" }} м²</span>
                     </div>
                     <div v-if="offer.land_area" class="spec-item">
-                      <UIcon name="lucide:land-plot" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">{{ offer.land_area || "–" }} сот.</span>
+                      <UIcon name="lucide:land-plot" class="size-6" />
+                      <span>{{ offer.land_area || "–" }} сот.</span>
                     </div>
                     <div v-if="offer.rooms_count" class="spec-item">
-                      <UIcon name="temaki:room" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">{{ offer.rooms_count }} комн.</span>
+                      <UIcon name="temaki:room" class="size-6" />
+                      <span>{{ offer.rooms_count }} комн.</span>
                     </div>
                     <div v-if="offer.floor" class="spec-item">
-                      <UIcon name="material-symbols:floor" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">{{ offer.floor }}{{ offer.house_floors_count ? "/" + offer.house_floors_count : "" }} эт.</span>
+                      <UIcon name="material-symbols:floor" class="size-6" />
+                      <span>{{ offer.floor }}{{ offer.house_floors_count ? "/" + offer.house_floors_count : "" }} эт.</span>
                     </div>
+
                     <div v-if="offer.floor === null && offer.house_floors_count !== null" class="spec-item">
-                      <UIcon name="material-symbols:floor" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">{{ offer.house_floors_count }} эт.</span>
+                      <UIcon name="material-symbols:floor" class="size-6" />
+                      <span>{{ offer.house_floors_count }} эт.</span>
                     </div>
                     <div v-if="offer.has_water_supply" class="spec-item">
-                      <UIcon name="material-symbols:water-drop-outline" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">Вода</span>
+                      <UIcon name="material-symbols:water-drop-outline" class="size-6" />
+                      <span>Вода</span>
                     </div>
                     <div v-if="offer.has_electricity" class="spec-item">
-                      <UIcon name="mage:electricity" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">Электричество</span>
+                      <UIcon name="mage:electricity" class="size-6" />
+                      <span>Электричество</span>
                     </div>
+
                     <div v-if="offer.renovation_type?.name" class="spec-item">
-                      <UIcon name="lsicon:decorate-outline" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">{{ offer.renovation_type?.name }}</span>
+                      <UIcon name="lsicon:decorate-outline" class="size-6" />
+                      <span>{{ offer.renovation_type?.name }}</span>
                     </div>
                     <div v-if="offer.house_built_year" class="spec-item">
-                      <UIcon name="i-heroicons-calendar" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">{{ offer.house_built_year }} г.</span>
+                      <UIcon name="i-heroicons-calendar" class="size-6" />
+                      <span>{{ offer.house_built_year }} г.</span>
                     </div>
                     <div v-if="offer.is_build_complete" class="spec-item">
-                      <UIcon name="fluent-mdl2:completed-solid" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">Сдан</span>
+                      <UIcon name="fluent-mdl2:completed-solid" class="size-6" />
+                      <span>Сдан</span>
                     </div>
                     <div v-if="offer.has_furniture" class="spec-item">
-                      <UIcon name="temaki:furniture" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">С мебелью</span>
+                      <UIcon name="temaki:furniture" class="size-6" />
+                      <span>С мебелью</span>
                     </div>
                     <div v-if="offer.has_elevator" class="spec-item">
-                      <UIcon name="tabler:elevator" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">Лифт</span>
+                      <UIcon name="tabler:elevator" class="size-6" />
+                      <span>Лифт</span>
                     </div>
                     <div v-if="offer.has_garbage_chute" class="spec-item">
-                      <UIcon name="mdi:garbage-can-outline" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">Мусоропровод</span>
+                      <UIcon name="mdi:garbage-can-outline" class="size-6" />
+                      <span>Мусоропровод</span>
                     </div>
                   </div>
                 </div>
-                <div class="offer-price-section flex justify-between pr-0! w-full sm:w-auto mt-4 sm:mt-0">
-                  <span class="creation-date spec-item text-xs sm:text-sm"
+                <div class="offer-price-section">
+                  <button class="favorite-heart" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
+                    <UIcon :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" class="heart-icon" />
+                  </button>
+                  <span class="creation-date spec-item"
                     >Опубликовано:
                     {{
                       new Date(offer.creation_date_source).toLocaleString("ru-RU", {
@@ -168,32 +155,31 @@
                       })
                     }}</span
                   >
-                  <div class="flex flex-col items-center sm:flex-row sm:items-center gap-2 sm:gap-3">
-                    <UBadge v-if="offer.price_category" :color="getPriceCategoryColor(offer.price_category)" variant="solid" class="category-badge text-xs w-fit sm:mb-3.5">
+                  <div class="flex items-center gap-3">
+                    <UBadge v-if="offer.price_category" :color="getPriceCategoryColor(offer.price_category)" variant="solid" class="category-badge">
                       {{ getPriceCategoryLabel(offer.price_category) }}
                     </UBadge>
-                    <div class="flex flex-col">
-                      <div class="offer-price text-lg sm:text-xl">
-                        {{ formatPrice(offer.price) }}
-                      </div>
-                      <div class="price-per-meter text-sm sm:text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
+                    <div class="offer-price">
+                      {{ formatPrice(offer.price) }}
                     </div>
                   </div>
+                  <div class="price-per-meter">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </UCard>
       </div>
+
       <div class="pagination-container" v-if="totalPages > 1">
-        <div class="pagination sm:flex-row">
-          <UButton @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" variant="outline" class="pagination-button sm:mb-0">
+        <div class="pagination">
+          <UButton @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" variant="outline" class="pagination-button">
             <UIcon name="i-heroicons-chevron-left" class="size-4" />
-            <span class="hidden sm:inline">Назад</span>
+            Назад
           </UButton>
-          <div class="page-numbers flex-wrap justify-center my-2 sm:my-0">
-            <UButton v-if="currentPage > 3" @click="goToPage(1)" :variant="currentPage === 1 ? 'solid' : 'outline'" class="page-button hidden sm:inline-block"> 1 </UButton>
-            <span v-if="currentPage > 4" class="page-ellipsis hidden sm:inline">...</span>
+          <div class="page-numbers">
+            <UButton v-if="currentPage > 3" @click="goToPage(1)" :variant="currentPage === 1 ? 'solid' : 'outline'" class="page-button"> 1 </UButton>
+            <span v-if="currentPage > 4" class="page-ellipsis">...</span>
             <UButton
               v-for="page in visiblePages"
               :key="page"
@@ -203,24 +189,20 @@
               class="page-button">
               {{ page }}
             </UButton>
-            <span v-if="currentPage < totalPages - 3" class="page-ellipsis hidden sm:inline">...</span>
-            <UButton
-              v-if="currentPage < totalPages - 2"
-              @click="goToPage(totalPages)"
-              :variant="currentPage === totalPages ? 'solid' : 'outline'"
-              class="page-button hidden sm:inline-block">
+            <span v-if="currentPage < totalPages - 3" class="page-ellipsis">...</span>
+            <UButton v-if="currentPage < totalPages - 2" @click="goToPage(totalPages)" :variant="currentPage === totalPages ? 'solid' : 'outline'" class="page-button">
               {{ totalPages }}
             </UButton>
           </div>
-          <UButton @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" variant="outline" class="pagination-button sm:mt-0">
-            <span class="hidden sm:inline">Вперед</span>
+          <UButton @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" variant="outline" class="pagination-button">
+            Вперед
             <UIcon name="i-heroicons-chevron-right" class="size-4" />
           </UButton>
         </div>
-        <div class="page-jump mt-4">
-          <span class="jump-label text-xs sm:text-sm">Перейти на:</span>
-          <UInput v-model.number="jumpPage" type="number" :min="1" :max="totalPages" class="jump-input w-16 sm:w-20" @keyup.enter="goToPage(jumpPage)" />
-          <UButton @click="goToPage(jumpPage)" variant="outline" class="jump-button text-xs sm:text-sm"> Перейти </UButton>
+        <div class="page-jump">
+          <span class="jump-label">Перейти на:</span>
+          <UInput v-model.number="jumpPage" type="number" :min="1" :max="totalPages" class="jump-input" @keyup.enter="goToPage(jumpPage)" />
+          <UButton @click="goToPage(jumpPage)" variant="outline" class="jump-button"> Перейти </UButton>
         </div>
       </div>
     </main>
@@ -229,8 +211,8 @@
 
 <script setup lang="ts">
 import { jwtDecode } from "jwt-decode";
-import type { OfferResponseFull } from "~/types/api";
-const { accessToken } = useAuth();
+import type { OfferResponseFull, OfferResponseWithPagination } from "~/types/api";
+const { logout, loading, accessToken, isAuthenticated } = useAuth();
 const userRole = computed(() => {
   if (!accessToken.value) return "";
   try {
@@ -244,28 +226,6 @@ const userRole = computed(() => {
 interface Filters {
   [key: string]: any;
 }
-const showFilters = ref(false);
-
-const toggleFiltersSidebar = () => {
-  showFilters.value = !showFilters.value;
-};
-
-// const handleResize = () => {
-//   if (window.innerWidth >= 768) {
-//     showFilters.value = true;
-//   } else {
-//     showFilters.value = false;
-//   }
-// };
-
-// onMounted(() => {
-//   handleResize();
-//   window.addEventListener("resize", handleResize);
-// });
-
-// onUnmounted(() => {
-//   window.removeEventListener("resize", handleResize);
-// });
 
 const exportCsv = async () => {
   try {
@@ -274,7 +234,7 @@ const exportCsv = async () => {
     const blob = await $api("/offers/export", {
       method: "GET",
       params: query,
-      responseType: "blob",
+      responseType: "blob", // ⬅️ ключевой момент
     });
 
     const url = window.URL.createObjectURL(blob);
@@ -467,11 +427,6 @@ const handleFiltersApply = async (filtersData: Filters) => {
   };
 
   console.log("Объединённые фильтры:", currentFilters.value);
-
-  if (window.innerWidth < 768) {
-    showFilters.value = false;
-  }
-
   refreshOffers();
 };
 
@@ -483,6 +438,10 @@ const handleFiltersReset = async () => {
   if (currentFilters.value.address_query) {
     filtersToKeep.address_query = currentFilters.value.address_query;
   }
+
+  // if (currentFilters.value.property_type) {
+  //     filtersToKeep.property_type = currentFilters.value.property_type
+  // }
 
   currentFilters.value = { ...filtersToKeep };
 
@@ -588,9 +547,17 @@ watch(currentPage, (newPage) => {
 
 <style scoped>
 @reference "tailwindcss";
-@reference "@nuxt/ui";
+
+:deep(*) {
+  @apply rounded-md!;
+}
+
+:deep(button) {
+  @apply cursor-pointer;
+}
+
 .offer-card {
-  @apply cursor-pointer ring-1 ring-default rounded-lg transition-all duration-250 p-2 hover:ring-[#c1f4eb] hover:bg-[#c1f4eb];
+  @apply cursor-pointer transition-all duration-250 hover:ring-[#c1f4eb] hover:bg-[#c1f4eb];
 }
 
 .no-image {
@@ -598,163 +565,219 @@ watch(currentPage, (newPage) => {
 }
 
 .favorite-heart {
-  @apply absolute  bg-white/90 rounded-full w-8 h-8 flex justify-center items-center hover:text-red-500 hover:bg-neutral-100;
+  @apply absolute top-[-12px] right-[-38px] bg-white/90 rounded-full! w-8 h-8 flex justify-center items-center hover:text-red-500 hover:bg-neutral-100!;
 }
 
 .favorite-heart.active {
   @apply bg-[#fdecec] text-red-500 transition-all duration-300;
 }
-
 .heart-icon {
   @apply transition-all duration-300 size-5;
 }
 
 .offer-details {
-  @apply flex flex-col w-full px-0 sm:px-5;
+  @apply flex flex-col w-full px-5;
+}
+
+.category-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sort-select {
+  background: #e9f2ff;
+  padding: 6px;
+  color: oklch(0.623 0.214 259.815);
+}
+
+.sort-select option {
+  background: white;
+  color: black;
 }
 
 .category-badge {
-  @apply text-xs px-2 py-1;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
 }
 
 .offer-header {
-  @apply flex justify-between items-start gap-4;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
 .offer-title-section {
-  @apply flex-1 flex flex-col gap-1 min-w-0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
 }
 
 .offer-title {
-  @apply font-semibold text-lg leading-relaxed line-clamp-2 text-[#2d3748];
+  display: flex;
+  font-weight: 600;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  color: #2d3748;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .offer-address {
-  @apply flex items-center gap-1.5 text-sm leading-relaxed text-[#718096];
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.9rem;
+  color: #718096;
+  line-height: 1.4;
 }
 
 .offer-price-section {
-  @apply text-right flex-shrink-0 relative flex flex-col items-end pr-4 -top-1;
+  text-align: right;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 1rem;
+  top: -5px;
 }
 
 .offer-price {
-  @apply font-bold text-xl text-[#2b6cb0] text-nowrap;
+  font-weight: 700;
+  font-size: 1.375rem;
+  color: #2b6cb0;
+}
+
+.clear-address-button {
+  padding-top: 5px;
+  font-size: 20px;
 }
 
 .price-per-meter {
-  @apply text-sm font-semibold text-[#38a169] text-nowrap;
+  font-size: 0.875rem;
+  color: #38a169;
+  font-weight: 600;
 }
 
 .offer-specs {
-  @apply flex items-center gap-x-4 sm:gap-x-4 gap-y-2 flex-wrap;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .spec-item {
-  @apply flex items-center gap-2 text-sm text-[#4a5568];
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #4a5568;
 }
 
+/* Пагинация */
 .pagination-container {
-  @apply mt-8 pt-6 border-t border-gray-300 bg-white;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  background: white;
 }
 
 .pagination {
-  @apply flex justify-center items-center gap-3 mb-4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .creation-date {
-  @apply absolute top-[8.5rem] w-max text-nowrap;
+  position: absolute;
+  top: 8.5rem;
+  width: max-content;
 }
 
 .page-numbers {
-  @apply flex gap-1;
+  display: flex;
+  gap: 0.25rem;
 }
 
 .pagination-button,
 .page-button {
-  @apply min-w-10 h-10 flex items-center justify-center text-sm font-medium;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .page-ellipsis {
-  @apply min-w-10 h-10 flex items-center justify-center font-medium text-[#6b7280];
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 .page-jump {
-  @apply flex justify-center items-center gap-2 mt-4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .jump-label {
-  @apply text-sm text-[#6b7280];
+  font-size: 0.875rem;
+  color: #6b7280;
 }
 
 .jump-input {
-  @apply w-20;
+  width: 5rem;
 }
 
 .jump-button {
-  @apply h-10;
+  height: 2.5rem;
 }
 
+/* Сообщение об отсутствии результатов */
 .no-results {
-  @apply flex flex-col justify-center items-center text-center mt-60;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-top: 250px;
+}
+
+.no-results-content {
+  max-width: 300px;
 }
 
 .no-results-icon {
-  @apply text-6xl mb-4 text-[#9ca3af];
+  font-size: 4rem;
+  color: #9ca3af;
+  margin-bottom: 1rem;
 }
 
 .no-results h3 {
-  @apply text-xl font-semibold mb-2 text-[#374151];
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
 }
 
 .no-results p {
-  @apply text-sm text-[#6b7280];
-}
-
-@media (max-width: 640px) {
-  .offer-specs {
-    @apply gap-3;
-  }
-
-  .spec-item {
-    @apply gap-1.5;
-  }
-
-  .creation-date {
-    @apply static text-xs mt-2;
-  }
-  .offer-price-section {
-    @apply flex flex-row;
-  }
-  .favorite-heart {
-    @apply absolute -top-55 right-2;
-  }
-
-  .page-button {
-    @apply min-w-8 h-8 text-xs;
-  }
-
-  .pagination-button {
-    @apply px-3 text-sm;
-  }
-}
-
-.filters-transition-enter-active,
-.filters-transition-leave-active {
-  transition:
-    max-height 0.3s ease-in-out,
-    opacity 0.3s ease-in-out;
-}
-
-.filters-transition-enter-from,
-.filters-transition-leave-to {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-}
-
-.filters-transition-enter-to,
-.filters-transition-leave-from {
-  max-height: 2000px;
-  opacity: 1;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 </style>

@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import date
+import re
 from typing import Dict, Literal
 import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -13,6 +14,8 @@ from app.backend.db.models import *
 from app.backend.fuzzy_logic.fuzzy_evaluator import FuzzyEvaluator
 from app.backend.MCDA.electre2 import electre
 from app.backend.MCDA.topsis import topsis
+from openai import OpenAI
+from app.backend.config import settings
 
 analysis_router = APIRouter(prefix="/analysis", tags=["analysis"])
 logging.basicConfig(
@@ -333,6 +336,647 @@ def electre_endpoint(
     }
 
     return response
+
+
+@analysis_router.post("/chat_assistant")
+async def assistant(query: str, session: AsyncSession = Depends(get_async_session)):
+    client = OpenAI(api_key=settings.OPEN_ROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
+    response = client.chat.completions.create(
+        model="arcee-ai/trinity-large-preview:free",
+        messages=[
+            {
+                "role": "system",
+                "content": """Ты — помощник по выбору недвижимости. 
+                Твоя задача — вежливо общаться с пользователем и, когда он просит найти недвижимость, 
+                формировать корректный SQL-запрос к предоставленной базе данных, 
+                а затем возвращать результаты в указанном формате.
+                {
+                "sql": "ЗДЕСЬ_ТВОЙ_ПОЛНЫЙ_SQL_ЗАПРОС",
+                "explanation": "Краткое пояснение на русском языке, почему запрос составлен именно так, основываясь на пожеланиях пользователя."
+                }
+
+ИМЕЙ В ВИДУ СЛЕДУЮЩИЕ КЛЮЧЕВЫЕ ПРАВИЛА ПРИ ФОРМИРОВАНИИ ЗАПРОСОВ:
+1.  ВСЕГДА возвращай только первые 5 вариантов (используй `LIMIT 5`).
+2.  Для каждого найденного объявления (`offer`) возвращай следующие поля: `o.id`, `a.full_address`, `o.price`, `o.is_new_house`, `o.images_urls[1]` (первое изображение), `o.url`.
+3.  Когда пользователь ищет объект "недалеко от центра", "близко к метро" или около другого объекта инфраструктуры, тебе необходимо связать таблицы `offer`, `address` и `address_infrastructure_link`. Фильтруй результаты по полю `distance` в таблице `address_infrastructure_link`.
+4.  Если речь идет о метро, в запросе фильтруй по типу инфраструктуры (`infrastructure_type.name`) 'Станция метро'.
+5.  В условиях `WHERE` при сравнении с текстовыми значениями из справочников (например, тип недвижимости, категория) ВСЕГДА указывай названия с заглавной буквы, как они должны быть записаны в БД: 'Квартира', 'Дом', 'Коттедж', 'Евроремонт' и т.д.
+6.  Названия административных объектов (область, город) используй без указания их типа. Например: 'Брянская' (не 'Брянская область'), 'Брянск' (не 'город Брянск'). Для улиц используй естественный порядок слов: 'Авиационная улица'.
+7.  Для фильтрации по категориям (`family_category`, `elderly_category`, `transport_access_category`) используй значения: 'low', 'medium', 'high'. Для `price_category` используй: 'cheap', 'normal', 'expensive'.
+8. Твой ответ на запрос пользователя о поиске недвижимости ДОЛЖЕН быть строго в следующем формате, без каких-либо markdown-разметки, комментариев или дополнительного текста:
+9. Когда тебя просят найти недвижимость подальше от чего то, не используй координаты, обращайся к таблице  address_infrastructure_link и сортируй по расстоянию до инфраструктуры. В infrastructure содержится так же тип инфраструктуры Цетр города.
+10. ИСПОЛЬЗУЙ JOIN КОГДА ХОЧЕШЬ НАПИСАТЬ ПОДЗАПРОС.
+{
+"sql": "ЗДЕСЬ_ТВОЙ_ПОЛНЫЙ_SQL_ЗАПРОС",
+"explanation": "Краткое пояснение на русском языке, почему запрос составлен именно так, основываясь на пожеланиях пользователя."
+}""",
+            },
+            {
+                "role": "user",
+                "content": """СХЕМА БАЗЫ ДАННЫХ ДЛЯ СПРАВКИ:
+
+alter table public.district
+    owner to postgres;
+
+create index if not exists ix_district_short_name
+    on public.district (short_name);
+
+create table if not exists public.microdistrict
+(
+    id         serial
+        constraint pk_microdistrict
+            primary key,
+    name       varchar
+        constraint uq_microdistrict_name
+            unique,
+    full_name  varchar,
+    short_name varchar
+);
+
+alter table public.microdistrict
+    owner to postgres;
+
+create index if not exists ix_microdistrict_short_name
+    on public.microdistrict (short_name);
+
+create table if not exists public.region
+(
+    id         serial
+        constraint pk_region
+            primary key,
+    name       varchar
+        constraint uq_region_name
+            unique,
+    full_name  varchar,
+    short_name varchar
+);
+
+alter table public.region
+    owner to postgres;
+
+create table if not exists public.settlement_type
+(
+    id   serial
+        constraint pk_settlement_type
+            primary key,
+    name varchar
+);
+
+alter table public.settlement_type
+    owner to postgres;
+
+create table if not exists public.settlement
+(
+    id                 serial
+        constraint pk_settlement
+            primary key,
+    name               varchar,
+    full_name          varchar
+        constraint uq_settlement_full_name
+            unique,
+    short_name         varchar,
+    settlement_type_id integer
+        constraint fk_settlement_settlement_type_id_settlement_type
+            references public.settlement_type
+);
+
+alter table public.settlement
+    owner to postgres;
+
+create index if not exists ix_settlement_short_name
+    on public.settlement (short_name);
+
+create table if not exists public.bathroom_type
+(
+    id   serial
+        constraint pk_bathroom_type
+            primary key,
+    name varchar
+);
+
+alter table public.bathroom_type
+    owner to postgres;
+
+create table if not exists public.gas_type
+(
+    id   serial
+        constraint pk_gas_type
+            primary key,
+    name varchar
+);
+
+alter table public.gas_type
+    owner to postgres;
+
+create table if not exists public.heating_type
+(
+    id   serial
+        constraint pk_heating_type
+            primary key,
+    name varchar
+);
+
+alter table public.heating_type
+    owner to postgres;
+
+create table if not exists public.house_material_type
+(
+    id   serial
+        constraint pk_house_material_type
+            primary key,
+    name varchar
+);
+
+alter table public.house_material_type
+    owner to postgres;
+
+create table if not exists public.infrastructure_type
+(
+    id   serial
+        constraint pk_infrastructure_type
+            primary key,
+    name varchar
+);
+
+alter table public.infrastructure_type
+    owner to postgres;
+
+create table if not exists public.infrastructure
+(
+    id                     serial
+        constraint pk_infrastructure
+            primary key,
+    name                   varchar,
+    coordinates            geography(Point, 4326),
+    infrastructure_type_id integer
+        constraint fk_infrastructure_infrastructure_type_id_infrastructure_type
+            references public.infrastructure_type,
+    constraint uq_infrastructure_name_coordinates
+        unique (name, coordinates)
+);
+
+alter table public.infrastructure
+    owner to postgres;
+
+create index if not exists idx_infrastructure_coordinates
+    on public.infrastructure using gist (coordinates);
+
+create table if not exists public.land_type
+(
+    id   serial
+        constraint pk_land_type
+            primary key,
+    name varchar
+);
+
+alter table public.land_type
+    owner to postgres;
+
+create table if not exists public.municipality_type
+(
+    id   serial
+        constraint pk_municipality_type
+            primary key,
+    name varchar
+);
+
+alter table public.municipality_type
+    owner to postgres;
+
+
+
+
+create index if not exists ix_municipality_type_name
+    on public.municipality_type (name);
+
+create table if not exists public.offer_type
+(
+    id   serial
+        constraint pk_offer_type
+            primary key,
+    name varchar
+);
+
+alter table public.offer_type
+    owner to postgres;
+
+create table if not exists public.parking_type
+(
+    id   serial
+        constraint pk_parking_type
+            primary key,
+    name varchar
+);
+
+alter table public.parking_type
+    owner to postgres;
+
+create table if not exists public.partnership_type
+(
+    id   serial
+        constraint pk_partnership_type
+            primary key,
+    name varchar
+);
+
+alter table public.partnership_type
+    owner to postgres;
+
+create table if not exists public.partnership
+(
+    id                  serial
+        constraint pk_partnership
+            primary key,
+    name                varchar
+        constraint uq_partnership_name
+            unique,
+    full_name           varchar,
+    short_name          varchar,
+    partnership_type_id integer
+        constraint fk_partnership_partnership_type_id_partnership_type
+            references public.partnership_type
+);
+
+alter table public.partnership
+    owner to postgres;
+
+
+create table if not exists public.property_type
+(
+    id   serial
+        constraint pk_property_type
+            primary key,
+    name varchar
+);
+
+alter table public.property_type
+    owner to postgres;
+
+create table if not exists public.renovation_type
+(
+    id   serial
+        constraint pk_renovation_type
+            primary key,
+    name varchar
+);
+
+alter table public.renovation_type
+    owner to postgres;
+
+create table if not exists public.residential_complex
+(
+    id          serial
+        constraint pk_residential_complex
+            primary key,
+    name        varchar
+        constraint uq_residential_complex_name
+            unique,
+    full_name   varchar,
+    short_name  varchar,
+    is_suburban boolean
+);
+
+alter table public.residential_complex
+    owner to postgres;
+
+create table if not exists public.role
+(
+    id   serial
+        constraint pk_role
+            primary key,
+    name varchar
+        constraint uq_role_name
+            unique
+);
+
+alter table public.role
+    owner to postgres;
+
+create table if not exists public.seller_type
+(
+    id   serial
+        constraint pk_seller_type
+            primary key,
+    name varchar
+);
+
+alter table public.seller_type
+    owner to postgres;
+
+create table if not exists public.seller
+(
+    id              serial
+        constraint pk_seller
+            primary key,
+    name            varchar
+        constraint uq_seller_name
+            unique,
+    rating          double precision,
+    foundation_date integer,
+    seller_type_id  integer
+        constraint fk_seller_seller_type_id_seller_type
+            references public.seller_type
+);
+
+alter table public.seller
+    owner to postgres;
+
+create table if not exists public.sewerage_type
+(
+    id   serial
+        constraint pk_sewerage_type
+            primary key,
+    name varchar
+);
+
+alter table public.sewerage_type
+    owner to postgres;
+
+create table if not exists public.street_type
+(
+    id   serial
+        constraint pk_street_type
+            primary key,
+    name varchar
+);
+
+alter table public.street_type
+    owner to postgres;
+
+create table if not exists public.street
+(
+    id             serial
+        constraint pk_street
+            primary key,
+    name           varchar
+        constraint uq_street_name
+            unique,
+    full_name      varchar,
+    short_name     varchar,
+    street_type_id integer
+        constraint fk_street_street_type_id_street_type
+            references public.street_type
+);
+
+alter table public.street
+    owner to postgres;
+
+create index if not exists ix_street_short_name
+    on public.street (short_name);
+
+create table if not exists public.super_municipality_type
+(
+    id   serial
+        constraint pk_super_municipality_type
+            primary key,
+    name varchar
+);
+
+
+create table if not exists public.address
+(
+    id                     serial
+        constraint pk_address
+            primary key,
+    house_number           varchar,
+    full_address           varchar,
+    coordinates            geography(Point, 4326)
+        constraint uq_address_coordinates
+            unique,
+    region_id              integer
+        constraint fk_address_region_id_region
+            references public.region,
+
+    settlement_id          integer
+        constraint fk_address_settlement_id_settlement
+            references public.settlement,
+    partnership_id         integer
+        constraint fk_address_partnership_id_partnership
+            references public.partnership,
+    district_id            integer
+        constraint fk_address_district_id_district
+            references public.district,
+    microdistrict_id       integer
+        constraint fk_address_microdistrict_id_microdistrict
+            references public.microdistrict,
+    street_id              integer
+        constraint fk_address_street_id_street
+            references public.street,
+    residential_complex_id integer
+        constraint fk_address_residential_complex_id_residential_complex
+            references public.residential_complex,
+    search_vector          tsvector
+);
+
+alter table public.address
+    owner to postgres;
+
+create index if not exists idx_address_coordinates
+    on public.address using gist (coordinates);
+
+create index if not exists idx_address_search_vector
+    on public.address using gin (search_vector);
+
+create index if not exists ix_address_district_id
+    on public.address (district_id);
+
+create trigger address_tsvector_update_trigger
+    before insert or update
+    on public.address
+    for each row
+execute procedure public.address_tsvector_update();
+
+create table if not exists public.address_infrastructure_link
+(
+    infrastructure_id integer not null
+        constraint fk_address_infrastructure_link_infrastructure_id_infrastructure
+            references public.infrastructure
+            on delete cascade,
+    address_id        integer not null
+        constraint fk_address_infrastructure_link_address_id_address
+            references public.address
+            on delete cascade,
+    distance          integer,
+    constraint pk_address_infrastructure_link
+        primary key (infrastructure_id, address_id)
+);
+
+alter table public.address_infrastructure_link
+    owner to postgres;
+
+create trigger trg_calc_distance_link
+    before insert or update
+    on public.address_infrastructure_link
+    for each row
+execute procedure public.calc_distance_link();
+
+
+create table if not exists public.water_supply_type
+(
+    id   serial
+        constraint pk_water_supply_type
+            primary key,
+    name varchar
+);
+
+alter table public.water_supply_type
+    owner to postgres;
+
+create table if not exists public.window_view_type
+(
+    id   serial
+        constraint pk_window_view_type
+            primary key,
+    name varchar
+);
+
+alter table public.window_view_type
+    owner to postgres;
+
+create table if not exists public.offer
+(
+    id                        serial
+        constraint pk_offer
+            primary key,
+    url                       varchar(500),
+    images_urls               varchar(500)[],
+    is_new_house              boolean,
+    price                     integer,
+    price_history             jsonb,
+    price_per_square_meter    integer,
+    total_area                double precision,
+    living_area               double precision,
+    kitchen_area              double precision,
+    ceiling_height            double precision,
+    floor                     integer,
+    bathrooms_count           integer,
+    has_furniture             boolean,
+    description               varchar,
+    house_built_year          integer,
+    land_area                 double precision,
+    is_build_complete         boolean,
+    rooms_count               integer,
+    bedrooms_count            integer,
+    elevators_count           integer,
+    balconies_count           integer,
+    house_floors_count        integer,
+    title                     varchar,
+    has_water_supply          boolean,
+    has_electricity           boolean,
+    has_gas                   boolean,
+    has_sewerage              boolean,
+    has_heating               boolean,
+    has_garbage_chute         boolean,
+    has_guard                 boolean,
+    has_garage                boolean,
+    has_bathhouse             boolean,
+    has_pool                  boolean,
+    has_terrace               boolean,
+    update_date               timestamp with time zone default now(),
+    update_date_source        timestamp with time zone,
+    contact_phone             varchar(20),
+    transport_access_score    double precision,
+    transport_access_category varchar,
+    elderly_score             double precision,
+    elderly_category          varchar,
+    family_score              double precision,
+    family_category           varchar,
+    price_category            varchar,
+    address_id                integer
+        constraint fk_offer_address_id_address
+            references public.address
+            on delete cascade,
+    offer_type_id             integer
+        constraint fk_offer_offer_type_id_offer_type
+            references public.offer_type,
+    property_type_id          integer
+        constraint fk_offer_property_type_id_property_type
+            references public.property_type,
+    bathroom_type_id          integer
+        constraint fk_offer_bathroom_type_id_bathroom_type
+            references public.bathroom_type,
+    renovation_type_id        integer
+        constraint fk_offer_renovation_type_id_renovation_type
+            references public.renovation_type,
+    window_view_type_id       integer
+        constraint fk_offer_window_view_type_id_window_view_type
+            references public.window_view_type,
+    parking_type_id           integer
+        constraint fk_offer_parking_type_id_parking_type
+            references public.parking_type,
+    house_material_type_id    integer
+        constraint fk_offer_house_material_type_id_house_material_type
+            references public.house_material_type,
+    heating_type_id           integer
+        constraint fk_offer_heating_type_id_heating_type
+            references public.heating_type,
+    gas_type_id               integer
+        constraint fk_offer_gas_type_id_gas_type
+            references public.gas_type,
+    sewerage_type_id          integer
+        constraint fk_offer_sewerage_type_id_sewerage_type
+            references public.sewerage_type,
+    water_supply_type_id      integer
+        constraint fk_offer_water_supply_type_id_water_supply_type
+            references public.water_supply_type,
+    seller_id                 integer
+        constraint fk_offer_seller_id_seller
+            references public.seller,
+    land_type_id              integer
+        constraint fk_offer_land_type_id_land_type
+            references public.land_type,
+    has_elevator              boolean,
+    has_balcony               boolean,
+    views_count               integer,
+    creation_date_source      timestamp with time zone,
+    views_history             jsonb,
+    last_ten_days_views_count integer,
+    daily_views_count         integer,
+    source                    varchar,
+    identical_urls            varchar(500)[],
+    is_active                 boolean                  default true not null
+);
+
+alter table public.offer
+    owner to postgres;
+
+create index if not exists ix_offer_address_id
+    on public.offer (address_id);""",
+            },
+            {"role": "user", "content": f"{query}"},
+        ],
+    )
+    print(response.choices[0].message.content)
+    try:
+        data = json.loads(response.choices[0].message.content)
+    except Exception as e:
+        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
+    print(data)
+    sql = data["sql"].strip()
+
+    if data.get("sql") is None:
+        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
+
+    sql_upper = re.sub(r"--.*?$|/\*.*?\*/", "", sql.upper(), flags=re.S)
+
+    if not sql_upper.lstrip().startswith("SELECT"):
+        return {"explanation": "Простите, это вне моей компетенции."}
+
+    if re.search(r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|REPLACE)\b", sql_upper):
+        return {"explanation": "Простите, это вне моей компетенции."}
+
+    if "user" in sql.lower():
+        return {"explanation": "Простите, это вне моей компетенции."}
+    if "password" in sql.lower():
+        return {"explanation": "Простите, это вне моей компетенции."}
+    print(sql)
+    try:
+        result = await session.execute(text(sql))
+    except Exception as e:
+        return {"sql": sql, "explanation": data["explanation"], "rows": []}
+    rows = result.mappings().all()
+    print(rows)
+    return {"sql": sql, "explanation": data["explanation"], "rows": rows}
 
 
 def convert_to_list(data):
