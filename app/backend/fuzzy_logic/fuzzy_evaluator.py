@@ -1,5 +1,4 @@
 from typing import Any, Dict
-
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
@@ -8,10 +7,6 @@ from skfuzzy import control as ctrl
 class FuzzyEvaluator:
     def __init__(self):
         self.setup_fuzzy_systems()
-
-    # -------------------------
-    # COMMON UTILITIES
-    # -------------------------
 
     @staticmethod
     def clip(value, min_v, max_v):
@@ -33,15 +28,10 @@ class FuzzyEvaluator:
             "category": self.get_category(score, consequent),
         }
 
-    # -------------------------
-    # TRANSPORT
-    # -------------------------
-
     def create_transport_system(self):
         metro_distance = ctrl.Antecedent(np.arange(0, 1001, 1), "metro_distance")
         bus_distance = ctrl.Antecedent(np.arange(0, 1001, 1), "bus_distance")
 
-        # ВАЖНО: numpy array
         parking_availability = ctrl.Antecedent(np.array([0, 1]), "parking")
 
         transport_access = ctrl.Consequent(np.arange(0, 11, 1), "transport_access")
@@ -51,7 +41,6 @@ class FuzzyEvaluator:
             var["medium"] = fuzz.trimf(var.universe, [300, 500, 700])
             var["far"] = fuzz.trimf(var.universe, [600, 1000, 1000])
 
-        # Бинарные MF
         parking_availability["no"] = fuzz.trimf(parking_availability.universe, [0, 0, 1])
         parking_availability["yes"] = fuzz.trimf(parking_availability.universe, [0, 1, 1])
 
@@ -81,10 +70,6 @@ class FuzzyEvaluator:
         ]
 
         return ctrl.ControlSystemSimulation(ctrl.ControlSystem(rules))
-
-    # -------------------------
-    # ELDERLY
-    # -------------------------
 
     def create_elderly_system(self):
         hospital_distance = ctrl.Antecedent(np.arange(0, 3001, 1), "hospital_distance")
@@ -172,10 +157,6 @@ class FuzzyEvaluator:
 
         return ctrl.ControlSystemSimulation(ctrl.ControlSystem(rules))
 
-    # -------------------------
-    # FAMILY
-    # -------------------------
-
     def create_family_system(self):
         kindergarten_distance = ctrl.Antecedent(np.arange(0, 1501, 1), "kindergarten_distance")
         school_distance = ctrl.Antecedent(np.arange(0, 1501, 1), "school_distance")
@@ -204,7 +185,6 @@ class FuzzyEvaluator:
         family_friendly["high"] = fuzz.trimf(family_friendly.universe, [5, 10, 10])
 
         rules = [
-            # Правила для total_rooms = "few"
             ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
             ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
             ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["large"] & total_rooms["few"], family_friendly["high"]),
@@ -232,7 +212,6 @@ class FuzzyEvaluator:
             ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
             ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]),
             ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["large"] & total_rooms["few"], family_friendly["low"]),
-            # Правила для total_rooms = "many"
             ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["small"] & total_rooms["many"], family_friendly["high"]),
             ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
             ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
@@ -263,10 +242,6 @@ class FuzzyEvaluator:
         ]
 
         return ctrl.ControlSystemSimulation(ctrl.ControlSystem(rules))
-
-    # -------------------------
-    # PUBLIC API
-    # -------------------------
 
     def setup_fuzzy_systems(self):
         self.transport = self.create_transport_system()
@@ -308,20 +283,3 @@ class FuzzyEvaluator:
 
 
 fuzzy_evaluator = FuzzyEvaluator()
-
-result = fuzzy_evaluator.evaluate_all(
-    {
-        "metro_distance": 9999,
-        "bus_distance": 9999,
-        "parking_availability": False,
-        "hospital_distance": 1900,
-        "pharmacy_distance": 500,
-        "floor": 1,
-        "elevator_availability": False,
-        "school_distance": 150,
-        "kindergarten_distance": 200,
-        "total_area": 67,
-        "total_rooms": 3,
-    }
-)
-print(result)

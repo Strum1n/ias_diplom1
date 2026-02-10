@@ -1,19 +1,11 @@
 import numpy as np
 
 
-def electre(evaluations, weights, is_min, alpha_init=0.1, beta_init=0.9, step=0.01, verbose=True):
-    """
-    ELECTRE с адаптивными порогами согласия и несогласия
-    и логированием изменения alpha / beta.
-    """
-
+def electre(evaluations, weights, is_min, alpha_init=0.5, beta_init=0.5, step=0.01, verbose=True):
     m, n = evaluations.shape
     evaluations = evaluations.astype(float).copy()
     weights = np.array(weights, dtype=float)
 
-    # -----------------------------
-    # Нормализация
-    # -----------------------------
     normalized = np.zeros_like(evaluations, dtype=float)
 
     for j in range(n):
@@ -24,16 +16,10 @@ def electre(evaluations, weights, is_min, alpha_init=0.1, beta_init=0.9, step=0.
         else:
             normalized[:, j] = evaluations[:, j] / norm
 
-    # -----------------------------
-    # Взвешивание
-    # -----------------------------
     weighted = normalized * weights
     total_weight = np.sum(weights)
     L = np.max(weighted, axis=0) - np.min(weighted, axis=0)
 
-    # -----------------------------
-    # Матрицы согласия и несогласия
-    # -----------------------------
     c = np.zeros((m, m))
     d = np.zeros((m, m))
     dominance_info = {}
@@ -67,9 +53,6 @@ def electre(evaluations, weights, is_min, alpha_init=0.1, beta_init=0.9, step=0.
                 "inferior": inferior,
             }
 
-    # -----------------------------
-    # Поиск ядра с логированием
-    # -----------------------------
     alpha = alpha_init
     beta = beta_init
 
@@ -98,13 +81,11 @@ def electre(evaluations, weights, is_min, alpha_init=0.1, beta_init=0.9, step=0.
         if verbose:
             print(f"[Шаг {step_id:02d}] α = {log_entry['alpha']:.2f}, β = {log_entry['beta']:.2f} → |ядро| = {log_entry['kernel_size']} {kernel}")
 
-        # Идеальный случай
         if len(kernel) == 1:
             if verbose:
-                print("✓ Найдено одноэлементное ядро")
+                print("Найдено одноэлементное ядро")
             return kernel, dominance_info, outranking, log
 
-        # Лучшее приближение
         if best_kernel is None or len(kernel) < len(best_kernel):
             best_kernel = kernel
             final_outranking = outranking
@@ -113,14 +94,11 @@ def electre(evaluations, weights, is_min, alpha_init=0.1, beta_init=0.9, step=0.
         beta -= step
 
     if verbose:
-        print("⚠ Одноэлементное ядро не найдено")
+        print("Одноэлементное ядро не найдено")
 
     return best_kernel, dominance_info, final_outranking, log
 
 
-# -------------------------------------------------
-# Пример использования
-# -------------------------------------------------
 if __name__ == "__main__":
     evaluations = np.array(
         [
@@ -132,7 +110,7 @@ if __name__ == "__main__":
         ]
     )
 
-    weights = [10, 1, 8]
+    weights = [1, 2, 3]
     is_min = [False, True, True]
 
     kernel, dominance, outranking, log = electre(

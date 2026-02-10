@@ -4,7 +4,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
-
 from app.backend.config import settings
 
 DATABASE_URL = settings.DB_URL
@@ -21,14 +20,6 @@ convention = {
 class BaseModel(SQLModel):
     @declared_attr
     def __tablename__(cls) -> str:
-        """
-        Автоматически преобразует имя класса CamelCase → snake_case.
-        Примеры:
-            OfferType → offer_type
-            WindowViewType → window_view_type
-            HTMLParser → html_parser
-            PropertyAddress → property_address
-        """
         return re.sub(r"(?!^)(?=[A-Z])", "_", cls.__name__).lower()
 
 

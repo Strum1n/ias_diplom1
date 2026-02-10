@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, List, Optional
 
 from geoalchemy2 import Geography
@@ -7,13 +7,9 @@ from pydantic import field_serializer
 from shapely.geometry import mapping
 from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
-from sqlmodel import ARRAY, Boolean, DateTime, Field, Index, Relationship, UniqueConstraint, text
+from sqlmodel import ARRAY, DateTime, Field, Index, Relationship, UniqueConstraint, text
 
 from app.backend.db.config import BaseModel
-
-# TODO ПОМЕНЯТЬ ТИПЫ У КООРДИНАТ НА GEOGRAPHY 4691
-# 4593 московская область
-# 4562 брянская
 
 
 class Favorite(BaseModel, table=True):
@@ -22,7 +18,6 @@ class Favorite(BaseModel, table=True):
 
 
 class Offer(BaseModel, table=True):
-    # 1. Идентификаторы
     id: int | None = Field(primary_key=True)
 
     is_active: bool = Field(
@@ -30,19 +25,16 @@ class Offer(BaseModel, table=True):
         sa_column_kwargs={"server_default": text("true")},
     )
 
-    # 4. Цена
     price: int | None
     price_per_square_meter: int | None
     price_category: str | None
     price_history: List[dict] | None = Field(sa_column=Column(JSONB))
 
-    # 5. Площади
     total_area: float | None
     living_area: float | None
     kitchen_area: float | None
     land_area: float | None
 
-    # 6. Планировка
     rooms_count: int | None
     bedrooms_count: int | None
     bathrooms_count: int | None
@@ -50,19 +42,16 @@ class Offer(BaseModel, table=True):
     house_floors_count: int | None
     ceiling_height: float | None
 
-    # 7. Дом и состояние
     is_new_house: bool | None
     house_built_year: int | None
     is_build_complete: bool | None
 
-    # 8. Коммуникации
     has_water_supply: bool | None
     has_electricity: bool | None
     has_gas: bool | None
     has_sewerage: bool | None
     has_heating: bool | None
 
-    # 9. Удобства
     elevators_count: int | None
     has_elevator: bool | None
     balconies_count: int | None
@@ -75,7 +64,6 @@ class Offer(BaseModel, table=True):
     has_pool: bool | None
     has_terrace: bool | None
 
-    # 10. Контент
     title: str | None
     description: str | None
     images_urls: List[str] | None = Field(sa_column=Column(ARRAY(String(500))))
@@ -83,7 +71,6 @@ class Offer(BaseModel, table=True):
     identical_urls: List[str] | None = Field(sa_column=Column(ARRAY(String(500))))
     source: str | None
 
-    # 11. Аналитика и скоринг
     transport_access_score: float | None
     transport_access_category: str | None
     elderly_score: float | None
@@ -91,16 +78,13 @@ class Offer(BaseModel, table=True):
     family_score: float | None
     family_category: str | None
 
-    # 12. Просмотры
     views_count: int | None
     daily_views_count: int | None
     last_ten_days_views_count: int | None
     views_history: List[dict] | None = Field(sa_column=Column(JSONB))
 
-    # 13. Контакты
     contact_phone: str | None = Field(max_length=20)
 
-    # 14. Служебные даты
     creation_date_source: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
     update_date_source: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
     update_date: datetime | None = Field(
@@ -125,7 +109,6 @@ class Offer(BaseModel, table=True):
     land_type_id: int | None = Field(foreign_key="land_type.id")
     land_type: Optional["LandType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    # 3. Типы и классификаторы
     bathroom_type_id: int | None = Field(foreign_key="bathroom_type.id")
     bathroom_type: Optional["BathroomType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
@@ -152,7 +135,6 @@ class Offer(BaseModel, table=True):
 
     water_supply_type_id: int | None = Field(foreign_key="water_supply_type.id")
     water_supply_type: Optional["WaterSupplyType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
-    # 15. Связи many-to-many
     users: List["User"] = Relationship(back_populates="offers", link_model=Favorite)
 
 
@@ -501,7 +483,7 @@ class User(BaseModel, table=True):
 
 class Password(BaseModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    hash: str  # здесь хранятся хэш + соль
+    hash: str
 
     user: "User" = Relationship(back_populates="password")
 

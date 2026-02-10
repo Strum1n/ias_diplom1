@@ -13,20 +13,14 @@ import overpy
 import zendriver as driver
 from zendriver import Browser, Tab
 from fake_useragent import UserAgent
-from geoalchemy2 import WKTElement
 from geopy.distance import geodesic
-from geopy.geocoders import Nominatim
-from geopy.geocoders import Photon
 from jsonpath_ng import parse
-from sqlalchemy.dialects.postgresql import insert
-from sqlmodel import select, tuple_
 
 from app.backend.db.models import *
 from app.backend.parsers.parser_cian import parse_offer_to_db
 from app.backend.parsers.utils import (
     add_address_infrastructure_link,
     add_offer_to_db,
-    captcha_solver,
     captcha_solver_v2,
     check_existens_offers,
     check_identical_offers,
