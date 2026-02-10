@@ -927,10 +927,15 @@ async def autocomplete(
 
 
 @offer_router.get("/{offer_id}", response_model=OfferResponseFull)
-async def get_offer(offer_id: int, current_user: Annotated[User, Depends(get_current_user)], session: AsyncSession = Depends(get_async_session)):
-    stmt = select(Offer).where(Offer.id == offer_id)
-    result = await session.exec(stmt)
-    offer = result.first()
+async def get_offer(
+    offer_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(get_async_session),
+):
+    offer = await session.get(Offer, offer_id)
+
+    if not offer:
+        raise HTTPException(status_code=404, detail="Offer not found")
 
     return offer
 

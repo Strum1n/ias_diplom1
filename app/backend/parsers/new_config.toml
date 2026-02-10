@@ -1,18 +1,18 @@
 [avito]
 domen_url = "https://www.avito.ru"
-url = "https://www.avito.ru/moskva/kvartiry/prodam-ASgBAgICAUSSA8YQ?f=ASgBAgICAkSSA8YQsLMU_qGPAw&localPriority=0"
+url = "https://www.avito.ru/moskva/kvartiry/prodam-ASgBAgICAUSSA8YQ?localPriority=0&p=2"
 price_filter_btn_selector = ""
 filter_btn_selector = "[data-marker=\"search-filters/submit-button\"]"
 next_btn_selector = "[data-marker=\"pagination-button/nextPage\"]"
 min_price_selector = "[data-marker=\"price-from/input\"]"
 max_price_selector = "[data-marker=\"price-to/input\"]"
 offer_urls_selector = "[data-marker=\"catalog-serp\"] [data-marker=\"item-photo-sliderLink\"]"
-min_price = 3400001
-max_price = 3400000
+min_price = 4800001
+max_price = 4900000
 price_step = 100000
 items_on_page = 50
 max_available_page = 100
-p = 25
+p = 1
 
 [cian]
 domen_url = "https://www.cian.ru"
@@ -21,11 +21,11 @@ price_filter_btn_selector = "[data-testid=\"price\"]"
 next_btn_selector = "nav[data-name=\"Pagination\"] > :nth-child(3):is(a), [data-testid=\"listing.pagination\"] > :nth-child(9):not(:disabled)"
 min_price_selector = "[placeholder=\"от\"]"
 max_price_selector = "[placeholder=\"до\"]"
-min_price = 22000001
+min_price = 23500001
 items_on_page = 28
 offer_urls_selector = ".x31de4314--_416c6--media, .x09f03c75--e726a9--content__title > a"
-max_price = 22500000
+max_price = 24000000
 max_available_page = 54
 filter_btn_selector = "[data-name=\"SummaryHeader\"], [data-testid=\"listing.offers-count\"]"
 price_step = 100000
-p = 19
+p = 9

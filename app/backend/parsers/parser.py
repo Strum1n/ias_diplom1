@@ -153,7 +153,7 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
                 task = asyncio.create_task(parse_offer_to_db(browser, url))
             tasks.append(task)
             if source == "avito":
-                await asyncio.sleep(random.uniform(1.2, 1.6))
+                await asyncio.sleep(random.uniform(2, 4))
             if source == "cian":
                 await asyncio.sleep(random.uniform(0.75, 1.1))
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -216,12 +216,12 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
 
             if "Иногда такое случается, чтобы вернуться на сайт <b>нажмите на кнопку Продолжить</b> для решения капчи" in await property_page.get_content():
                 raise Exception
-            offer_info_el = await property_page.find("window.__preloadedState__ = ", timeout=3)
+            offer_info_el = await property_page.find("buyerItem", timeout=3)
             offer_info_raw_text_encoded = await offer_info_el.get_html()
-            offer_info_raw_text_encoded = offer_info_raw_text_encoded.split('preloadedState__ = "')[1].split('";</script>')[0]
+            offer_info_raw_text_encoded = offer_info_raw_text_encoded.split("<script>window.__staticRouterHydrationData = JSON.parse(")[1].split(");</script>")[0]
             offer_info_raw_text_decoded = unquote(offer_info_raw_text_encoded)
             offer_json = deep_parse_json(json.loads(offer_info_raw_text_decoded.replace("\xa0", "")))
-            # json_text = json.dumps(offer_json, ensure_ascii=False)
+            json_text = json.dumps(offer_json, ensure_ascii=False)
             await property_page.sleep(0.25)
             try:
                 price_history_el = await property_page.select(".price-history__cursorPointer___XzY5ZW", 3)
@@ -331,7 +331,7 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
 
 async def parse_address(json_data: dict, url: str):
     try:
-        geo_info = json_data["@avito/bx-item-view"]["buyerItem"]["item"]["geo"]
+        geo_info = json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"]["geo"]
         # district_name_from_site = (parse("$..content").find(geo_info)) if len(parse("$..content").find(geo_info)) > 0 else None
 
         # geolocator = Photon(user_agent=UA_DESKTOP.random)
@@ -541,9 +541,9 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
         # json_text = json.dumps(json_data, ensure_ascii=False)
         residential_complex = None
         residential_complex = (
-            json_data["@avito/bx-item-view"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["description"]
-            if json_data["@avito/bx-item-view"]["buyerItem"]["item"].get("houseParams")
-            and "Название новостройки" in json_data["@avito/bx-item-view"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["title"]
+            json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["description"]
+            if json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"].get("houseParams")
+            and "Название новостройки" in json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["title"]
             else None
         )
         if residential_complex is None:
@@ -740,7 +740,7 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
 # TODO ИНФУ О ЗАСТРОЙЩИКЕ ПАРСИТЬ
 async def parse_offer_info(json_data: dict):
     try:
-        json_data_2 = json_data["@avito/bx-item-view"]["buyerItem"]
+        json_data_2 = json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]
         json_data_1 = json_data_2["item"]
         url = json_data_1["seo"]["canonicalUrl"]
         source = "avito" if "avito.ru" in url else None
@@ -754,9 +754,9 @@ async def parse_offer_info(json_data: dict):
         creation_date_source = json_data["priceHistoryGenerated"][len(json_data["priceHistoryGenerated"]) - 1]["changeTime"]
         is_new_house = (
             True
-            if json_data["@avito/bx-item-view"]["analytics"]["microCategorySlug"] == "novostroyka"
+            if json_data["loaderData"]["catalog-or-main-or-item"]["analytics"]["microCategorySlug"] == "novostroyka"
             else False
-            if json_data["@avito/bx-item-view"]["analytics"]["microCategorySlug"] == "vtorichka"
+            if json_data["loaderData"]["catalog-or-main-or-item"]["analytics"]["microCategorySlug"] == "vtorichka"
             else None
         )
         images_urls = [img["1280x960"] for img in json_data_1["imageUrls"]]
@@ -1116,7 +1116,7 @@ async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1
 
 
 async def main():
-    await offers_urls_bypass("cian")
+    await offers_urls_bypass("avito")
 
 
 if __name__ == "__main__":

@@ -179,8 +179,8 @@ class FuzzyEvaluator:
     def create_family_system(self):
         kindergarten_distance = ctrl.Antecedent(np.arange(0, 1501, 1), "kindergarten_distance")
         school_distance = ctrl.Antecedent(np.arange(0, 1501, 1), "school_distance")
-        total_area = ctrl.Antecedent(np.arange(0, 151, 1), "total_area")
-        total_rooms = ctrl.Antecedent(np.arange(0, 6, 1), "total_rooms")
+        total_area = ctrl.Antecedent(np.arange(0, 101, 1), "total_area")
+        total_rooms = ctrl.Antecedent(np.arange(0, 5, 1), "total_rooms")
 
         family_friendly = ctrl.Consequent(np.arange(0, 11, 1), "family_friendly")
 
@@ -193,155 +193,73 @@ class FuzzyEvaluator:
             var["far"] = fuzz.trimf(var.universe, [b, 1500, 1500])
 
         total_rooms["few"] = fuzz.trimf(total_rooms.universe, [0, 0, 3])
-        total_rooms["enough"] = fuzz.trimf(total_rooms.universe, [2, 3, 4])
-        total_rooms["many"] = fuzz.trimf(total_rooms.universe, [3, 5, 5])
+        total_rooms["many"] = fuzz.trimf(total_rooms.universe, [2, 5, 5])
 
-        total_area["small"] = fuzz.trimf(total_area.universe, [0, 0, 50])
-        total_area["medium"] = fuzz.trimf(total_area.universe, [40, 80, 110])
-        total_area["large"] = fuzz.trimf(total_area.universe, [90, 150, 150])
+        total_area["small"] = fuzz.trimf(total_area.universe, [0, 0, 40])
+        total_area["medium"] = fuzz.trimf(total_area.universe, [30, 60, 70])
+        total_area["large"] = fuzz.trimf(total_area.universe, [65, 100, 100])
 
         family_friendly["low"] = fuzz.trimf(family_friendly.universe, [0, 0, 5])
         family_friendly["medium"] = fuzz.trimf(family_friendly.universe, [0, 5, 10])
         family_friendly["high"] = fuzz.trimf(family_friendly.universe, [5, 10, 10])
 
         rules = [
-            ctrl.Rule(
-                ((total_rooms["many"] & total_area["large"]) | (total_rooms["enough"] & total_area["large"]) | (total_rooms["many"] & total_area["medium"]))
-                & (kindergarten_distance["close"] | kindergarten_distance["medium"])
-                & (school_distance["close"] | (school_distance["medium"])),
-                family_friendly["high"],
-            ),
-            ctrl.Rule(
-                ((total_rooms["many"] & total_area["large"]) | (total_rooms["enough"] & total_area["large"]) | (total_rooms["many"] & total_area["medium"]))
-                & (kindergarten_distance["far"] & school_distance["far"]),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                ((total_rooms["many"] & total_area["large"]) | (total_rooms["enough"] & total_area["large"]) | (total_rooms["many"] & total_area["medium"]))
-                & ((kindergarten_distance["medium"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                ((total_rooms["many"] & total_area["large"]) | (total_rooms["enough"] & total_area["large"]) | (total_rooms["many"] & total_area["medium"]))
-                & ((kindergarten_distance["close"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["close"])),
-                family_friendly["high"],
-            ),
-            ctrl.Rule(
-                (total_rooms["enough"] & total_area["medium"])
-                & (kindergarten_distance["close"] | kindergarten_distance["medium"])
-                & (school_distance["close"] | (school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule((total_rooms["enough"] & total_area["medium"]) & (kindergarten_distance["far"] & school_distance["far"]), family_friendly["low"]),
-            ctrl.Rule(
-                (total_rooms["enough"] & total_area["medium"])
-                & ((kindergarten_distance["medium"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_rooms["enough"] & total_area["medium"])
-                & ((kindergarten_distance["close"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["close"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule((total_rooms["few"] & total_area["large"]) & (kindergarten_distance["close"] & school_distance["close"]), family_friendly["high"]),
-            ctrl.Rule(
-                (total_rooms["few"] & total_area["large"])
-                & ((kindergarten_distance["medium"] & school_distance["close"]) | (kindergarten_distance["close"] & school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule((total_rooms["few"] & total_area["large"]) & (kindergarten_distance["far"] & school_distance["far"]), family_friendly["low"]),
-            ctrl.Rule(
-                (total_rooms["few"] & total_area["large"])
-                & ((kindergarten_distance["medium"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_rooms["few"] & total_area["large"])
-                & ((kindergarten_distance["close"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["close"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule((total_rooms["many"] & total_area["small"]) & (kindergarten_distance["close"] & school_distance["close"]), family_friendly["high"]),
-            ctrl.Rule(
-                (total_rooms["many"] & total_area["small"])
-                & ((kindergarten_distance["medium"] & school_distance["close"]) | (kindergarten_distance["close"] & school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule((total_rooms["many"] & total_area["small"]) & (kindergarten_distance["far"] & school_distance["far"]), family_friendly["low"]),
-            ctrl.Rule(
-                (total_rooms["many"] & total_area["small"])
-                & ((kindergarten_distance["medium"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_rooms["many"] & total_area["small"])
-                & ((kindergarten_distance["close"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["close"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule((total_rooms["few"] & total_area["medium"]) & (kindergarten_distance["close"] & school_distance["close"]), family_friendly["medium"]),
-            ctrl.Rule((total_rooms["few"] & total_area["medium"]) & (kindergarten_distance["far"] & school_distance["far"]), family_friendly["low"]),
-            ctrl.Rule(
-                (total_rooms["few"] & total_area["medium"])
-                & ((kindergarten_distance["close"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["close"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_rooms["few"] & total_area["medium"])
-                & ((kindergarten_distance["medium"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["medium"])),
-                family_friendly["low"],
-            ),
-            ctrl.Rule(
-                (total_rooms["few"] & total_area["medium"])
-                & ((kindergarten_distance["medium"] & school_distance["close"]) | (kindergarten_distance["close"] & school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule((total_rooms["enough"] & total_area["small"]) & (kindergarten_distance["close"] & school_distance["close"]), family_friendly["medium"]),
-            ctrl.Rule((total_rooms["enough"] & total_area["small"]) & (kindergarten_distance["far"] & school_distance["far"]), family_friendly["low"]),
-            ctrl.Rule(
-                (total_rooms["enough"] & total_area["small"])
-                & ((kindergarten_distance["close"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["close"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_rooms["enough"] & total_area["small"])
-                & ((kindergarten_distance["medium"] & school_distance["far"]) | (kindergarten_distance["far"] & school_distance["medium"])),
-                family_friendly["low"],
-            ),
-            ctrl.Rule(
-                (total_rooms["enough"] & total_area["small"])
-                & ((kindergarten_distance["medium"] & school_distance["close"]) | (kindergarten_distance["close"] & school_distance["medium"])),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_area["small"] | total_rooms["few"]) & (kindergarten_distance["close"] & school_distance["close"]),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_area["large"] & total_rooms["many"]) & (kindergarten_distance["far"] | school_distance["far"]),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_area["large"] | total_rooms["many"])
-                & (kindergarten_distance["close"] | school_distance["close"])
-                & (kindergarten_distance["medium"] | school_distance["medium"]),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_area["medium"] & total_rooms["enough"]) & (kindergarten_distance["medium"] & school_distance["medium"]),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_area["medium"] & total_rooms["enough"]) & (kindergarten_distance["close"] & school_distance["close"]),
-                family_friendly["high"],
-            ),
-            ctrl.Rule(
-                (total_area["small"] & total_rooms["enough"]) & (kindergarten_distance["close"] | school_distance["close"]),
-                family_friendly["medium"],
-            ),
-            ctrl.Rule(
-                (total_area["large"] | total_rooms["many"]) & (kindergarten_distance["far"] & school_distance["far"]),
-                family_friendly["low"],
-            ),
+            # Правила для total_rooms = "few"
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["large"] & total_rooms["few"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["large"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["large"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["large"] & total_rooms["few"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["large"] & total_rooms["few"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["large"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["large"] & total_rooms["few"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["large"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["large"] & total_rooms["few"], family_friendly["low"]),
+            # Правила для total_rooms = "many"
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["small"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["small"] & total_rooms["many"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["large"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["small"] & total_rooms["many"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["small"] & total_rooms["many"], family_friendly["low"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["large"] & total_rooms["many"], family_friendly["medium"]),
         ]
 
         return ctrl.ControlSystemSimulation(ctrl.ControlSystem(rules))
@@ -389,7 +307,6 @@ class FuzzyEvaluator:
         }
 
 
-# Тестирование обновленной системы
 fuzzy_evaluator = FuzzyEvaluator()
 
 result = fuzzy_evaluator.evaluate_all(
@@ -398,13 +315,13 @@ result = fuzzy_evaluator.evaluate_all(
         "bus_distance": 9999,
         "parking_availability": False,
         "hospital_distance": 1900,
-        "pharmacy_distance": 500,  # Добавлена дистанция до аптеки
+        "pharmacy_distance": 500,
         "floor": 1,
         "elevator_availability": False,
-        "school_distance": 9999,
-        "kindergarten_distance": 343,
-        "total_area": 31.0,
-        "total_rooms": 1,
+        "school_distance": 150,
+        "kindergarten_distance": 200,
+        "total_area": 67,
+        "total_rooms": 3,
     }
 )
 print(result)

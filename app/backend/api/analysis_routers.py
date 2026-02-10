@@ -261,10 +261,21 @@ async def recalculate_fuzzy_scores(
                 "total_area": offer.total_area,
                 "total_rooms": offer.rooms_count or 1,
             }
-            print(data)
+            print()
+            logger.info(f"data for Offer ID={offer.id}: {data}")
+
             try:
                 result = fuzzy.evaluate_all(data)
 
+                logger.info(
+                    "Result: %s",
+                    {
+                        "transport_access": result.get("transport_access"),
+                        "elderly_friendly": result.get("elderly_friendly"),
+                        "family_friendly": result.get("family_friendly"),
+                    },
+                )
+                print()
                 if not result:
                     logger.error(f"❌ Fuzzy вернул None для Offer ID={offer.id} (data={data})")
                     null_results += 1
@@ -357,7 +368,7 @@ async def assistant(query: str, session: AsyncSession = Depends(get_async_sessio
 
 ИМЕЙ В ВИДУ СЛЕДУЮЩИЕ КЛЮЧЕВЫЕ ПРАВИЛА ПРИ ФОРМИРОВАНИИ ЗАПРОСОВ:
 1.  ВСЕГДА возвращай только первые 5 вариантов (используй `LIMIT 5`).
-2.  Для каждого найденного объявления (`offer`) возвращай следующие поля: `o.id`, `a.full_address`, `o.price`, `o.is_new_house`, `o.images_urls[1]` (первое изображение), `o.url`.
+2.  Для каждого найденного объявления (`offer`) возвращай следующие поля: `o.id`, `a.full_address`, `o.price`, `o.is_new_house`, `o.images_urls[1]` (первое изображение), `o.url`, `o.price_category`, `o.family_category`, `o.elderly_category`, `o.transport_access_category`.
 3.  Когда пользователь ищет объект "недалеко от центра", "близко к метро" или около другого объекта инфраструктуры, тебе необходимо связать таблицы `offer`, `address` и `address_infrastructure_link`. Фильтруй результаты по полю `distance` в таблице `address_infrastructure_link`.
 4.  Если речь идет о метро, в запросе фильтруй по типу инфраструктуры (`infrastructure_type.name`) 'Станция метро'.
 5.  В условиях `WHERE` при сравнении с текстовыми значениями из справочников (например, тип недвижимости, категория) ВСЕГДА указывай названия с заглавной буквы, как они должны быть записаны в БД: 'Квартира', 'Дом', 'Коттедж', 'Евроремонт' и т.д.
@@ -365,7 +376,7 @@ async def assistant(query: str, session: AsyncSession = Depends(get_async_sessio
 7.  Для фильтрации по категориям (`family_category`, `elderly_category`, `transport_access_category`) используй значения: 'low', 'medium', 'high'. Для `price_category` используй: 'cheap', 'normal', 'expensive'.
 8. Твой ответ на запрос пользователя о поиске недвижимости ДОЛЖЕН быть строго в следующем формате, без каких-либо markdown-разметки, комментариев или дополнительного текста:
 9. Когда тебя просят найти недвижимость подальше от чего то, не используй координаты, обращайся к таблице  address_infrastructure_link и сортируй по расстоянию до инфраструктуры. В infrastructure содержится так же тип инфраструктуры Цетр города.
-10. ИСПОЛЬЗУЙ JOIN КОГДА ХОЧЕШЬ НАПИСАТЬ ПОДЗАПРОС.
+10. ИСПОЛЬЗУЙ JOIN ВМЕСТО ПОДЗАПРОСОВ, вместо (SELECT id FROM property_type WHERE name = 'Квартира') делай JOIN ON o.property_type_id = pt.id WHERE pt.name = 'Квартира'.
 {
 "sql": "ЗДЕСЬ_ТВОЙ_ПОЛНЫЙ_SQL_ЗАПРОС",
 "explanation": "Краткое пояснение на русском языке, почему запрос составлен именно так, основываясь на пожеланиях пользователя."
@@ -378,8 +389,6 @@ async def assistant(query: str, session: AsyncSession = Depends(get_async_sessio
 alter table public.district
     owner to postgres;
 
-create index if not exists ix_district_short_name
-    on public.district (short_name);
 
 create table if not exists public.microdistrict
 (
@@ -389,15 +398,14 @@ create table if not exists public.microdistrict
     name       varchar
         constraint uq_microdistrict_name
             unique,
-    full_name  varchar,
-    short_name varchar
+
+
 );
 
 alter table public.microdistrict
     owner to postgres;
 
-create index if not exists ix_microdistrict_short_name
-    on public.microdistrict (short_name);
+
 
 create table if not exists public.region
 (
@@ -407,8 +415,7 @@ create table if not exists public.region
     name       varchar
         constraint uq_region_name
             unique,
-    full_name  varchar,
-    short_name varchar
+
 );
 
 alter table public.region
@@ -431,10 +438,8 @@ create table if not exists public.settlement
         constraint pk_settlement
             primary key,
     name               varchar,
-    full_name          varchar
-        constraint uq_settlement_full_name
-            unique,
-    short_name         varchar,
+
+
     settlement_type_id integer
         constraint fk_settlement_settlement_type_id_settlement_type
             references public.settlement_type
@@ -443,8 +448,7 @@ create table if not exists public.settlement
 alter table public.settlement
     owner to postgres;
 
-create index if not exists ix_settlement_short_name
-    on public.settlement (short_name);
+
 
 create table if not exists public.bathroom_type
 (
@@ -590,8 +594,6 @@ create table if not exists public.partnership
     name                varchar
         constraint uq_partnership_name
             unique,
-    full_name           varchar,
-    short_name          varchar,
     partnership_type_id integer
         constraint fk_partnership_partnership_type_id_partnership_type
             references public.partnership_type
@@ -631,8 +633,6 @@ create table if not exists public.residential_complex
     name        varchar
         constraint uq_residential_complex_name
             unique,
-    full_name   varchar,
-    short_name  varchar,
     is_suburban boolean
 );
 
@@ -711,8 +711,6 @@ create table if not exists public.street
     name           varchar
         constraint uq_street_name
             unique,
-    full_name      varchar,
-    short_name     varchar,
     street_type_id integer
         constraint fk_street_street_type_id_street_type
             references public.street_type
@@ -720,9 +718,6 @@ create table if not exists public.street
 
 alter table public.street
     owner to postgres;
-
-create index if not exists ix_street_short_name
-    on public.street (short_name);
 
 create table if not exists public.super_municipality_type
 (

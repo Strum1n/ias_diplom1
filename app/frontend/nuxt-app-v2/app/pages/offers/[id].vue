@@ -333,7 +333,7 @@
           </div>
         </div>
 
-        <div v-if="offer.price_history?.length <= 1 || offer.views_history === null" class="flex-1">
+        <div v-if="offer.price_history?.length >= 1 || offer.views_history === null" class="flex-1">
           <div class="sticky top-17 w-full">
             <div class="p-6 rounded-lg ring ring-default">
               <div>
@@ -594,6 +594,13 @@ const {
     return useNuxtData(key).data.value;
   },
 });
+
+if (error.value) {
+  throw createError({
+    statusCode: error.value.statusCode || 404,
+    statusMessage: "Объект не найден",
+  });
+}
 
 const { data: favoritesData, refresh: refreshFavorites } = useAsyncData("favorites", () => $api("offers/favorites/"));
 
