@@ -48,7 +48,7 @@ export function useAuth() {
       body.append('username', username)
       body.append('password', password)
       const base = config.apiBase;
-      const res: LoginResponse = await $fetch(`http://localhost:8000/auth/login`, {
+      const res: LoginResponse = await $fetch(`http://ias-diplom.dynv6.net/apiback/auth/login`, {
         method: 'POST',
         body,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

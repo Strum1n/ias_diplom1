@@ -87,7 +87,7 @@ const handleSubmit = async () => {
   const base = config.apiBase;
   try {
     // Отправляем запрос на сервер с правильными данными
-    const response = await $fetch(`http://localhost:8000/auth/register`, {
+    const response = await $fetch(`http://ias-diplom.dynv6.net/apiback/auth/register`, {
       method: "POST",
       body: {
         user_name: form.user_name, // Имя пользователя
