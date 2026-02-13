@@ -21,7 +21,6 @@ offer_router = APIRouter(prefix="/offers", tags=["Offers"])
 async def export_offers_csv(
     session: AsyncSession = Depends(get_async_session),
     address_query: Optional[str] = None,
-    # Булевы фильтры
     is_new_house: Optional[bool] = None,
     has_furniture: Optional[bool] = None,
     is_build_complete: Optional[bool] = None,
@@ -38,7 +37,6 @@ async def export_offers_csv(
     has_terrace: Optional[bool] = None,
     has_elevator: Optional[bool] = None,
     has_balcony: Optional[bool] = None,
-    # Диапазоны чисел
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
     min_total_area: Optional[float] = None,
@@ -59,7 +57,6 @@ async def export_offers_csv(
     max_land_area: Optional[float] = None,
     min_price_per_square_meter: Optional[int] = None,
     max_price_per_square_meter: Optional[int] = None,
-    # Списки значений
     rooms_count: Optional[List[int]] = Query(None),
     bathrooms_count: Optional[List[int]] = Query(None),
     bedrooms_count: Optional[List[int]] = Query(None),
@@ -82,16 +79,13 @@ async def export_offers_csv(
     land_type: Optional[List[int]] = Query(None),
     source: Optional[List[str]] = Query(None),
 ):
-    # --- 1. Формируем фильтры (аналогично основному эндпоинту) ---
     filters = []
 
-    # Полнотекстовый поиск по адресу
     if address_query:
         ts_query = " & ".join(f"{w}:*" for w in address_query.lower().split() if w.strip())
         address_subquery = select(Address.id).where(Address.search_vector.op("@@")(func.to_tsquery("russian", ts_query))).scalar_subquery()
         filters.append(Offer.address_id.in_(address_subquery))
 
-    # Булевы фильтры
     bool_filters = {
         "is_new_house": is_new_house,
         "has_furniture": has_furniture,
@@ -115,7 +109,6 @@ async def export_offers_csv(
         if value is not None:
             filters.append(getattr(Offer, field) == value)
 
-    # Диапазоны чисел
     range_filters = [
         ("price", min_price, max_price),
         ("total_area", min_total_area, max_total_area),
@@ -134,7 +127,6 @@ async def export_offers_csv(
         if max_val is not None:
             filters.append(getattr(Offer, field) <= max_val)
 
-    # Списки значений
     list_filters = {
         "rooms_count": rooms_count,
         "bathrooms_count": bathrooms_count,
@@ -162,8 +154,6 @@ async def export_offers_csv(
         if values:
             filters.append(getattr(Offer, field).in_(values))
 
-    # --- 2. Получаем все данные с фильтрами и связями ---
-    # Загружаем все связи через join
     stmt = select(Offer).options(
         selectinload(Offer.address).selectinload(Address.region),
         selectinload(Offer.address).selectinload(Address.municipality),
@@ -188,47 +178,38 @@ async def export_offers_csv(
     if filters:
         stmt = stmt.where(and_(*filters))
 
-    # Сортировка по умолчанию по дате создания
     stmt = stmt.order_by(desc(Offer.creation_date_source).nulls_last())
 
     result = await session.exec(stmt)
     offers = result.all()
 
-    # --- 3. Формируем CSV файл ---
     output = io.StringIO()
     writer = csv.writer(output, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-    # Заголовки столбцов с учетом всех полей из модели
     headers = [
-        # Основная информация
         "ID",
         "Источник",
         "Цена (руб)",
         "Цена за кв.м (руб)",
         "Ценовая категория",
-        # Площади
         "Общая площадь (кв.м)",
         "Жилая площадь (кв.м)",
         "Площадь кухни (кв.м)",
         "Площадь участка (кв.м)",
-        # Планировка
         "Количество комнат",
         "Количество спален",
         "Количество санузлов",
         "Этаж",
         "Этажность дома",
         "Высота потолков (м)",
-        # Дом и состояние
         "Новостройка",
         "Год постройки дома",
         "Строительство завершено",
-        # Коммуникации
         "Водоснабжение",
         "Электричество",
         "Газ",
         "Канализация",
         "Отопление",
-        # Удобства
         "Количество лифтов",
         "Лифт",
         "Количество балконов",
@@ -240,29 +221,23 @@ async def export_offers_csv(
         "Баня",
         "Бассейн",
         "Терраса",
-        # Контент
         "Заголовок",
         "Описание",
         "URL",
         "Дублирующие URL",
-        # Аналитика и скоринг
         "Транспортная доступность (балл)",
         "Транспортная доступность (категория)",
         "Для пожилых (балл)",
         "Для пожилых (категория)",
         "Для семей (балл)",
         "Для семей (категория)",
-        # Просмотры
         "Количество просмотров",
         "Просмотров за день",
         "Просмотров за 10 дней",
-        # Контакты
         "Контактный телефон",
-        # Даты
         "Дата создания (источник)",
         "Дата обновления (источник)",
         "Дата обновления (система)",
-        # Адресные данные
         "Регион",
         "Муниципалитет",
         "Населенный пункт",
@@ -272,12 +247,10 @@ async def export_offers_csv(
         "Полный адрес",
         "Координаты (широта)",
         "Координаты (долгота)",
-        # Продавец
         "Продавец",
         "Рейтинг продавца",
         "Год основания продавца",
         "Тип продавца",
-        # Типы и классификаторы
         "Тип предложения",
         "Тип недвижимости",
         "Тип участка",
@@ -293,14 +266,12 @@ async def export_offers_csv(
     ]
     writer.writerow(headers)
 
-    # Функция для безопасного получения значений
     def get_value(obj, attr, default=""):
         if obj and hasattr(obj, attr):
             value = getattr(obj, attr)
             return value if value is not None else default
         return default
 
-    # Функция для преобразования булевых значений
     def bool_to_str(value):
         if value is True:
             return "Да"
@@ -308,50 +279,40 @@ async def export_offers_csv(
             return "Нет"
         return ""
 
-    # Данные
     for offer in offers:
-        # Получаем координаты
         lat = ""
         lon = ""
         if offer.address and offer.address.coordinates_list:
-            # coordinates_list возвращает [lon, lat]
             lon = offer.address.coordinates_list[0] if len(offer.address.coordinates_list) > 0 else ""
             lat = offer.address.coordinates_list[1] if len(offer.address.coordinates_list) > 1 else ""
 
-        # Преобразуем списки в строки
         images_urls_str = ", ".join(offer.images_urls) if offer.images_urls else ""
         identical_urls_str = ", ".join(offer.identical_urls) if offer.identical_urls else ""
 
         row_data = [
-            # Основная информация
             get_value(offer, "id"),
             get_value(offer, "source"),
             get_value(offer, "price"),
             get_value(offer, "price_per_square_meter"),
             get_value(offer, "price_category"),
-            # Площади
             get_value(offer, "total_area"),
             get_value(offer, "living_area"),
             get_value(offer, "kitchen_area"),
             get_value(offer, "land_area"),
-            # Планировка
             get_value(offer, "rooms_count"),
             get_value(offer, "bedrooms_count"),
             get_value(offer, "bathrooms_count"),
             get_value(offer, "floor"),
             get_value(offer, "house_floors_count"),
             get_value(offer, "ceiling_height"),
-            # Дом и состояние
             bool_to_str(get_value(offer, "is_new_house")),
             get_value(offer, "house_built_year"),
             bool_to_str(get_value(offer, "is_build_complete")),
-            # Коммуникации
             bool_to_str(get_value(offer, "has_water_supply")),
             bool_to_str(get_value(offer, "has_electricity")),
             bool_to_str(get_value(offer, "has_gas")),
             bool_to_str(get_value(offer, "has_sewerage")),
             bool_to_str(get_value(offer, "has_heating")),
-            # Удобства
             get_value(offer, "elevators_count"),
             bool_to_str(get_value(offer, "has_elevator")),
             get_value(offer, "balconies_count"),
@@ -363,29 +324,23 @@ async def export_offers_csv(
             bool_to_str(get_value(offer, "has_bathhouse")),
             bool_to_str(get_value(offer, "has_pool")),
             bool_to_str(get_value(offer, "has_terrace")),
-            # Контент
             get_value(offer, "title"),
             get_value(offer, "description"),
             get_value(offer, "url"),
             identical_urls_str,
-            # Аналитика и скоринг
             get_value(offer, "transport_access_score"),
             get_value(offer, "transport_access_category"),
             get_value(offer, "elderly_score"),
             get_value(offer, "elderly_category"),
             get_value(offer, "family_score"),
             get_value(offer, "family_category"),
-            # Просмотры
             get_value(offer, "views_count"),
             get_value(offer, "daily_views_count"),
             get_value(offer, "last_ten_days_views_count"),
-            # Контакты
             get_value(offer, "contact_phone"),
-            # Даты
             get_value(offer, "creation_date_source"),
             get_value(offer, "update_date_source"),
             get_value(offer, "update_date"),
-            # Адресные данные
             get_value(offer.address.region, "name") if offer.address and offer.address.region else "",
             get_value(offer.address.municipality, "name") if offer.address and offer.address.municipality else "",
             get_value(offer.address.settlement, "name") if offer.address and offer.address.settlement else "",
@@ -395,12 +350,10 @@ async def export_offers_csv(
             get_value(offer.address, "full_address"),
             lat,
             lon,
-            # Продавец
             get_value(offer.seller, "name") if offer.seller else "",
             get_value(offer.seller, "rating") if offer.seller else "",
             get_value(offer.seller, "foundation_date") if offer.seller else "",
             get_value(offer.seller.seller_type, "name") if offer.seller and offer.seller.seller_type else "",
-            # Типы и классификаторы
             get_value(offer.offer_type, "name") if offer.offer_type else "",
             get_value(offer.property_type, "name") if offer.property_type else "",
             get_value(offer.land_type, "name") if offer.land_type else "",
@@ -415,16 +368,13 @@ async def export_offers_csv(
             get_value(offer.water_supply_type, "name") if offer.water_supply_type else "",
         ]
 
-        # Обработка значений
         row_data = [str(v).replace("\n", " ").replace("\r", " ") if v is not None and not isinstance(v, bool) else "" if v is None else str(v) for v in row_data]
 
         writer.writerow(row_data)
 
-    # --- 4. Возвращаем CSV файл ---
     csv_content = output.getvalue()
     output.close()
 
-    # Генерируем имя файла с текущей датой
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"offers_export_{timestamp}.csv"
 
@@ -443,7 +393,6 @@ async def get_offers(
         "desc",
         description="Sort order: asc or desc",
     ),
-    # Булевы фильтры
     is_new_house: Optional[bool] = None,
     has_furniture: Optional[bool] = None,
     is_build_complete: Optional[bool] = None,
@@ -460,7 +409,6 @@ async def get_offers(
     has_terrace: Optional[bool] = None,
     has_elevator: Optional[bool] = None,
     has_balcony: Optional[bool] = None,
-    # Диапазоны чисел
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
     min_total_area: Optional[float] = None,
@@ -481,7 +429,6 @@ async def get_offers(
     max_land_area: Optional[float] = None,
     min_price_per_square_meter: Optional[int] = None,
     max_price_per_square_meter: Optional[int] = None,
-    # Списки значений
     rooms_count: Optional[List[int]] = Query(None),
     bathrooms_count: Optional[List[int]] = Query(None),
     bedrooms_count: Optional[List[int]] = Query(None),
@@ -504,23 +451,17 @@ async def get_offers(
     land_type: Optional[List[int]] = Query(None),
     source: Optional[List[str]] = Query(None),
 ):
-    # --- 1. Общий count без фильтров ---
     total_count_stmt = select(func.count(Offer.id))
     total_result = await session.exec(total_count_stmt)
     total_count = total_result.first()
 
-    # --- 2. Формируем фильтры ---
     filters = []
 
-    # Полнотекстовый поиск по адресу
     if address_query:
         ts_query = " & ".join(f"{w}:*" for w in address_query.lower().split() if w.strip())
-        # Предполагаем, что у Offer есть связь с Address через relationship
-        # Если связь называется 'address_rel' и в Address есть search_vector
         address_subquery = select(Address.id).where(Address.search_vector.op("@@")(func.to_tsquery("russian", ts_query))).scalar_subquery()
         filters.append(Offer.address_id.in_(address_subquery))
 
-    # Булевы фильтры
     bool_filters = {
         "is_new_house": is_new_house,
         "has_furniture": has_furniture,
@@ -544,7 +485,6 @@ async def get_offers(
         if value is not None:
             filters.append(getattr(Offer, field) == value)
 
-    # Диапазоны чисел
     range_filters = [
         ("price", min_price, max_price),
         ("total_area", min_total_area, max_total_area),
@@ -563,7 +503,6 @@ async def get_offers(
         if max_val is not None:
             filters.append(getattr(Offer, field) <= max_val)
 
-    # Списки значений
     list_filters = {
         "rooms_count": rooms_count,
         "bathrooms_count": bathrooms_count,
@@ -611,14 +550,12 @@ async def get_offers(
     else:
         order_clause = desc(Offer.creation_date_source).nulls_last()
 
-    # --- 3. filtered_count ---
     filtered_count_stmt = select(func.count(Offer.id))
     if filters:
         filtered_count_stmt = filtered_count_stmt.where(and_(*filters))
     filtered_result = await session.exec(filtered_count_stmt)
     filtered_count = filtered_result.first()
 
-    # --- 4. Получаем данные с фильтрами и пагинацией ---
     stmt = select(Offer).order_by(order_clause)
     if filters:
         stmt = stmt.where(and_(*filters))
@@ -626,7 +563,6 @@ async def get_offers(
     result = await session.exec(stmt)
     offers = result.all()
 
-    # --- 5. Формируем pagination ---
     has_more = offset + len(offers) < filtered_count
 
     return {
@@ -641,7 +577,6 @@ async def get_offers(
 async def get_offers_for_map(
     session: AsyncSession = Depends(get_async_session),
     address_query: Optional[str] = None,
-    # --- Булевы фильтры ---
     is_new_house: Optional[bool] = None,
     has_furniture: Optional[bool] = None,
     is_build_complete: Optional[bool] = None,
@@ -658,7 +593,6 @@ async def get_offers_for_map(
     has_terrace: Optional[bool] = None,
     has_elevator: Optional[bool] = None,
     has_balcony: Optional[bool] = None,
-    # --- Диапазоны ---
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
     min_total_area: Optional[float] = None,
@@ -679,7 +613,6 @@ async def get_offers_for_map(
     max_land_area: Optional[float] = None,
     min_price_per_square_meter: Optional[int] = None,
     max_price_per_square_meter: Optional[int] = None,
-    # --- Списки значений ---
     rooms_count: Optional[List[int]] = Query(None),
     bathrooms_count: Optional[List[int]] = Query(None),
     bedrooms_count: Optional[List[int]] = Query(None),
@@ -701,18 +634,15 @@ async def get_offers_for_map(
     seller_id: Optional[List[int]] = Query(None),
     land_type: Optional[List[int]] = Query(None),
     source: Optional[List[str]] = Query(None),
-    # --- Bounds карты ---
     sw_lat: Optional[float] = Query(None),
     sw_lng: Optional[float] = Query(None),
     ne_lat: Optional[float] = Query(None),
     ne_lng: Optional[float] = Query(None),
-    # --- Лимит ---
     limit: int = 100000,
 ):
     where_clauses = []
     params = {}
 
-    # --- Полнотекстовый поиск по адресу ---
     if address_query:
         ts_query = " & ".join(f"{w}:*" for w in address_query.lower().split() if w.strip())
         where_clauses.append("""
@@ -723,7 +653,6 @@ async def get_offers_for_map(
         """)
         params["ts_query"] = ts_query
 
-    # --- Булевы фильтры ---
     bool_filters = {
         "is_new_house": is_new_house,
         "has_furniture": has_furniture,
@@ -747,7 +676,6 @@ async def get_offers_for_map(
             where_clauses.append(f"o.{field} = :{field}")
             params[field] = value
 
-    # --- Диапазоны ---
     range_filters = {
         "price": (min_price, max_price),
         "total_area": (min_total_area, max_total_area),
@@ -768,7 +696,6 @@ async def get_offers_for_map(
             where_clauses.append(f"o.{field} <= :max_{field}")
             params[f"max_{field}"] = max_val
 
-    # --- Списки значений ---
     list_filters = {
         "rooms_count": rooms_count,
         "bathrooms_count": bathrooms_count,
@@ -799,14 +726,12 @@ async def get_offers_for_map(
             for i, val in enumerate(values):
                 params[f"{field}_{i}"] = val
 
-    # --- Фильтр по bounding box через оператор && ---
     if all(v is not None for v in [sw_lat, sw_lng, ne_lat, ne_lng]):
         where_clauses.append("""
             a.coordinates::geometry && ST_MakeEnvelope(:sw_lng, :sw_lat, :ne_lng, :ne_lat, 4326)
         """)
         params.update({"sw_lat": sw_lat, "sw_lng": sw_lng, "ne_lat": ne_lat, "ne_lng": ne_lng})
 
-    # --- Итоговое условие ---
     where_sql = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
     query = text(f"""
@@ -816,7 +741,8 @@ async def get_offers_for_map(
             ST_X(a.coordinates::geometry) AS longitude, 
             ST_Y(a.coordinates::geometry) AS latitude,
             o.price_category,
-            o.images_urls[1] AS first_image_url
+            o.images_urls[1] AS first_image_url,
+            o.is_new_house
         FROM offer o
         JOIN address a ON o.address_id = a.id
         {where_sql}
@@ -840,6 +766,7 @@ async def get_offers_for_map(
             "address": {"house_number": o[7], "full_address": o[8], "coordinates_list": [o[9], o[10]]},
             "price_category": o[11],
             "image_url": o[12],
+            "is_new_house": o[13],
         }
         for o in offers
     ]
@@ -904,7 +831,6 @@ async def autocomplete(
 ):
     query_like = f"%{query}%"
     limit = 10
-    # Выбираем таблицу в зависимости от type
     if type == "region":
         stmt = select(Region.short_name).where(Region.short_name.ilike(query_like))
     elif type == "municipality":

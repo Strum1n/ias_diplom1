@@ -517,7 +517,7 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
 
         city_matches = [item["shortName"] for item in address_info if item["locationTypeId"] in [161, 1, 149] and len(item["fullName"].split()) == 1]
 
-        if address["region_name"] != "Москва":
+        if address.get("region_name") and address["region_name"] != "Москва":
             city = next(
                 (item for item in address_info if item["locationTypeId"] in [161, 1, 149] and len(item["fullName"].split()) == 1),
                 None,

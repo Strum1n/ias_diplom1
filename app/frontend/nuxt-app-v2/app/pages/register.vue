@@ -84,7 +84,7 @@ const handleSubmit = async () => {
 
   loading.value = true;
   error.value = null;
-
+  const base = config.apiBase;
   try {
     // Отправляем запрос на сервер с правильными данными
     const response = await $fetch(`http://localhost:8000/auth/register`, {

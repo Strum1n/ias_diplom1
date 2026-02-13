@@ -1,20 +1,30 @@
 <template>
-  <div class="flex gap-5 mx-auto max-h-[92.9vh]! p-5">
-    <div class="w-[22%]">
+  <div class="flex flex-col max-h-full md:flex-row gap-2.5 mx-auto p-3 md:p-5 md:gap-5 md:max-h-[92.9vh]!">
+    <div class="md:hidden">
+      <UButton icon="i-heroicons-funnel" @click="toggleFiltersSidebar" variant="outline" color="primary" class="w-full justify-center">
+        {{ showFilters ? "Скрыть фильтры" : "Показать фильтры" }}
+      </UButton>
+    </div>
+    <div
+      class="w-full md:w-[22%]"
+      :class="{
+        'max-h-0 overflow-hidden md:max-h-none md:overflow-visible': !showFilters,
+        'max-h-500 overflow-visible mb-4': showFilters,
+      }">
       <FiltersSidebar @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>
 
-    <main class="map-content">
+    <main class="map-content max-h-[84.5vh] min-h-150! flex-1 sm:max-h-max">
       <div class="mb-3">
         <AddressAutocomplete @address-selected="handleAddressSearch" @search-triggered="handleAddressSearch" />
       </div>
 
-      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-3 text-sm" color="info">
-        {{ addressForSearch }}
+      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-2 w-full md:px-3 text-xs md:w-fit md:text-sm" color="info">
+        <span class="truncate w-fit md:w-fit">{{ addressForSearch }}</span>
         <UButton
           trailing-icon="heroicons:x-mark-16-solid"
           variant="outline"
-          class="px-0 ring-[#e9f2ff] pt-2 border-0 bg-transparent"
+          class="px-0 ring-[#e9f2ff] pt-2 border-0 bg-transparent mr-0 ml-auto"
           color="info"
           @click="clearAddressSearch"
           size="md"></UButton>
@@ -25,19 +35,18 @@
       </div>
 
       <div class="results-info mb-3">
-        <div class="flex items-end" v-if="offersPending">
-          <span>Объектов на карте:</span>
-          <UIcon name="codex:loader" size="20px" />
+        <div class="flex items-center gap-2" v-if="offersPending">
+          <span class="text-sm md:text-base">Объектов на карте:</span>
+          <UIcon name="codex:loader" size="16px md:20px" />
         </div>
-        <div v-else>
+        <div v-else class="text-sm md:text-base">
           Объектов на карте: <span class="font-semibold text-primary">{{ offers.length.toLocaleString("ru-RU") }}</span>
         </div>
       </div>
 
-      <div class="map-container">
-        <UIcon v-if="offersPending" name="line-md:loading-loop" size="100px" class="loading-icon" />
-
-        <YaMap :parent-offers="offers"></YaMap>
+      <div class="map-container relative">
+        <UIcon v-if="offersPending" name="line-md:loading-loop" class="loading-icon absolute inset-0 m-auto z-10" />
+        <YaMap :parent-offers="offers" class="h-full w-full"></YaMap>
       </div>
     </main>
   </div>
@@ -55,85 +64,41 @@ interface Filters {
 
 const { $api } = useNuxtApp();
 
+// Состояние для показа/скрытия фильтров
+const showFilters = ref(false);
+
+// Функция для переключения видимости фильтров
+const toggleFiltersSidebar = () => {
+  showFilters.value = !showFilters.value;
+};
+
 const currentFilters = ref<Filters>({});
 const addressForSearch = computed(() => currentFilters.value.address_query);
 
-// Функция для подготовки параметров запроса
 const prepareRequestQuery = () => {
   const query: Record<string, any> = {
     limit: 1000000,
   };
 
-  console.log("Грузим офферы с фильтрами:", currentFilters.value);
-
-  // Обрабатываем фильтры из currentFilters
   if (currentFilters.value && Object.keys(currentFilters.value).length > 0) {
     Object.entries(currentFilters.value).forEach(([key, value]) => {
-      // Пропускаем null, undefined и пустые строки
       if (value == null || value === "" || (Array.isArray(value) && value.length === 0)) return;
 
-      // Обработка массивов
       if (Array.isArray(value)) {
-        // Для $fetch массив автоматически преобразуется в повторяющиеся параметры
         query[key] = value.filter((item) => item != null && item !== "");
-      }
-      // Обработка булевых значений
-      else if (typeof value === "boolean") {
-        // Добавляем только true значения
+      } else if (typeof value === "boolean") {
         if (value === true) {
           query[key] = String(value);
         }
-      }
-      // Обработка объектов (например, адрес)
-      else if (typeof value === "object" && !Array.isArray(value)) {
-        // Сериализуем объект в JSON
+      } else if (typeof value === "object" && !Array.isArray(value)) {
         query[key] = JSON.stringify(value);
-      }
-      // Обработка строк и чисел
-      else {
+      } else {
         query[key] = String(value);
       }
     });
   }
 
   return query;
-};
-
-const { data: favoritesData, refresh: refreshFavorites } = await useAsyncData("favorites", () => $api("offers/favorites/"));
-
-const favoriteOffers = computed(() => {
-  return new Set(favoritesData.value?.map((item) => item.id) || []);
-});
-
-const toggleFavorite = async (offer: Offer) => {
-  if (!offer.id) return;
-
-  const offerId = offer.id;
-  const wasFavorite = favoriteOffers.value.has(offerId);
-
-  try {
-    if (wasFavorite) {
-      $api(`offers/favorites/${offerId}`, { method: "DELETE" });
-
-      // Локально удаляем из favoritesData
-      if (favoritesData.value) {
-        favoritesData.value = favoritesData.value.filter((item) => item.id !== offerId);
-      }
-    } else {
-      $api(`offers/favorites/${offerId}`, { method: "POST" });
-
-      // Локально добавляем в favoritesData
-      if (favoritesData.value) {
-        favoritesData.value = [...favoritesData.value, offer];
-      }
-    }
-  } catch (error) {
-    console.error("Ошибка при обновлении избранного:", error);
-  }
-};
-
-const isFavorite = (offerId: number | null): boolean => {
-  return offerId !== null && favoriteOffers.value.has(offerId);
 };
 
 const {
@@ -150,8 +115,6 @@ const {
 const offers = computed(() => offersData.value || []);
 
 const handleFiltersApply = async (filtersData: Filters) => {
-  console.log("Получены фильтры через событие:", filtersData);
-
   currentFilters.value = {
     ...filtersData,
     ...("address_query" in currentFilters.value && {
@@ -159,7 +122,11 @@ const handleFiltersApply = async (filtersData: Filters) => {
     }),
   };
 
-  console.log("Объединённые фильтры:", currentFilters.value);
+  // Закрываем фильтры после применения на мобильных
+  if (window.innerWidth < 768) {
+    showFilters.value = false;
+  }
+
   refreshOffers();
 };
 
@@ -170,12 +137,7 @@ const handleFiltersReset = async () => {
     filtersToKeep.address_query = currentFilters.value.address_query;
   }
 
-  // if (currentFilters.value.property_type) {
-  //     filtersToKeep.property_type = currentFilters.value.property_type
-  // }
-
   currentFilters.value = { ...filtersToKeep };
-
   refreshOffers();
 };
 
@@ -196,222 +158,55 @@ const handleAddressSearch = (query: string) => {
 const clearAddressSearch = () => {
   const { address_query, ...filtersWithoutAddress } = currentFilters.value;
   currentFilters.value = filtersWithoutAddress;
-
   refreshOffers();
-};
-
-const isFullscreen = ref(false);
-
-const toggleFullscreen = () => {
-  if (isFullscreen.value) {
-    document.exitFullscreen();
-  } else {
-    const mapContainer = document.querySelector(".map-container");
-    if (mapContainer) {
-      mapContainer.requestFullscreen();
-    }
-  }
-};
-
-const handleFullscreenChange = () => {
-  isFullscreen.value = !!document.fullscreenElement;
 };
 
 const mapState = useMapState();
 
-onMounted(() => {
-  document.addEventListener("fullscreenchange", handleFullscreenChange);
-});
-
 onBeforeUnmount(() => {
   mapState.value.center = undefined;
-  document.removeEventListener("fullscreenchange", handleFullscreenChange);
 });
 </script>
 
 <style scoped>
-.ymaps3x0-resize-control {
-  --ymaps3x0-resize-control-color: white;
+@reference 'tailwindcss';
+.map-content {
+  @apply flex flex-col flex-1  min-h-0;
 }
 
 .loading-icon {
-  position: absolute;
-  z-index: 10;
-}
-
-.page-layout {
-  height: 92.6vh;
-  display: flex;
-  gap: 1.5rem;
-  padding: 1.3rem;
-}
-
-/* Основной контент с картой */
-.map-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.marker {
-  position: relative;
-  width: 20px;
-  height: 20px;
-  background: #ff0000;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-}
-
-.cluster {
-  background: #1976d2;
-  color: white;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-}
-
-.cluster-popup {
-  position: absolute;
-  top: 40px;
-  left: -50px;
-  background: white;
-  padding: 12px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  width: 220px;
-  max-height: 300px;
-  /* Ограничиваем максимальную высоту */
-  overflow-y: auto;
-  /* Добавляем вертикальную прокрутку */
-  z-index: 1000;
-}
-
-.cluster-close-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 22px;
-  height: 22px;
-  border: none;
-  background: #eee;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 20px;
-  text-align: center;
-  padding: 0;
-  color: #444;
-}
-
-.cluster-close-btn:hover {
-  background: #ddd;
-}
-
-.popup {
-  position: absolute;
-  top: calc(100% + 10px);
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px 10px 10px 28px;
-  color: black;
-  min-width: 150px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Крестик для попапа маркера */
-.popup-close {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 20px;
-  height: 20px;
-  border: none;
-  background: #eee;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 18px;
-  text-align: center;
-  padding: 0;
-  color: #444;
-}
-
-.popup-close:hover {
-  background: #ddd;
-}
-
-.offer-list {
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 10px;
+  @apply size-5 absolute z-10 md:size-20;
 }
 
 .map-container {
-  display: flex;
+  @apply flex justify-center items-center flex-auto min-h-0 overflow-hidden border border-[#e2e8f0] bg-white rounded-xl  md:h-auto;
+}
 
-  justify-content: center;
-  align-items: center;
-  flex: 1 1 auto;
-  min-height: 0;
+/* Мобильные адаптации */
+@media (max-width: 640px) {
+  .map-container {
+    @apply min-h-[50vh];
+  }
+}
+
+/* Анимация для фильтров */
+.filters-transition-enter-active,
+.filters-transition-leave-active {
+  transition:
+    max-height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+}
+
+.filters-transition-enter-from,
+.filters-transition-leave-to {
+  max-height: 0;
+  opacity: 0;
   overflow: hidden;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-  background: white;
 }
 
-.sidebar-container {
-  width: 22.9%;
-}
-
-.offer-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.offer-title {
-  font-weight: bold;
-  font-size: 16px;
-  margin-bottom: 8px;
-}
-
-.offer-img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 6px;
-  background: #f0f0f0;
-  margin-bottom: 8px;
-}
-
-.offer-price {
-  color: #1976d2;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.offer-address {
-  font-size: 12px;
-  color: #666;
-}
-
-.fullscreen {
-  width: 26px;
-  height: 26px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cg fill='%236B6B6B'%3E%3Cpath d='M16.14 7.86L14.27 6H20v5.7l-1.83-1.82L15.04 13 13 10.98l3.13-3.13zm0 0M9.86 18.14L11.73 20H6v-5.7l1.83 1.82L10.96 13 13 15.02l-3.13 3.13zm0 0'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-.exit-fullscreen {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Cg fill='%236B6B6B'%3E%3Cpath d='M8.14 15.86L6.27 14H12v5.7l-1.83-1.83-3.13 3.14L5 18.98l3.13-3.13zm0 0M17.86 10.14L19.73 12H14V6.3l1.83 1.83 3.13-3.14L21 7.02l-3.13 3.13zm0 0'/%3E%3C/g%3E%3C/svg%3E");
+.filters-transition-enter-to,
+.filters-transition-leave-from {
+  max-height: 2000px;
+  opacity: 1;
 }
 </style>

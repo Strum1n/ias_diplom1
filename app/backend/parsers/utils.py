@@ -76,13 +76,6 @@ async def check_identical_offers(
     session_factory,
     current_url: str | None = None,
 ):
-    """Ищет офферы с точно такими же значениями полей и адресом в радиусе 5 метров.
-
-    Аргументы:
-    - `coordinates`: кортеж с координатами (lat, lon) или (lon, lat). Порядок определяется автоматически.
-    - остальные поля сравниваются на точное равенство (None -> IS NULL).
-    """
-    # Разрешаем оба порядка координат: (lat, lon) или (lon, lat)
     async with session_factory() as session:
         session: AsyncSession
 
@@ -90,7 +83,6 @@ async def check_identical_offers(
 
         conditions = []
 
-        # Helper to add equality or IS NULL for None
         def _eq_or_isnull(col, value):
             return col.is_(None) if value is None else col == value
 
@@ -111,11 +103,9 @@ async def check_identical_offers(
         result = await session.exec(stmt)
         offers = result.all()
 
-        # Если передан текущий URL, добавим его в поле identical_urls найденных объявлений
         if current_url and offers:
             try:
                 for off in offers:
-                    # Не добавляем ссылку на самого себя
                     if getattr(off, "url", None) == current_url:
                         continue
 
@@ -216,7 +206,6 @@ async def add_offer_to_db(new_offer: Offer, session_factory) -> int | None:
     async with session_factory() as session:
         while True:
             try:
-                # Пытаемся добавить новое объявление с новым адресом
                 session.add(new_offer)
                 await session.commit()
                 await session.refresh(new_offer)
@@ -426,9 +415,7 @@ async def add_address_infrastructure_link(
 
 
 def create_offer_from_data(new_offer_info, address_info, type_ids):
-    """Создает объекты Address, Seller и Offer из данных"""
 
-    # Создание объекта Address
     address = Address(
         full_address=address_info["full_address"],
         coordinates=WKTElement(
@@ -447,13 +434,10 @@ def create_offer_from_data(new_offer_info, address_info, type_ids):
         house_number=address_info.get("house_number"),
     )
 
-    # Создание объекта Seller
     seller = _create_seller(new_offer_info, type_ids)
 
-    # Генерация заголовка
     title = _generate_offer_title(new_offer_info)
 
-    # Создание объекта Offer
     new_offer = Offer(
         url=new_offer_info["url"],
         source=new_offer_info.get("source"),
@@ -519,9 +503,7 @@ def create_offer_from_data(new_offer_info, address_info, type_ids):
     return new_offer
 
 
-# Вспомогательные функции для создания адресных компонентов
 def _create_region(address_info, type_ids):
-    """Создает объект Region при наличии данных"""
     if address_info.get("region_name"):
         return Region(
             name=address_info.get("region_name"),
@@ -532,7 +514,6 @@ def _create_region(address_info, type_ids):
 
 
 def _create_super_municipality(address_info, type_ids):
-    """Создает объект SuperMunicipality при наличии данных"""
     if address_info.get("super_municipality_name"):
         return SuperMunicipality(
             name=address_info.get("super_municipality_name"),
@@ -544,7 +525,6 @@ def _create_super_municipality(address_info, type_ids):
 
 
 def _create_municipality(address_info, type_ids):
-    """Создает объект Municipality при наличии данных"""
     if address_info.get("municipality_name"):
         return Municipality(
             name=address_info.get("municipality_name"),
@@ -556,7 +536,6 @@ def _create_municipality(address_info, type_ids):
 
 
 def _create_settlement(address_info, type_ids):
-    """Создает объект Settlement при наличии данных"""
     if address_info.get("settlement_name"):
         return Settlement(
             name=address_info.get("settlement_name"),
@@ -568,7 +547,6 @@ def _create_settlement(address_info, type_ids):
 
 
 def _create_partnership(address_info, type_ids):
-    """Создает объект Partnership при наличии данных"""
     if address_info.get("partnership_name"):
         return Partnership(
             name=address_info.get("partnership_name"),
@@ -580,7 +558,6 @@ def _create_partnership(address_info, type_ids):
 
 
 def _create_district(address_info, type_ids):
-    """Создает объект District при наличии данных"""
     if address_info.get("district_name"):
         return District(
             name=address_info.get("district_name"),
@@ -592,7 +569,6 @@ def _create_district(address_info, type_ids):
 
 
 def _create_microdistrict(address_info, type_ids):
-    """Создает объект Microdistrict при наличии данных"""
     if address_info.get("microdistrict_name"):
         return Microdistrict(
             name=address_info.get("microdistrict_name"),
@@ -604,7 +580,6 @@ def _create_microdistrict(address_info, type_ids):
 
 
 def _create_street(address_info, type_ids):
-    """Создает объект Street при наличии данных"""
     if address_info.get("street_name"):
         return Street(
             name=address_info.get("street_name"),
@@ -616,7 +591,6 @@ def _create_street(address_info, type_ids):
 
 
 def _create_residential_complex(address_info, type_ids):
-    """Создает объект ResidentialComplex при наличии данных"""
     if address_info.get("residential_complex_name"):
         return ResidentialComplex(
             name=address_info.get("residential_complex_name"),
@@ -629,7 +603,6 @@ def _create_residential_complex(address_info, type_ids):
 
 
 def _create_seller(new_offer_info, type_ids):
-    """Создает объект Seller"""
     foundation_date = None
     if new_offer_info.get("seller_foundation_date") is not None:
         numbers = re.findall(r"\d+", str(new_offer_info["seller_foundation_date"]))
@@ -644,14 +617,10 @@ def _create_seller(new_offer_info, type_ids):
 
 
 def _generate_offer_title(new_offer_info):
-    """Генерирует заголовок предложения на основе данных"""
-
     def _fmt(*parts):
-        """Форматирует части заголовка, пропуская None и пустые строки"""
         return ", ".join(str(x) for x in parts if x not in (None, ""))
 
     def _g(key):
-        """Вспомогательная функция для получения значения из new_offer_info"""
         return new_offer_info.get(key)
 
     property_type = _g("property_type")
@@ -671,7 +640,6 @@ def _generate_offer_title(new_offer_info):
             _g("land_type"),
         )
     else:
-        # Квартиры-студии или свободная планировка
         if rooms_count == 0:
             if property_type == "Апартаменты":
                 room_text = "Апартаменты-студия"

@@ -33,44 +33,117 @@
               :prev="{ onClick: onClickPrev }"
               :next="{ onClick: onClickNext }"
               :ui="{
-                controls: 'absolute top-20 sm:top-30 md:top-40 lg:top-61 inset-x-2 sm:inset-x-8 md:inset-x-12 lg:inset-x-17.5 opasity-0',
+                controls: 'absolute top-20 sm:top-23 inset-x-2 sm:inset-x-8 md:inset-x-12 lg:inset-x-17.5 opasity-0',
               }"
               class="w-full max-w-200 min-h-60 sm:min-h-80 md:min-h-100 lg:min-h-120 mx-auto border-2 border-default"
               @select="onSelect">
               <img :src="item" width="2000" height="480" class="rounded-lg w-full h-full object-contain" />
             </UCarousel>
 
-            <div ref="thumbsContainer" class="no-scroll flex gap-2 sm:gap-3 max-w-200 overflow-x-auto whitespace-nowrap pt-3 sm:pt-4 mx-auto">
+            <div ref="thumbsContainer" class="no-scroll flex gap-3 max-w-200 overflow-x-auto whitespace-nowrap pt-4 mx-auto">
               <div
                 v-for="(item, index) in offer.images_urls"
                 :key="index"
-                class="sas h-10 sm:h-12 md:h-14 lg:h-15 opacity-35 hover:opacity-100 transition-opacity cursor-pointer flex-shrink-0"
+                class="sas h-15 opacity-35 hover:opacity-100 transition-opacity cursor-pointer"
                 :class="{ 'opacity-100': activeIndex === index }"
                 @click="select(index)">
-                <img :src="item" width="78" height="100" class="rounded-lg w-full h-full object-cover" />
+                <img :src="item" width="78" height="100" class="rounded-lg" />
               </div>
             </div>
           </div>
+          <div v-if="isMobile">
+            <div class="p-4 sm:p-5 md:p-6 rounded-lg ring ring-default">
+              <div>
+                <div class="price">
+                  <p class="flex justify-start items-start flex-col sm:flex-row sm:gap-4 gap-2 items-start sm:items-center">
+                    <span class="text-xl sm:text-2xl md:text-3xl">{{ formatPrice(offer.price) }} ₽</span>
+                    <UBadge class="mb-2" size="sm" :color="getPriceCategoryColor(offer.price_category)">
+                      {{ getPriceCategoryLabel(offer.price_category) }}
+                    </UBadge>
+                  </p>
 
+                  <button class="favorite-heart h-10 w-10 sm:h-11.25 sm:w-11.25" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
+                    <UIcon size="24 sm:30" :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" class="heart-icon" />
+                  </button>
+                </div>
+
+                <div class="price-per-meter text-sm sm:text-base">
+                  <span>Цена за метр:</span><span class="font-semibold !text-[#38a169]">{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span>
+                </div>
+              </div>
+              <div>
+                <h3 class="mt-2 mb-2 text-base">Контакты:</h3>
+
+                <div v-if="offer.contact_phone" class="phone-number text-base sm:text-lg">{{ formatPhone(offer.contact_phone) }}</div>
+                <div class="phone-number font-semibold! text-base sm:text-lg" v-else>Временный номер, проверьте в источнике</div>
+
+                <div class="seller-info my-3">
+                  <div class="seller-type text-sm">{{ offer.seller.seller_type?.name }}</div>
+                  <div class="seller-name text-base sm:text-lg">{{ offer.seller.name }}</div>
+                </div>
+                <div class="original-link">
+                  <p class="flex items-center gap-1 text-sm sm:text-base">
+                    <UIcon size="16 sm:18" name="i-heroicons-link"></UIcon>
+                    Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}.RU</a>
+                  </p>
+                  <div class="flex flex-col gap-1 mt-1" v-if="offer.identical_urls && offer.identical_urls[0] && !offer.identical_urls[0].includes(offer.source)">
+                    <p class="text-sm">В других источниках:</p>
+                    <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black text-sm">
+                      {{ offer.identical_urls[0].match(/([\w-]+)\.ru/)?.[1] || offer.identical_urls[0] }}.ru
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-default mt-4 sm:mt-5">
+              <h3 class="text-lg sm:text-xl">История цен</h3>
+              <VChart class="mt-3 sm:mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
+              <div v-else class="text-sm sm:text-base">Нет данных по истории цен</div>
+            </div>
+
+            <div class="views-section mt-4 sm:mt-5">
+              <h3 class="text-lg sm:text-xl font-semibold mb-4">Статистика просмотров</h3>
+              <div class="views-stats">
+                <div class="stat-item">
+                  <p class="text-sm sm:text-base">Всего:</p>
+                  <span class="text-sm sm:text-base">{{ offer.views_count }}</span>
+                </div>
+                <div class="stat-item">
+                  <p class="text-sm sm:text-base">10 дней:</p>
+                  <span class="text-sm sm:text-base">{{ offer.last_ten_days_views_count }}</span>
+                </div>
+                <div class="stat-item">
+                  <p class="text-sm sm:text-base">Сегодня:</p>
+                  <span class="text-sm sm:text-base">{{ offer.daily_views_count }}</span>
+                </div>
+              </div>
+              <VChart class="mt-3 sm:mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
+            </div>
+          </div>
           <div class="info-card">
             <h3 class="text-lg sm:text-xl xl:text-2xl">Оценки</h3>
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-3 justify-between">
               <div class="category-item w-full sm:w-1/3">
                 <p class="text-sm sm:text-base">Для пожилых:</p>
-                <UBadge size="sm sm:lg" :color="getCategoryColor(offer.elderly_category)">
+                <UBadge size="lg" :color="getCategoryColor(offer.elderly_category)">
                   {{ getCategoryLabel(offer.elderly_category) }}
+                  <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined" class="sm:inline"> ({{ offer.elderly_score.toFixed(2) }}) </span>
                 </UBadge>
               </div>
-              <div class="category-item w-full sm:w-1/3">
+              <div class="category-item w-full">
                 <p class="text-sm sm:text-base">Для семьи:</p>
-                <UBadge size="sm sm:lg" :color="getCategoryColor(offer.family_category)">
+                <UBadge size="lg" :color="getCategoryColor(offer.family_category)">
                   {{ getCategoryLabel(offer.family_category) }}
+                  <span v-if="offer.family_score !== null && offer.family_score !== undefined" class="sm:inline"> ({{ offer.family_score.toFixed(2) }}) </span>
                 </UBadge>
               </div>
-              <div class="category-item w-full sm:w-1/3">
+              <div class="category-item w-full">
                 <p class="text-sm sm:text-base">Транспортная доступность:</p>
-                <UBadge size="sm sm:lg" :color="getCategoryColor(offer.transport_access_category)">
+                <UBadge size="lg" :color="getCategoryColor(offer.transport_access_category)">
                   {{ getCategoryLabel(offer.transport_access_category) }}
+                  <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined" class="sm:inline">
+                    ({{ offer.transport_access_score.toFixed(2) }})
+                  </span>
                 </UBadge>
               </div>
             </div>
@@ -88,7 +161,7 @@
               </template>
             </UAccordion>
             <div class="flex flex-col lg:flex-row lg:gap-8 xl:gap-10 gap-6" v-if="['Квартира', 'Апартаменты'].includes(offer.property_type.name)">
-              <div class="info-grid w-full lg:w-1/2">
+              <div class="info-grid">
                 <h3 class="text-lg sm:text-xl">О квартире</h3>
                 <div>
                   <p class="text-sm sm:text-base">Тип:</p>
@@ -334,14 +407,14 @@
           </div>
         </div>
 
-        <div v-if="offer.price_history?.length <= 1 || offer.views_history === null" class="flex-1 w-full">
+        <div v-if="!isMobile" class="flex-1 w-full">
           <div class="lg:sticky lg:top-17 w-full">
             <div class="p-4 sm:p-5 md:p-6 rounded-lg ring ring-default">
               <div>
                 <div class="price">
-                  <p class="flex flex-col sm:flex-row sm:gap-4 gap-2 items-start sm:items-center">
-                    <span class="text-xl sm:text-2xl md:text-3xl">{{ formatPrice(offer.price) }} ₽</span>
-                    <UBadge size="sm sm:lg" :color="getPriceCategoryColor(offer.price_category)">
+                  <p class="flex flex-col sm:flex-row sm:gap-4 items-center">
+                    <span>{{ formatPrice(offer.price) }} ₽</span>
+                    <UBadge size="lg" :color="getPriceCategoryColor(offer.price_category)">
                       {{ getPriceCategoryLabel(offer.price_category) }}
                     </UBadge>
                   </p>
@@ -351,12 +424,12 @@
                   </button>
                 </div>
 
-                <div class="price-per-meter text-sm sm:text-base mt-2">
+                <div class="price-per-meter text-sm sm:text-base mt-0.5">
                   <span>Цена за метр:</span><span class="font-semibold !text-[#38a169]">{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span>
                 </div>
               </div>
               <div>
-                <h3 class="mt-3 mb-2 text-lg sm:text-xl">Контакты:</h3>
+                <h3 class="mt-2 mb-2 text-base">Контакты:</h3>
 
                 <div v-if="offer.contact_phone" class="phone-number text-base sm:text-lg">{{ formatPhone(offer.contact_phone) }}</div>
                 <div class="phone-number font-semibold! text-base sm:text-lg" v-else>Временный номер, проверьте в источнике</div>
@@ -381,12 +454,12 @@
             </div>
             <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-default mt-4 sm:mt-5">
               <h3 class="text-lg sm:text-xl">История цен</h3>
-              <VChart class="mt-3 sm:mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 250px sm:300px lg:328px" />
+              <VChart class="mt-3 sm:mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
               <div v-else class="text-sm sm:text-base">Нет данных по истории цен</div>
             </div>
 
             <div class="views-section mt-4 sm:mt-5">
-              <h3 class="text-lg sm:text-xl">Статистика просмотров</h3>
+              <h3 class="text-lg sm:text-xl font-semibold mb-4">Статистика просмотров</h3>
               <div class="views-stats">
                 <div class="stat-item">
                   <p class="text-sm sm:text-base">Всего:</p>
@@ -401,78 +474,8 @@
                   <span class="text-sm sm:text-base">{{ offer.daily_views_count }}</span>
                 </div>
               </div>
-              <VChart class="mt-3 sm:mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 250px sm:300px lg:328px" />
+              <VChart class="mt-3 sm:mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
             </div>
-          </div>
-        </div>
-
-        <div v-else class="w-full lg:sticky lg:top-17">
-          <div class="p-4 sm:p-5 md:p-6 rounded-lg ring ring-default">
-            <div>
-              <div class="price">
-                <p class="flex flex-col sm:flex-row sm:gap-4 gap-2 items-start sm:items-center">
-                  <span class="text-xl sm:text-2xl md:text-3xl">{{ formatPrice(offer.price) }} ₽</span>
-                  <UBadge size="sm sm:lg" :color="getPriceCategoryColor(offer.price_category)">
-                    {{ getPriceCategoryLabel(offer.price_category) }}
-                  </UBadge>
-                </p>
-
-                <button class="favorite-heart h-10 w-10 sm:h-11.25 sm:w-11.25" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
-                  <UIcon size="24 sm:30" :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" class="heart-icon" />
-                </button>
-              </div>
-
-              <div class="price-per-meter text-sm sm:text-base mt-2">
-                <span>Цена за метр:</span><span class="font-semibold !text-[#38a169]">{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span>
-              </div>
-            </div>
-            <div>
-              <h3 class="mt-3 mb-2 text-lg sm:text-xl">Контакты:</h3>
-
-              <div v-if="offer.contact_phone" class="phone-number text-base sm:text-lg">{{ formatPhone(offer.contact_phone) }}</div>
-              <div class="phone-number font-semibold! text-base sm:text-lg" v-else>Временный номер, проверьте в источнике</div>
-
-              <div class="seller-info my-3">
-                <div class="seller-type text-sm">{{ offer.seller.seller_type?.name }}</div>
-                <div class="seller-name text-base sm:text-lg">{{ offer.seller.name }}</div>
-              </div>
-              <div class="original-link">
-                <p class="flex items-center gap-1 text-sm sm:text-base">
-                  <UIcon size="16 sm:18" name="i-heroicons-link"></UIcon>
-                  Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}.RU</a>
-                </p>
-                <div class="flex flex-col gap-1 mt-1" v-if="offer.identical_urls && offer.identical_urls[0] && !offer.identical_urls[0].includes(offer.source)">
-                  <p class="text-sm">В других источниках:</p>
-                  <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black text-sm">
-                    {{ offer.identical_urls[0].match(/([\w-]+)\.ru/)?.[1] || offer.identical_urls[0] }}.ru
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-default mt-4 sm:mt-5">
-            <h3 class="text-lg sm:text-xl">История цен</h3>
-            <VChart class="mt-3 sm:mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 250px sm:300px lg:328px" />
-            <div v-else class="text-sm sm:text-base">Нет данных по истории цен</div>
-          </div>
-
-          <div class="views-section mt-4 sm:mt-5">
-            <h3 class="text-lg sm:text-xl">Статистика просмотров</h3>
-            <div class="views-stats">
-              <div class="stat-item">
-                <p class="text-sm sm:text-base">Всего:</p>
-                <span class="text-sm sm:text-base">{{ offer.views_count }}</span>
-              </div>
-              <div class="stat-item">
-                <p class="text-sm sm:text-base">10 дней:</p>
-                <span class="text-sm sm:text-base">{{ offer.last_ten_days_views_count }}</span>
-              </div>
-              <div class="stat-item">
-                <p class="text-sm sm:text-base">Сегодня:</p>
-                <span class="text-sm sm:text-base">{{ offer.daily_views_count }}</span>
-              </div>
-            </div>
-            <VChart class="mt-3 sm:mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 250px sm:300px lg:328px" />
           </div>
         </div>
       </div>
@@ -681,7 +684,7 @@ const priceChartOption = computed(() => {
       name: "Цена, ₽",
     },
     grid: {
-      left: 40,
+      left: 0,
       right: 0,
       top: 30,
       bottom: 30,
@@ -711,11 +714,13 @@ const priceChartOption = computed(() => {
 const viewsChartOption = computed(() => {
   if (!offer.value?.views_history?.length) return null;
 
-  const data = [...offer.value.views_history].sort((a, b) => +new Date(a.date) - +new Date(b.date)).map((item) => [item.date, item.views]);
+  const data = offer.value.views_history.map((item) => [item.date, item.views]);
 
   return {
     tooltip: {
+      type: "category",
       trigger: "axis",
+      valueFormatter: (v: number) => `Просмотров: ${v}`,
     },
     xAxis: {
       type: "time",
@@ -727,7 +732,7 @@ const viewsChartOption = computed(() => {
       name: "Просмотры",
     },
     grid: {
-      left: 40,
+      left: 0,
       right: 0,
       top: 30,
       bottom: 30,
@@ -830,6 +835,17 @@ const getCategoryColor = (category: string) => {
   };
   return colors[category] || "gray";
 };
+
+const isMobile = ref(false);
+
+onMounted(() => {
+  const check = () => {
+    isMobile.value = window.innerWidth < 640;
+  };
+
+  check();
+  window.addEventListener("resize", check);
+});
 </script>
 
 <style scoped>
@@ -865,15 +881,15 @@ const getCategoryColor = (category: string) => {
 
 .stat-item,
 .category-item {
-  @apply flex gap-4 items-center bg-[#f8fafc] p-4 rounded-lg w-1/3;
+  @apply flex gap-4 items-center justify-between bg-[#f8fafc] p-4 rounded-lg sm:w-1/3;
 }
 
 .category-item p {
-  @apply text-muted;
+  @apply text-muted w-max;
 }
 
 .info-grid {
-  @apply flex flex-col gap-2.5 w-1/2;
+  @apply flex  w-full flex-col gap-2.5 sm:w-1/2;
 }
 
 .info-grid div {
@@ -981,15 +997,15 @@ const getCategoryColor = (category: string) => {
 
 .views-section,
 .price-history-section {
-  @apply p-6! rounded-lg ring ring-default mt-5;
+  @apply p-3.5 rounded-lg ring ring-default mt-5 sm:p-6;
 }
 
 .views-stats {
-  @apply flex gap-3;
+  @apply flex gap-1.5 sm:gap-3;
 }
 
 .stat-item {
-  @apply w-1/3 flex;
+  @apply gap-1  w-1/3 flex flex-wrap;
 }
 
 .stat-item p {

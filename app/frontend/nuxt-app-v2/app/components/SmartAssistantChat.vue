@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
     <!-- Кнопка открытия -->
-    <UButton icon="i-heroicons-chat-bubble-left-right" color="primary" variant="outline" @click="toggle"> Помощник </UButton>
+    <UButton icon="i-heroicons-chat-bubble-left-right" color="primary" variant="outline" @click="toggle"> <span class="hidden sm:inline">Помощник</span> </UButton>
 
     <!-- Чат -->
     <Transition name="fade-slide">
@@ -34,7 +34,7 @@
 
                 <div class="assistant-results">
                   <div v-for="offer in msg.content.rows" :key="offer.id" class="assistant-offer" @click="navigateTo(`/offers/${offer.id}`)">
-                    <img :src="offer.images_urls" alt="Фото" class="offer-image" />
+                    <img :src="offer.first_image" alt="Фото" class="offer-image" />
 
                     <div class="offer-info">
                       <div class="offer-price">
@@ -60,7 +60,7 @@
         </div>
 
         <form class="chat-input" @submit.prevent="send">
-          <UInput v-model="input" placeholder="Задайте вопрос…" autocomplete="off" />
+          <UInput class="w-full" v-model="input" placeholder="Задайте вопрос…" autocomplete="off" />
           <UButton icon="i-heroicons-paper-airplane" type="submit" />
         </form>
       </div>
@@ -142,7 +142,9 @@ const send = async () => {
 @reference "tailwindcss";
 @reference "@nuxt/ui";
 .chat-panel {
-  @apply absolute right-0 top-12 w-80 h-[420px] bg-white border rounded-lg shadow-lg flex flex-col z-50;
+  @apply fixed inset-0 z-50 bg-white flex flex-col
+  sm:absolute sm:inset-auto sm:right-0 sm:top-12 
+  sm:w-80 sm:h-[420px] sm:border sm:rounded-lg sm:shadow-lg;
 }
 
 .chat-header {
@@ -166,7 +168,7 @@ const send = async () => {
 }
 
 .chat-input {
-  @apply flex gap-2 p-2 border-t;
+  @apply flex gap-2 p-2 border-t w-full;
 }
 
 .fade-slide-enter-active,

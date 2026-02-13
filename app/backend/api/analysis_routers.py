@@ -12,7 +12,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.backend.db.config import get_async_session
 from app.backend.db.models import *
 from app.backend.fuzzy_logic.fuzzy_evaluator import FuzzyEvaluator
-from app.backend.MCDA.electre2 import electre
+from app.backend.MCDA.electre import electre
 from app.backend.MCDA.topsis import topsis
 from openai import OpenAI
 from app.backend.config import settings
@@ -240,7 +240,7 @@ async def recalculate_fuzzy_scores(
                 "school_distance": infra.get("school_distance", 9999),
                 "kindergarten_distance": infra.get("kindergarten_distance", 9999),
                 "total_area": offer.total_area,
-                "total_rooms": offer.rooms_count or 1,
+                "total_rooms": offer.rooms_count or offer.bedrooms_count or 1,
             }
             logger.info(f"data for Offer ID={offer.id}: {data}")
 
@@ -301,8 +301,8 @@ def electre_endpoint(
     evaluations: str = Query(..., description="JSON матрица, пример: [[3,5],[4,2]]"),
     weights: str = Query(..., description="JSON список, пример: [0.4,0.6]"),
     is_min: str = Query(..., description="JSON список, пример: [false,true]"),
-    alpha_init: float = 0.8,
-    beta_init: float = 0.4,
+    alpha_init: float = 0.9,
+    beta_init: float = 0.1,
     step: float = 0.05,
 ):
     evaluations = np.array(json.loads(evaluations), dtype=float)

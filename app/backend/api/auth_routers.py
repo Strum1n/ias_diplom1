@@ -38,7 +38,6 @@ async def login_for_access_token(
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
-    # Создаем payload с email и role_id
     token_data = {"sub": user.email, "role": user.role.name}
 
     access_token = create_access_token(data=token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
@@ -46,12 +45,11 @@ async def login_for_access_token(
     if isinstance(access_token, bytes):
         access_token = access_token.decode("utf-8")
     response = JSONResponse(content={"access_token": access_token, "token_type": "bearer"})
-    # HttpOnly cookie для refresh_token
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=True,  # в проде https
+        secure=True,
         samesite="none",
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
     )
@@ -78,7 +76,6 @@ async def refresh_access_token(request: Request):
 
     access_token = create_access_token(data={"sub": username}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
 
-    # (опционально) создаём новый refresh_token
     new_refresh_token = create_refresh_token(data={"sub": username}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
 
     response = JSONResponse(
@@ -101,7 +98,6 @@ async def refresh_access_token(request: Request):
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserRequest, session: AsyncSession = Depends(get_async_session)):
-    # Проверяем, существует ли пользователь с таким именем
     statement = select(User).where(User.email == user_data.email)
     result = await session.exec(statement)
     existing_user = result.first()
@@ -112,14 +108,12 @@ async def register_user(user_data: UserRequest, session: AsyncSession = Depends(
             detail="Username already registered",
         )
 
-    # Хэшируем пароль и создаём запись в таблице Password
     hashed_password = get_password_hash(user_data.password)
     password_entry = Password(hash=hashed_password)
     session.add(password_entry)
     await session.commit()
     await session.refresh(password_entry)
 
-    # Создаём нового пользователя и связываем с Password
     new_user = User(
         user_name=user_data.user_name,
         email=user_data.email,

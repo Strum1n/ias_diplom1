@@ -46,7 +46,9 @@
               trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
             }">
           </USelect>
+
           <SmartAssistantChat />
+
           <UButton icon="i-bx:export" @click="exportCsv()" class="sm:absolute sm:right-0" variant="outline" color="info" v-if="userRole == 'Админ'">
             <span class="hidden sm:inline">Экспорт в CSV</span>
           </UButton>
@@ -79,16 +81,16 @@
                   <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
                     <UBadge v-if="offer.family_category" :color="getCategoryColor(offer.family_category)" variant="solid" class="category-badge text-xs">
                       Семья: {{ getCategoryLabel(offer.family_category) }}
-                      <span v-if="offer.family_score !== null && offer.family_score !== undefined" class="hidden sm:inline"> ({{ offer.family_score.toFixed(2) }}) </span>
+                      <span v-if="offer.family_score !== null && offer.family_score !== undefined" class="sm:inline"> ({{ offer.family_score.toFixed(2) }}) </span>
                     </UBadge>
                     <UBadge v-if="offer.elderly_category" :color="getCategoryColor(offer.elderly_category)" variant="solid" class="category-badge text-xs">
                       Пожилые: {{ getCategoryLabel(offer.elderly_category) }}
-                      <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined" class="hidden sm:inline"> ({{ offer.elderly_score.toFixed(2) }}) </span>
+                      <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined" class="sm:inline"> ({{ offer.elderly_score.toFixed(2) }}) </span>
                     </UBadge>
                     <UBadge v-if="offer.transport_access_category" :color="getCategoryColor(offer.transport_access_category)" variant="solid" class="category-badge text-xs">
                       Транспорт:
                       {{ getCategoryLabel(offer.transport_access_category) }}
-                      <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined" class="hidden sm:inline">
+                      <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined" class="sm:inline">
                         ({{ offer.transport_access_score.toFixed(2) }})
                       </span>
                     </UBadge>
@@ -97,7 +99,7 @@
                     {{ offer.title || "Без названия" }}
                   </h3>
                   <div class="offer-address mt-1">
-                    <UIcon name="tabler:map-pin" class="size-4 sm:size-5" />
+                    <UIcon name="tabler:map-pin" class="size-12 sm:size-5" />
                     <span class="text-xs sm:text-sm">{{ offer.address?.full_address }}</span>
                   </div>
                   <div class="offer-specs mt-3">

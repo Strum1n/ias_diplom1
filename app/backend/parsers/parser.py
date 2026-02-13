@@ -46,8 +46,6 @@ STOP_CREATE_NEW_PAGE = False
 
 async def offers_urls_bypass(source: Literal["avito", "cian"]):
     config = use_config(PATH_TO_AVITO_CONFIG, "r")
-    max_retries = 5
-
     browser = await driver.start(headless=False)
     page = await browser.get(config[source]["url"])
     try:
@@ -60,46 +58,40 @@ async def offers_urls_bypass(source: Literal["avito", "cian"]):
         is_geetest_captcha = False
     if is_geetest_captcha:
         await captcha_solver_v2(page)
-    total_offers = 0
-    successful_tasks_total = 0
     # TODO добавтиь обработку конца парсинга
     await page.sleep(5)
     while True:
         filtered_offers_count = 0
         if config[source]["price_filter_btn_selector"] != "":
-            price_filter_btn = await page.select(config[source]["price_filter_btn_selector"])
-            await price_filter_btn.mouse_click()
+            try:
+                price_filter_btn = await page.select(config[source]["price_filter_btn_selector"])
+                await price_filter_btn.mouse_click()
+            except Exception as e:
+                pass
         max_price_filter_el = await page.select(config[source]["max_price_selector"])
         min_price_filter_el = await page.select(config[source]["min_price_selector"])
         while filtered_offers_count < config[source]["items_on_page"] * config[source]["max_available_page"]:
-            if source == "sas":
-                await page.evaluate(f"document.querySelector('{config[source]['max_price_selector']}').select();")
-                await max_price_filter_el.clear_input_by_deleting()
-                for digit in str(config[source]["max_price"]):
-                    await page.sleep(1)
-                    await max_price_filter_el.send_keys(digit)
-            else:
-                await max_price_filter_el.focus()
-                await max_price_filter_el.clear_input()
-                await page.evaluate(f"document.querySelector('{config[source]['max_price_selector']}').value={str(config[source]['max_price'])[:-1]};")
-                await page.sleep(1)
-                await max_price_filter_el.send_keys(str(config[source]["max_price"])[-1])
-                await page.sleep(3)
-            if source == "sas":
-                await page.evaluate(f"document.querySelector('{config[source]['min_price_selector']}').select();")
-                await min_price_filter_el.clear_input_by_deleting()
-                for digit in str(config[source]["min_price"]):
-                    await page.sleep(1)
-                    await min_price_filter_el.send_keys(digit)
-            else:
-                await min_price_filter_el.focus()
-                await min_price_filter_el.clear_input()
-                await page.evaluate(f"document.querySelector('{config[source]['min_price_selector']}').value={str(config[source]['min_price'])[:-1]};")
-                await page.sleep(1)
-                await min_price_filter_el.send_keys(str(config[source]["min_price"])[-1])
-                await page.sleep(3)
+            await max_price_filter_el.focus()
+            await max_price_filter_el.send_keys(str(config[source]["max_price"])[-1])
+            await page.sleep(1)
+            await max_price_filter_el.clear_input()
+            await page.evaluate(f"document.querySelector('{config[source]['max_price_selector']}').value={str(config[source]['max_price'])[:-1]};")
+            await page.sleep(1)
+            await max_price_filter_el.send_keys(str(config[source]["max_price"])[-1])
+            await page.sleep(3)
 
-            filter_btn = await page.select(config[source]["filter_btn_selector"])
+            await min_price_filter_el.focus()
+            await min_price_filter_el.send_keys(str(config[source]["min_price"])[-1])
+            await page.sleep(1)
+            await min_price_filter_el.clear_input()
+            await page.evaluate(f"document.querySelector('{config[source]['min_price_selector']}').value={str(config[source]['min_price'])[:-1]};")
+            await page.sleep(1)
+            await min_price_filter_el.send_keys(str(config[source]["min_price"])[-1])
+            await page.sleep(3)
+            try:
+                filter_btn = await page.select(config[source]["filter_btn_selector"])
+            except Exception as e:
+                filter_btn = await page.select('[data-marker="page-title/count"]')
             filtered_offers_count = int(re.findall(r"\d+", filter_btn.text_all.replace(" ", ""))[0]) if re.findall(r"\d+", filter_btn.text_all.replace(" ", "")) else 0
             if filtered_offers_count > config[source]["items_on_page"] * config[source]["max_available_page"] or "Показать больше 1 тыс. объявлений" in filter_btn.text_all:
                 config[source]["max_price"] -= config[source]["price_step"]
@@ -140,14 +132,12 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
                 await asyncio.sleep(5)
             active_tasks = [t for t in tasks if not t.done()]
             if source == "avito":
-                # if len(active_tasks) > 4:
-                #     await asyncio.sleep(3)
                 task = asyncio.create_task(parse_offer_to_db_avito(browser, url))
             elif source == "cian":
                 task = asyncio.create_task(parse_offer_to_db(browser, url))
             tasks.append(task)
             if source == "avito":
-                await asyncio.sleep(random.uniform(2, 4))
+                await asyncio.sleep(random.uniform(2, 2.5))
             if source == "cian":
                 await asyncio.sleep(random.uniform(0.75, 1.1))
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -230,12 +220,10 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
 
             price_history_result = []
             for i, (date_str, price_str) in enumerate(matches):
-                # Преобразуем дату
                 date_obj = dateparser.parse(date_str, languages=["ru"])
 
                 change_time = date_obj.isoformat() + "+00:00"
 
-                # Создаем объект
                 item = {"priceData": {"price": int(price_str), "currency": "rur"}, "changeTime": change_time}
 
                 price_history_result.append(item)
@@ -326,10 +314,7 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
 async def parse_address(json_data: dict, url: str):
     try:
         geo_info = json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"]["geo"]
-        # district_name_from_site = (parse("$..content").find(geo_info)) if len(parse("$..content").find(geo_info)) > 0 else None
 
-        # geolocator = Photon(user_agent=UA_DESKTOP.random)
-        # address_from_url = parse("$..address").find(geo_info)[0].value + (f", {district_name_from_site}" if district_name_from_site else "")
         overpass_query = f"""
 [out:json][timeout:25];
 
@@ -451,17 +436,6 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
             if (relation.tags.get("place", "ы") in ["city", "town", "village", "hamlet"] and relation.tags["name"] in geo_info["address"])
         ] or [relation for relation in [*data.relations, *data.ways] if (relation.tags.get("place", "ы") in ["city", "town", "village", "hamlet"] and relation.tags["name"])]
         settlement = settlement[0].tags
-        # settlement = (
-        #     min(
-        #         settlement,
-        #         key=lambda e: geodesic(
-        #             (geo_info["coords"]["lat"], geo_info["coords"]["lng"]),
-        #             (e.center_lat if e._type_value == "relation" else e.lat, e.center_lon if e._type_value == "relation" else e.lon),
-        #         ).meters,
-        #     ).tags
-        #     if settlement
-        #     else None
-        # )
         if settlement is None and region == "Москва":
             settlement = {"name": "Москва"}
 
@@ -532,7 +506,6 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
             None,
         )
 
-        # json_text = json.dumps(json_data, ensure_ascii=False)
         residential_complex = None
         residential_complex = (
             json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["description"]
@@ -673,16 +646,6 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
             "house_number": house_number,
         }
 
-        # if address.get("settlement_name", "") == address.get("municipality_name", ""):
-        #     full_address = ", ".join(
-        #         value
-        #         for key, value in address.items()
-        #         if ("full_name" in key or "house_number" in key or "settlement_short_name" in key)
-        #         and value is not None
-        #         and key != "settlement_full_name"
-        #         and key != "municipality_full_name"
-        #     )
-        # else:
         if region == "Москва":
             address = {
                 "latitude": geo_info["coords"]["lat"],
@@ -1110,7 +1073,7 @@ async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1
 
 
 async def main():
-    await offers_urls_bypass("avito")
+    await offers_urls_bypass("cian")
 
 
 if __name__ == "__main__":

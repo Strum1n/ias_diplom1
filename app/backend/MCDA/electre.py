@@ -1,24 +1,28 @@
 import numpy as np
 
 
-def electre(evaluations, weights, is_min, alpha_init=0.5, beta_init=0.5, step=0.01, verbose=True):
+def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.01, verbose=True):
     m, n = evaluations.shape
     evaluations = evaluations.astype(float).copy()
     weights = np.array(weights, dtype=float)
 
-    normalized = np.zeros_like(evaluations, dtype=float)
+    # Инверсия минимизируемых критериев (как во второй версии)
+    for j in range(n):
+        if is_min[j]:
+            evaluations[:, j] = -evaluations[:, j]
 
+    # Нормализация (евклидова)
+    normalized = np.zeros_like(evaluations, dtype=float)
     for j in range(n):
         norm = np.sqrt(np.sum(evaluations[:, j] ** 2))
-        if is_min[j]:
-            min_val = np.min(evaluations[:, j])
-            normalized[:, j] = min_val / (evaluations[:, j] * norm)
-        else:
+        if norm != 0:
             normalized[:, j] = evaluations[:, j] / norm
 
     weighted = normalized * weights
     total_weight = np.sum(weights)
-    L = np.max(weighted, axis=0) - np.min(weighted, axis=0)
+
+    # Диапазон для формулы несогласия (как во второй версии — по evaluations)
+    L = np.max(evaluations, axis=0) - np.min(evaluations, axis=0)
 
     c = np.zeros((m, m))
     d = np.zeros((m, m))
@@ -30,20 +34,23 @@ def electre(evaluations, weights, is_min, alpha_init=0.5, beta_init=0.5, step=0.
             if i == k:
                 continue
 
-            superior, equal, inferior = [], [], []
+            superior = []
+            equal = []
+            inferior = []
 
+            # ВАЖНО: сравнение как во второй версии — по evaluations
             for j in range(n):
-                if weighted[i, j] > weighted[k, j]:
+                if evaluations[i, j] > evaluations[k, j]:
                     superior.append(j)
-                elif weighted[i, j] == weighted[k, j]:
+                elif evaluations[i, j] == evaluations[k, j]:
                     equal.append(j)
                 else:
                     inferior.append(j)
 
-            c[i, k] = sum(weights[j] for j in superior + equal) / total_weight
+            c[i, k] = np.round(sum(weights[j] for j in superior + equal) / total_weight, 2)
 
             if inferior:
-                d[i, k] = max((weighted[k, j] - weighted[i, j]) / L[j] for j in inferior if L[j] != 0)
+                d[i, k] = np.round(max((evaluations[k, j] - evaluations[i, j]) / L[j] for j in inferior if L[j] != 0), 2)
             else:
                 d[i, k] = 0.0
 
@@ -59,7 +66,6 @@ def electre(evaluations, weights, is_min, alpha_init=0.5, beta_init=0.5, step=0.
     best_kernel = None
     final_outranking = None
     log = []
-
     step_id = 0
 
     while alpha <= 1.0 and beta >= 0.0:
@@ -84,7 +90,7 @@ def electre(evaluations, weights, is_min, alpha_init=0.5, beta_init=0.5, step=0.
         if len(kernel) == 1:
             if verbose:
                 print("Найдено одноэлементное ядро")
-            return kernel, dominance_info, outranking, log
+            return kernel, dominance_info, outranking
 
         if best_kernel is None or len(kernel) < len(best_kernel):
             best_kernel = kernel
@@ -96,7 +102,7 @@ def electre(evaluations, weights, is_min, alpha_init=0.5, beta_init=0.5, step=0.
     if verbose:
         print("Одноэлементное ядро не найдено")
 
-    return best_kernel, dominance_info, final_outranking, log
+    return best_kernel, dominance_info, final_outranking
 
 
 if __name__ == "__main__":

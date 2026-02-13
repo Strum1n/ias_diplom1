@@ -48,6 +48,7 @@
             <div class="offer-card" v-for="(offer, index) in clusterPopup.offers" :key="offer.id">
               <div class="font-bold text-base">{{ offer.title }}</div>
               <div class="relative">
+                <UBadge class="absolute top-1.5 left-1.5" v-if="offer.is_new_house" color="neutral">Новостройка</UBadge>
                 <img class="offer-img" :src="offer.image_url" alt="" />
                 <button class="favorite-heart" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
                   <UIcon size="20" :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" />
@@ -56,6 +57,7 @@
 
               <div class="gap-2 font-semibold text-[var(--color-info)] flex items-center">
                 {{ formatPrice(offer.price) }}
+
                 <UBadge v-if="offer.price_category == 'expensive'" color="error"> {{ getPriceCategoryLabel(offer.price_category) }}</UBadge>
                 <UBadge v-else-if="offer.price_category == 'normal'" color="info"> {{ getPriceCategoryLabel(offer.price_category) }}</UBadge>
                 <UBadge v-else="offer.price_category == 'cheap'" color="success"> {{ getPriceCategoryLabel(offer.price_category) }}</UBadge>
@@ -105,7 +107,7 @@ const bounds = ref<LngLatBounds>([
   [0, 0],
 ]);
 
-const { data: favoritesData, refresh: refreshFavorites } = await useAsyncData("favorites", () => $api("offers/favorites/"));
+const { data: favoritesData, refresh: refreshFavorites } = useAsyncData("favorites", () => $api("offers/favorites/"));
 
 const openRouteToOffer = (coords: number[], type: "auto" | "pedestrian" | "mt" = "auto") => {
   if (!coords || coords.length !== 2) return;
@@ -116,13 +118,15 @@ const openRouteToOffer = (coords: number[], type: "auto" | "pedestrian" | "mt" =
 };
 
 const { $api } = useNuxtApp();
+
 const favoriteOffers = computed(() => {
   return new Set(favoritesData.value?.map((item) => item.id) || []);
 });
 
 const toggleFavorite = async (offer: Offer) => {
   if (!offer.id) return;
-
+  console.log(favoritesData.value);
+  console.log(favoriteOffers.value);
   const offerId = offer.id;
   const wasFavorite = favoriteOffers.value.has(offerId);
 
@@ -130,17 +134,16 @@ const toggleFavorite = async (offer: Offer) => {
     if (wasFavorite) {
       $api(`offers/favorites/${offerId}`, { method: "DELETE" });
 
-      // Локально удаляем из favoritesData
       if (favoritesData.value) {
         favoritesData.value = favoritesData.value.filter((item) => item.id !== offerId);
       }
     } else {
       $api(`offers/favorites/${offerId}`, { method: "POST" });
 
-      // Локально добавляем в favoritesData
       if (favoritesData.value) {
         favoritesData.value = [...favoritesData.value, offer];
       }
+      refreshFavorites();
     }
   } catch (error) {
     console.error("Ошибка при обновлении избранного:", error);
@@ -190,7 +193,8 @@ const getInfoPopup = (feature: ClustererFeature): string => {
   const outlineIcon =
     "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0Ij4KCTxwYXRoIGZpbGw9ImN1cnJlbnRDb2xvciIgZD0ibTEyIDE5LjY1NGwtLjc1OC0uNjg1cS0yLjQ0OC0yLjIzNi00LjA1LTMuODI4cS0xLjYwMS0xLjU5My0yLjUyOC0yLjgxdC0xLjI5Ni0yLjJUMyA4LjE1cTAtMS45MDggMS4yOTYtMy4yMDRUNy41IDMuNjVxMS4zMiAwIDIuNDc1LjY3NVQxMiA2LjI4OVExMi44NyA1IDE0LjAyNSA0LjMyNVQxNi41IDMuNjVxMS45MDggMCAzLjIwNCAxLjI5NlQyMSA4LjE1cTAgLjk5Ni0uMzY4IDEuOThxLS4zNjkuOTg2LTEuMjk2IDIuMjAydC0yLjUxOSAyLjgwOXEtMS41OTIgMS41OTItNC4wNiAzLjgyOHptMC0xLjM1NHEyLjQtMi4xNyAzLjk1LTMuNzE2dDIuNDUtMi42ODV0MS4yNS0yLjAxNVEyMCA5LjAwNiAyMCA4LjE1cTAtMS41LTEtMi41dC0yLjUtMXEtMS4xOTQgMC0yLjIwNC42ODJUMTIuNDkgNy4zODVoLS45NzhxLS44MTctMS4zOS0xLjgxNy0yLjA2M3EtMS0uNjcyLTIuMTk0LS42NzJxLTEuNDggMC0yLjQ5IDFUNCA4LjE1cTAgLjg1Ni4zNSAxLjczNHQxLjI1IDIuMDE1dDIuNDUgMi42NzVUMTIgMTguM20wLTYuODI1IiAvPgo8L3N2Zz4=";
 
-  return `<div class="marker-popup">
+  return feature.properties?.is_new_house
+    ? `<div class="marker-popup">
         
 
         <div class="offer-card">
@@ -199,9 +203,46 @@ const getInfoPopup = (feature: ClustererFeature): string => {
             <button class="cluster-close-btn">×</button>
         </div>
             <div class="relative">
+            
                 <button class="favorite-heart" data-offer-id="${feature.id}">
                     <img class="favorite-icon" src="${isFavorite(Number(feature.id)) ? filledIcon : outlineIcon}" alt="icon" />
                 </button>
+                <span class="font-medium inline-flex items-center text-xs px-2 py-1 gap-1 rounded-md text-inverted bg-inverted absolute top-1.5 left-1.5">Новостройка</span>
+                <img src="${feature.properties?.image_url}" alt="" class="w-full h-37.5 object-cover rounded-md bg-gray-100" />
+            </div>
+
+            <div class="flex gap-2 font-semibold text-[var(--color-info)]">
+                ${formatPrice(feature.properties?.price)} 
+                <span style="background-color: ${getPriceCategoryColor(feature.properties?.price_category)}" class="font-medium inline-flex items-center text-xs px-2 py-1 gap-1 rounded-md text-inverted">${getPriceCategoryLabel(feature.properties?.price_category)}</span>
+            </div>
+
+            <div class="text-sm text-muted">${feature.properties?.address}</div>
+
+            <div class="flex items-center gap-4">
+            <a href="/offers/${feature.id}" class="rounded-md mt-1.5 font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-2.5 py-1.5 text-sm gap-1.5 text-inverted bg-info hover:bg-info/75 active:bg-info/75 disabled:bg-info aria-disabled:bg-info focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info w-max">
+                К объекту <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWFycm93LXJpZ2h0LWljb24gbHVjaWRlLWFycm93LXJpZ2h0Ij48cGF0aCBkPSJNNSAxMmgxNCIvPjxwYXRoIGQ9Im0xMiA1IDcgNy03IDciLz48L3N2Zz4="/>
+            </a>
+            <a href="https://yandex.ru/maps/?mode=routes&amp;routes[activeComparisonMode]=auto&amp;rtext=~${feature.geometry.coordinates[1]},${feature.geometry.coordinates[0]}&amp;z=17" target="_blank" class="rounded-md font-medium inline-flex items-center disabled:cursor-not-allowed aria-disabled:cursor-not-allowed disabled:opacity-75 aria-disabled:opacity-75 transition-colors px-2.5 py-1.5 gap-1.5 text-inverted bg-inverted hover:bg-inverted/90 active:bg-inverted/90 disabled:bg-inverted aria-disabled:bg-inverted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-inverted mt-1.5 h-8 text-sm">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20'%3E%3Cpath fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m3 11l19-9l-9 19l-2-8z'/%3E%3C/svg%3E"/> Маршрут
+            <a/>
+            </div>
+            
+        </div>
+    </div>`
+    : `<div class="marker-popup">
+        
+
+        <div class="offer-card">
+        <div class="flex items-start justify-between gap-3">
+            <p class="font-bold text-base">${feature.properties?.title}</p>
+            <button class="cluster-close-btn">×</button>
+        </div>
+            <div class="relative">
+            
+                <button class="favorite-heart" data-offer-id="${feature.id}">
+                    <img class="favorite-icon" src="${isFavorite(Number(feature.id)) ? filledIcon : outlineIcon}" alt="icon" />
+                </button>
+                
                 <img src="${feature.properties?.image_url}" alt="" class="w-full h-37.5 object-cover rounded-md bg-gray-100" />
             </div>
 
@@ -265,6 +306,7 @@ const getPointList = computed(() => {
         coordinates: props.parentOffers[i]?.address?.coordinates_list,
       },
       properties: {
+        is_new_house: props.parentOffers[i]?.is_new_house,
         title: props.parentOffers[i]?.title,
         price: props.parentOffers[i]?.price,
         price_category: props.parentOffers[i]?.price_category,
@@ -409,6 +451,7 @@ interface Offer {
   floor: number | null;
   title: string | null;
   price_category: string | null;
+  is_new_house: Boolean | null;
   address: Address | null;
   image_url: string | null;
 }
@@ -476,11 +519,12 @@ const LOCATION = ref<YMapLocationRequest>({
 
 :deep(.favorite-heart),
 .favorite-heart {
-  @apply absolute top-1.5 right-1.5 bg-white rounded-full w-8 h-8 flex items-center justify-center cursor-pointer transition-all ease-linear z-10;
+  @apply absolute top-1.5 right-1.5 bg-white/90 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer transition-all ease-linear z-10;
 }
 
-.favorite-heart.active {
-  @apply bg-[#fdecec] text-red-600;
+:deep(.active),
+.active {
+  @apply bg-[#fdecec] text-red-500 transition-all duration-300;
 }
 
 .cluster-popup {

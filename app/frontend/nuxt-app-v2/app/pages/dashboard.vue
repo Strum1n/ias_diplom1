@@ -546,7 +546,7 @@ const priceHistoryChartOption = computed(() => {
       data: baseMonthly.map((i) => [i.date, i.avg_price]),
     },
     ...comparisonMonthly.map((c) => ({
-      name: c.labelWithoutGroup || "",
+      name: c.label || "",
       type: "line",
       smooth: true,
       showSymbol: false,

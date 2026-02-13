@@ -47,7 +47,7 @@ export function useAuth() {
       const body = new URLSearchParams()
       body.append('username', username)
       body.append('password', password)
-      
+      const base = config.apiBase;
       const res: LoginResponse = await $fetch(`http://localhost:8000/auth/login`, {
         method: 'POST',
         body,

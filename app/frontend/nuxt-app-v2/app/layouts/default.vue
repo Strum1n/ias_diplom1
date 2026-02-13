@@ -34,7 +34,7 @@
           </template>
 
           <template v-else>
-            <UButton variant="soft" @click="navigateTo('/login')" size="sm" class="hidden sm:inline-flex">Войти</UButton>
+            <UButton variant="soft" @click="navigateTo('/login')" size="sm" class="sm:inline-flex">Войти</UButton>
             <UButton variant="solid" @click="navigateTo('/register')" size="sm">Регистрация</UButton>
           </template>
         </div>
