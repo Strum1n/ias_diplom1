@@ -94,6 +94,7 @@ import { YandexMap, YandexMapClusterer, YandexMapControls, YandexMapDefaultFeatu
 
 const props = defineProps<{
   parentOffers?: Offer[];
+  favoriteOffers?: number[];
 }>();
 const mapState = useMapState();
 
@@ -107,8 +108,6 @@ const bounds = ref<LngLatBounds>([
   [0, 0],
 ]);
 
-const { data: favoritesData, refresh: refreshFavorites } = useAsyncData("favorites", () => $api("offers/favorites/"));
-
 const openRouteToOffer = (coords: number[], type: "auto" | "pedestrian" | "mt" = "auto") => {
   if (!coords || coords.length !== 2) return;
   const [lng, lat] = coords;
@@ -119,31 +118,29 @@ const openRouteToOffer = (coords: number[], type: "auto" | "pedestrian" | "mt" =
 
 const { $api } = useNuxtApp();
 
-const favoriteOffers = computed(() => {
-  return new Set(favoritesData.value?.map((item) => item.id) || []);
-});
+const favoriteIds = ref<Set<number>>(new Set(props.favoriteOffers || []));
 
 const toggleFavorite = async (offer: Offer) => {
   if (!offer.id) return;
-  console.log(favoritesData.value);
-  console.log(favoriteOffers.value);
+
   const offerId = offer.id;
-  const wasFavorite = favoriteOffers.value.has(offerId);
+  const wasFavorite = favoriteIds.value.has(offerId);
 
   try {
     if (wasFavorite) {
-      $api(`offers/favorites/${offerId}`, { method: "DELETE" });
+      await $api(`offers/favorites/${offerId}`, { method: "DELETE" });
 
-      if (favoritesData.value) {
-        favoritesData.value = favoritesData.value.filter((item) => item.id !== offerId);
-      }
+      // Обновляем локальное состояние
+      const newSet = new Set(favoriteIds.value);
+      newSet.delete(offerId);
+      favoriteIds.value = newSet;
     } else {
-      $api(`offers/favorites/${offerId}`, { method: "POST" });
+      await $api(`offers/favorites/${offerId}`, { method: "POST" });
 
-      if (favoritesData.value) {
-        favoritesData.value = [...favoritesData.value, offer];
-      }
-      refreshFavorites();
+      // Обновляем локальное состояние
+      const newSet = new Set(favoriteIds.value);
+      newSet.add(offerId);
+      favoriteIds.value = newSet;
     }
   } catch (error) {
     console.error("Ошибка при обновлении избранного:", error);
@@ -151,12 +148,13 @@ const toggleFavorite = async (offer: Offer) => {
 };
 
 const isFavorite = (offerId: number | null): boolean => {
-  return offerId !== null && favoriteOffers.value.has(offerId);
+  return offerId !== null && favoriteIds.value.has(offerId);
 };
 
 onMounted(() => {
   console.log("Маунтимся");
   console.log("Офферы от родителя", props.parentOffers);
+  console.log("Избранное от родителя", props.favoriteOffers);
   console.log("Центр из mapState", mapState.value.center);
   console.log("OfferId из mapState", mapState.value.offerId);
   if (mapState.value.center) {

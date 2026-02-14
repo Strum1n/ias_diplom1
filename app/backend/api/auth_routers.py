@@ -1,8 +1,10 @@
 from datetime import timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.params import Body
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from jwt import PyJWTError, decode
+import jwt
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.backend.api.response_models import UserRequest
@@ -11,10 +13,13 @@ from app.backend.auth_utils.auth import (
     ALGORITHM,
     REFRESH_SECRET_KEY,
     REFRESH_TOKEN_EXPIRE_DAYS,
+    SECRET_KEY,
     authenticate_user,
     create_access_token,
+    create_password_reset_token,
     create_refresh_token,
     get_password_hash,
+    send_reset_link_email,
     send_welcome_email,
 )
 from app.backend.db.config import get_async_session
@@ -54,6 +59,66 @@ async def login_for_access_token(
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600,
     )
     return response
+
+
+class PasswordResetRequest(BaseModel):
+    email: str
+
+
+@auth_router.post("/request-password-reset")
+async def request_password_reset(
+    data: PasswordResetRequest,
+    session: AsyncSession = Depends(get_async_session),
+):
+    statement = select(User).where(User.email == data.email)
+    result = await session.exec(statement)
+    user = result.first()
+
+    if user:
+        token = create_password_reset_token(data.email)
+        reset_link = f"http://localhost:3000/reset-password?token={token}"
+        await send_reset_link_email(data.email, reset_link)
+
+    return {"message": "Если пользователь существует, ссылка отправлена"}
+
+
+class ConfirmPasswordResetRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+@auth_router.post("/confirm-password-reset")
+async def confirm_password_reset(
+    data: ConfirmPasswordResetRequest,
+    session: AsyncSession = Depends(get_async_session),
+):
+    try:
+        payload = jwt.decode(data.token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "password_reset":
+            raise HTTPException(status_code=400, detail="Неверный токен")
+
+        email = payload.get("sub")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Неверный или просроченный токен")
+
+    statement = select(User).where(User.email == email)
+    result = await session.exec(statement)
+    user = result.first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="Пользователь не найден")
+
+    user.password.hash = get_password_hash(data.new_password)
+    session.add(user)
+    await session.commit()
+
+    return {"message": "Пароль успешно обновлен"}
+
+
+@auth_router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(key="refresh_token", path="/")
+    return {"message": "Logged out successfully"}
 
 
 class RefreshTokenRequest(BaseModel):

@@ -1,237 +1,278 @@
 <template>
-  <div class="p-5 min-h-screen">
-    <div class="rounded-lg ring p-5 pb-0 ring-default flex gap-4">
-      <USelect
-        v-model="draftFilters.groupBy"
-        :items="[
-          { label: 'Области', value: 'region' },
-          { label: 'Муниципалитеты', value: 'municipality' },
-          { label: 'Населённые пункты', value: 'settlement' },
-          { label: 'Районы', value: 'district' },
-          { label: 'Микрорайоны', value: 'microdistrict' },
-          { label: 'Улицы', value: 'street' },
-        ]"
-        placeholder="Группировка"
-        class="w-40 h-8" />
-      <div v-if="visibleInputs.includes('region')" class="relative">
-        <UInput v-model="draftFilters.region" placeholder="Область" @update:model-value="(v) => handleInputChange('region', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.region.length > 0 && autocompleteResults.region[0] != draftFilters.region"
-          class="w-64 absolute z-10 bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          <li v-for="(item, index) in autocompleteResults.region" :key="index" @click="selectResult('region', item)" class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-      <div v-if="visibleInputs.includes('municipality')" class="relative">
-        <UInput v-model="draftFilters.municipality" placeholder="Муниципалитет" @update:model-value="(v) => handleInputChange('municipality', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.municipality.length > 0 && autocompleteResults.municipality[0] != draftFilters.municipality"
-          class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          <li
-            v-for="(item, index) in autocompleteResults.municipality"
-            :key="index"
-            @click="selectResult('municipality', item)"
-            class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-      <div v-if="visibleInputs.includes('settlement')" class="relative">
-        <UInput v-model="draftFilters.settlement" placeholder="Населённый пункт" @update:model-value="(v) => handleInputChange('settlement', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.settlement.length > 0 && autocompleteResults.settlement[0] != draftFilters.settlement"
-          class="absolute rounded-sm ring-1 ring-default max-h-50 overflow-auto z-10 bg-white w-full mt-1 text-sm">
-          <li
-            v-for="(item, index) in autocompleteResults.settlement"
-            :key="index"
-            @click="selectResult('settlement', item)"
-            class="px-3 py-2 cursor-pointer bg-white border-b border-[var(--ui-border-muted)] px-3 py-2 hover:bg-[var(--ui-color-neutral-100)">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="visibleInputs.includes('district')" class="relative">
-        <UInput v-model="draftFilters.district" placeholder="Район" @update:model-value="(v) => handleInputChange('district', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.district.length > 0 && autocompleteResults.district[0] != draftFilters.district"
-          class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          <li v-for="(item, index) in autocompleteResults.district" :key="index" @click="selectResult('district', item)" class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="visibleInputs.includes('microdistrict')" class="relative">
-        <UInput v-model="draftFilters.microdistrict" placeholder="Микрорайон" @update:model-value="(v) => handleInputChange('microdistrict', v)" />
-        <ul
-          v-click-outside="handleClickOutside"
-          v-if="autocompleteResults.microdistrict.length > 0 && autocompleteResults.microdistrict[0] != draftFilters.microdistrict"
-          class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
-          <li
-            v-for="(item, index) in autocompleteResults.microdistrict"
-            :key="index"
-            @click="selectResult('microdistrict', item)"
-            class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
-            {{ item }}
-          </li>
-        </ul>
-      </div>
-      <div>
-        <span class="font-[550]">Тип населенного пункта</span>
-        <UCheckboxGroup
-          v-model="draftFilters.settlementTypes"
+  <div class="p-3 md:p-5 min-h-screen">
+    <div class="rounded-lg ring p-3 md:p-5 pb-0 ring-default flex flex-col md:flex-row gap-3 md:gap-4">
+      <div class="flex flex-col md:flex-row gap-3 md:gap-2">
+        <USelect
+          v-model="draftFilters.groupBy"
           :items="[
-            { label: 'Город', value: 'город' },
-            { label: 'Деревня', value: 'деревня' },
-            { label: 'Посёлок', value: 'поселок' },
-            { label: 'Село', value: 'село' },
+            { label: 'Области', value: 'region' },
+            { label: 'Муниципалитеты', value: 'municipality' },
+            { label: 'Населённые пункты', value: 'settlement' },
+            { label: 'Районы', value: 'district' },
+            { label: 'Микрорайоны', value: 'microdistrict' },
+            { label: 'Улицы', value: 'street' },
           ]"
-          class="mb-4 mt-2" />
+          placeholder="Группировка"
+          class="w-full md:w-40 h-8" />
+
+        <div class="grid grid-cols-1 md:flex gap-2 md:gap-4">
+          <div v-if="visibleInputs.includes('region')" class="relative">
+            <UInput class="w-full" v-model="draftFilters.region" placeholder="Область" @update:model-value="(v) => handleInputChange('region', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.region.length > 0 && autocompleteResults.region[0] != draftFilters.region"
+              class="w-full md:w-64 absolute z-10 bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+              <li v-for="(item, index) in autocompleteResults.region" :key="index" @click="selectResult('region', item)" class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
+
+          <div v-if="visibleInputs.includes('municipality')" class="relative">
+            <UInput class="w-full" v-model="draftFilters.municipality" placeholder="Муниципалитет" @update:model-value="(v) => handleInputChange('municipality', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.municipality.length > 0 && autocompleteResults.municipality[0] != draftFilters.municipality"
+              class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+              <li
+                v-for="(item, index) in autocompleteResults.municipality"
+                :key="index"
+                @click="selectResult('municipality', item)"
+                class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
+
+          <div v-if="visibleInputs.includes('settlement')" class="relative">
+            <UInput class="w-full" v-model="draftFilters.settlement" placeholder="Населённый пункт" @update:model-value="(v) => handleInputChange('settlement', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.settlement.length > 0 && autocompleteResults.settlement[0] != draftFilters.settlement"
+              class="absolute rounded-sm ring-1 ring-default max-h-50 overflow-auto z-10 bg-white w-full mt-1 text-sm">
+              <li
+                v-for="(item, index) in autocompleteResults.settlement"
+                :key="index"
+                @click="selectResult('settlement', item)"
+                class="px-3 py-2 cursor-pointer bg-white border-b border-[var(--ui-border-muted)] px-3 py-2 hover:bg-[var(--ui-color-neutral-100)]">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
+
+          <div v-if="visibleInputs.includes('district')" class="relative">
+            <UInput class="w-full" v-model="draftFilters.district" placeholder="Район" @update:model-value="(v) => handleInputChange('district', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.district.length > 0 && autocompleteResults.district[0] != draftFilters.district"
+              class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+              <li
+                v-for="(item, index) in autocompleteResults.district"
+                :key="index"
+                @click="selectResult('district', item)"
+                class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
+
+          <div v-if="visibleInputs.includes('microdistrict')" class="relative">
+            <UInput class="w-full" v-model="draftFilters.microdistrict" placeholder="Микрорайон" @update:model-value="(v) => handleInputChange('microdistrict', v)" />
+            <ul
+              v-click-outside="handleClickOutside"
+              v-if="autocompleteResults.microdistrict.length > 0 && autocompleteResults.microdistrict[0] != draftFilters.microdistrict"
+              class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto">
+              <li
+                v-for="(item, index) in autocompleteResults.microdistrict"
+                :key="index"
+                @click="selectResult('microdistrict', item)"
+                class="px-3 py-2 hover:bg-blue-100 cursor-pointer">
+                {{ item }}
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
-      <div>
-        <span class="font-[550]">Вид недвижимости</span>
-        <URadioGroup
-          class="mt-2"
-          v-model="draftFilters.is_new_house"
-          :items="[
-            { label: 'Все', value: undefined },
-            { label: 'Новостройки', value: true },
-            { label: 'Вторичка', value: false },
-          ]" />
+
+      <div class="flex md:flex gap-8 md:gap-6 w-full md:w-auto">
+        <div class="md:w-auto">
+          <span class="font-[550] text-sm md:text-base">Тип населенного пункта</span>
+          <UCheckboxGroup
+            v-model="draftFilters.settlementTypes"
+            :items="[
+              { label: 'Город', value: 'город' },
+              { label: 'Деревня', value: 'деревня' },
+              { label: 'Посёлок', value: 'поселок' },
+              { label: 'Село', value: 'село' },
+            ]"
+            class="mb-2 mt-1 flex flex-wrap gap-2" />
+        </div>
+
+        <div class="md:w-auto">
+          <span class="font-[550] text-sm md:text-base">Вид недвижимости</span>
+          <URadioGroup
+            class="mt-1"
+            v-model="draftFilters.is_new_house"
+            :items="[
+              { label: 'Все', value: undefined },
+              { label: 'Новостройки', value: true },
+              { label: 'Вторичка', value: false },
+            ]" />
+        </div>
       </div>
-      <UButton color="primary" variant="solid" class="h-fit p-2" @click="applyFilters"> Применить фильтры </UButton>
-      <UButton color="info" icon="i-material-symbols:add-ad-rounded" variant="soft" class="h-fit p-2" @click="addComparison"> Добавить к сравнению </UButton>
-      <UButton color="error" variant="soft" icon="i-f7:clear-fill" class="h-fit p-2" @click="comparisons = []"> Очистить сравнение </UButton>
+
+      <div class="flex flex-col mb-2 sm:flex-row gap-2 md:gap-4 mt-2 md:mt-0">
+        <UButton color="primary" variant="solid" class="h-fit p-2 text-sm" @click="applyFilters"> Применить фильтры </UButton>
+        <UButton color="info" icon="i-material-symbols:add-ad-rounded" variant="soft" class="h-fit p-2 text-sm" @click="addComparison"> Добавить к сравнению </UButton>
+        <UButton color="error" variant="soft" icon="i-f7:clear-fill" class="h-fit p-2 text-sm" @click="comparisons = []"> Очистить сравнение </UButton>
+      </div>
     </div>
+
     <div
       v-if="appliedFilters.municipality || appliedFilters.region || appliedFilters.settlement || appliedFilters.district || appliedFilters.microdistrict"
-      class="flex mt-5 items-center text-black font-semibold text-xl justify-center w-full">
-      <UIcon name="tabler:filter" class="size-5" />
-      <span>: {{ appliedFiltersLabel }}</span>
-    </div>
-    <div class="flex py-5 gap-4.5 justify-between">
-      <div class="stat-card">
-        <h3>Всего объектов</h3>
-
-        <div v-if="loadingOneObject" class="stat-card-info">
-          <UIcon class="size-8" name="ic:round-maps-home-work"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
-        </div>
-        <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="ic:round-maps-home-work"> </UIcon> <span>{{ OneObjectData?.total_count }}</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <h3>Средняя цена</h3>
-        <div v-if="loadingOneObject" class="stat-card-info">
-          <UIcon class="size-8" name="solar:money-bag-bold"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
-        </div>
-        <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="solar:money-bag-bold"> </UIcon>
-          <span>{{ new Intl.NumberFormat("ru-RU").format(OneObjectData?.statistics.averages.average_price) }} ₽</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <h3>Средняя площадь</h3>
-
-        <div v-if="loadingOneObject" class="stat-card-info">
-          <UIcon class="size-8" name="bx:area"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
-        </div>
-        <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="bx:area"> </UIcon> <span>{{ OneObjectData?.statistics.averages.average_area }}</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <h3>Новых сегодня</h3>
-
-        <div v-if="loadingOneObject" class="stat-card-info">
-          <UIcon class="size-8" name="material-symbols:fiber-new"> </UIcon> <span><UIcon class="size-8" name="codex:loader"></UIcon></span>
-        </div>
-        <div v-else class="stat-card-info">
-          <UIcon class="size-8" name="material-symbols:fiber-new"> </UIcon> <span>{{ OneObjectData?.offers_today }}</span>
-        </div>
-      </div>
+      class="flex mt-4 md:mt-5 items-center text-black font-semibold text-lg md:text-xl justify-center w-full">
+      <UIcon name="tabler:filter" class="w-18 md:size-5" />
+      <span class="ml-1">: {{ appliedFiltersLabel }}</span>
     </div>
 
-    <div class="flex gap-4">
-      <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4.5 py-4 md:py-5">
+      <div class="stat-card">
+        <h3 class="text-xs md:text-2xl">Всего объектов</h3>
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="ic:round-maps-home-work"> </UIcon>
+          <span><UIcon class="size-6 md:size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="ic:round-maps-home-work"> </UIcon>
+          <span class="text-lg md:text-2xl">{{ OneObjectData?.total_count }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3 class="text-xs md:text-2xl">Средняя цена</h3>
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="solar:money-bag-bold"> </UIcon>
+          <span><UIcon class="size-6 md:size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="solar:money-bag-bold"> </UIcon>
+          <span class="text-lg md:text-2xl">{{ new Intl.NumberFormat("ru-RU").format(OneObjectData?.statistics.averages.average_price) }} ₽</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3 class="text-xs md:text-2xl">Средняя площадь</h3>
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="bx:area"> </UIcon>
+          <span><UIcon class="size-6 md:size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="bx:area"> </UIcon>
+          <span class="text-lg md:text-2xl">{{ OneObjectData?.statistics.averages.average_area }} м²</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3 class="text-xs md:text-2xl">Новых сегодня</h3>
+        <div v-if="loadingOneObject" class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="material-symbols:fiber-new"> </UIcon>
+          <span><UIcon class="size-6 md:size-8" name="codex:loader"></UIcon></span>
+        </div>
+        <div v-else class="stat-card-info">
+          <UIcon class="size-6 md:size-8" name="material-symbols:fiber-new"> </UIcon>
+          <span class="text-lg md:text-2xl">{{ OneObjectData?.offers_today }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-4">
+      <div class="rounded-lg ring ring-default p-3 md:p-4 w-full">
         <VChartFull v-if="priceHistoryData" :option="priceHistoryChartOption" :init-options="{ height: 400 }" autoresize />
-        <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
+        <div v-else class="flex h-full justify-center items-center"><UIcon class="size-8 md:size-20" name="codex:loader"></UIcon></div>
       </div>
 
-      <div class="rounded-lg ring ring-default p-4 w-full md:w-1/2">
+      <div class="rounded-lg ring ring-default p-3 md:p-4 w-full">
         <VChartFull v-if="viewsHistoryData" :option="viewsHistoryChartOption" autoresize :init-options="{ height: 400 }" />
-        <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
+        <div v-else class="flex h-full justify-center items-center"><UIcon class="size-8 md:size-20" name="codex:loader"></UIcon></div>
       </div>
     </div>
 
-    <div class="flex mt-5 gap-4 flex-row justify-between">
-      <div class="ring w-[75%] ring-default relative rounded-lg">
-        <USelect v-model="appliedFilters.chartType" :items="chartTypeOptions" placeholder="Тип графика" class="w-fit z-10 absolute top-5 left-5" />
-        <UButton v-if="canDrillUp" class="absolute top-20.5 z-10 left-12" icon="i-heroicons-arrow-left" color="neutral" variant="ghost" @click="drillUp"> Назад </UButton>
-        <UButton
-          v-if="canDrillUp && appliedFilters.groupBy != 'street'"
-          class="absolute top-20.5 z-10 right-12"
-          trailing-icon="i-heroicons-arrow-right"
-          color="neutral"
-          variant="ghost"
-          @click="drillDownBtn">
-          Вперед
-        </UButton>
-        <div>
-          <VChartFull class="p-2" v-if="settlementsData" :option="chartOption" autoresize :init-options="chartInitOptions" @click="handleChartClick" />
-          <div v-else class="flex h-full justify-center items-center"><UIcon size="70" name="codex:loader"></UIcon></div>
-          <div v-if="!loadingSettlements && settlementsData?.length === 0" class="text-center top-50 left-144 absolute text-gray-400 mt-2">
+    <div class="flex flex-col lg:flex-row mt-4 md:mt-5 gap-4 justify-between">
+      <div class="ring w-full lg:w-[75%] ring-default relative rounded-lg">
+        <div class="absolute top-3 left-3 right-3 flex justify-between z-10">
+          <USelect v-model="appliedFilters.chartType" :items="chartTypeOptions" placeholder="Тип графика" class="w-max md:w-fit" />
+          <div class="flex gap-2">
+            <UButton v-if="canDrillUp && isMobile" icon="i-heroicons-arrow-left" color="neutral" variant="ghost" size="xs" @click="drillUp"> </UButton>
+            <UButton
+              v-if="canDrillUp && appliedFilters.groupBy != 'street' && isMobile"
+              trailing-icon="i-heroicons-arrow-right"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              @click="drillDownBtn">
+            </UButton>
+            <UButton v-if="canDrillUp && !isMobile" class="absolute top-20.5 z-10 left-12" icon="i-heroicons-arrow-left" color="neutral" variant="ghost" @click="drillUp">
+              Назад
+            </UButton>
+            <UButton
+              v-if="canDrillUp && appliedFilters.groupBy != 'street' && !isMobile"
+              class="absolute top-20.5 z-10 right-12"
+              trailing-icon="i-heroicons-arrow-right"
+              color="neutral"
+              variant="ghost"
+              @click="drillDownBtn">
+              Вперед
+            </UButton>
+          </div>
+        </div>
+
+        <div class="relative pt-8! pr-3 md:pt-16">
+          <VChartFull class="p-0 md:p-2" v-if="settlementsData" :option="chartOption" autoresize :init-options="chartInitOptions" @click="handleChartClick" />
+          <div v-else class="flex h-full justify-center items-center"><UIcon class="size-8 md:size-20" name="codex:loader"></UIcon></div>
+          <div v-if="!loadingSettlements && settlementsData?.length === 0" class="absolute bottom-60 left-0 right-0 text-center text-gray-400">
             Нет данных для выбранного уровня
           </div>
         </div>
       </div>
-      <div class="w-[25%]">
+
+      <div class="w-full lg:w-[25%]">
         <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="propertyTypesPieOption" autoresize :init-options="chartInitOptions" />
       </div>
     </div>
 
-    <div class="flex mt-5 gap-4">
-      <div class="flex w-[75%] flex-col">
-        <p class="text-xl font-semibold">Популярные объявления</p>
-        <div class="flex flex-col gap-5 mt-4" v-for="block in topOffersBlocks" :key="block.label">
-          <h3 class="text-lg text-center">
+    <div class="flex flex-col lg:flex-row mt-4 md:mt-5 gap-4">
+      <div class="flex w-full lg:w-[75%] flex-col">
+        <p class="text-lg md:text-xl font-semibold">Популярные объявления</p>
+        <div class="flex flex-col gap-3 md:gap-5 mt-3 md:mt-4" v-for="block in topOffersBlocks" :key="block.label">
+          <h3 class="text-base md:text-lg text-center">
             {{ block.label }}
           </h3>
-
           <div
             v-for="offer in block.offers"
             :key="offer.id"
             class="ring ring-[#f8fafc] rounded-lg h-fit p-0 bg-[#f8fafc] cursor-pointer hover:bg-[#e9eef4] hover:ring-[#e9eef4] transition-all"
             @click="openOffer(offer)">
-            <div class="flex h-fit">
-              <div class="relative">
-                <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-61 h-42" />
-
-                <div v-else class="h-33 w-51 flex items-center justify-center">
-                  <UIcon name="i-heroicons-photo" class="size-10 text-gray-400" />
+            <div class="flex flex-col sm:flex-row h-fit">
+              <div class="relative sm:w-1/4">
+                <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover rounded-lg w-full h-40 sm:h-40" />
+                <div v-else class="h-40 sm:h-33 flex items-center justify-center">
+                  <UIcon name="i-heroicons-photo" class="size-8 md:size-10 text-gray-400" />
                 </div>
-
-                <UBadge v-if="offer.is_new_house" color="neutral" class="absolute top-3 left-2"> Новостройка </UBadge>
+                <UBadge v-if="offer.is_new_house" color="neutral" class="absolute top-2 left-2 text-xs"> Новостройка </UBadge>
               </div>
 
-              <div class="pl-4 flex justify-between w-full">
-                <div class="relative py-5 w-full justify-between flex px-5">
-                  <div class="flex flex-col gap-1">
-                    <h3 class="font-bold text-base text-nowrap">
+              <div class="sm:pl-4 flex justify-between w-full">
+                <div class="relative py-3 sm:py-5 w-full justify-between flex flex-col sm:flex-row px-3 sm:px-5">
+                  <div class="flex flex-col gap-1 sm:gap-1">
+                    <h3 class="font-bold text-base md:text-lg">
                       {{ offer.title || "Без названия" }}
                     </h3>
-                    <div class="text-base">
-                      <UIcon name="tabler:map-pin" class="size-4" />
-                      {{ offer.address?.full_address }}
+                    <div class="text-sm mt-1 md:text-base">
+                      <p>
+                        <UIcon name="tabler:map-pin" class="min-w-5 size-5" /> <span>{{ offer.address?.full_address }}</span>
+                      </p>
                     </div>
-                    <span class="text-sm absolute bottom-4"
+                    <span class="text-xs md:text-sm mt-2 sm:absolute sm:bottom-4"
                       >Опубликовано:
                       {{
                         new Date(offer.creation_date_source).toLocaleString("ru-RU", {
@@ -246,14 +287,14 @@
                     >
                   </div>
 
-                  <div class="flex flex-col items-end mr-0 gap-1">
+                  <div class="flex flex-col items-end mr-0 gap-1 mt-2 sm:mt-0">
                     <div class="flex items-center justify-center gap-2">
-                      <UBadge v-if="offer.price_category" :color="getCategoryColor(offer.price_category)" variant="solid" class="flex text-nowrap justify-center">
+                      <UBadge v-if="offer.price_category" :color="getCategoryColor(offer.price_category)" variant="solid" class="flex text-nowrap text-xs md:text-sm">
                         {{ getCategoryLabel(offer.price_category) }}
                       </UBadge>
-                      <span class="font-bold text-base text-nowrap">{{ formatPrice(offer.price) }}</span>
+                      <span class="font-bold text-nowrap text-sm md:text-base">{{ formatPrice(offer.price) }}</span>
                     </div>
-                    <div class="text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
+                    <div class="text-xs md:text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
                   </div>
                 </div>
               </div>
@@ -261,9 +302,10 @@
           </div>
         </div>
       </div>
-      <div class="flex grow w-[25%] flex-col gap-4">
-        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize :init-options="pieChartInitOptions" />
-        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize :init-options="pieChartInitOptions" />
+
+      <div class="flex flex-col gap-4 w-full lg:w-[25%]">
+        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="apartmentsByRoomsPieOption" autoresize :init-options="chartInitOptions" />
+        <VChartFull class="ring rounded-lg ring-default p-2" v-if="OneObjectData" :option="flatTypePieOption" autoresize :init-options="chartInitOptions" />
       </div>
     </div>
   </div>
@@ -295,6 +337,22 @@ interface SettlementData {
     cheap: number;
     normal: number;
     expensive: number;
+  };
+
+  family_categories: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+  elderly_categories: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+  transport_access_categories: {
+    low: number;
+    medium: number;
+    high: number;
   };
 
   area_boxplot?: {
@@ -370,7 +428,16 @@ interface OneObjectStats {
   };
   top_offers_by_views: TopOffer[];
 }
+const isMobile = ref(false);
 
+onMounted(() => {
+  const check = () => {
+    isMobile.value = window.innerWidth < 640;
+  };
+
+  check();
+  window.addEventListener("resize", check);
+});
 const topOffersBlocks = computed(() => {
   const blocks = [];
 
@@ -457,6 +524,9 @@ const appliedFiltersLabel = computed(() => {
 const chartTypeOptions = ref([
   { label: "Количество объектов", value: "offers" },
   { label: "Категории цен", value: "priceCategories" },
+  { label: "Комфорт для семьи", value: "familyCategories" },
+  { label: "Комфорт для пожилых", value: "elderlyCategories" },
+  { label: "Транспортная доступность", value: "transportAccessCategories" },
   { label: "Средняя цена за м²", value: "avgPricePerMeter" },
   { label: "Среднее кол-во просмотров за день", value: "avgDailyViewsCount" },
   { label: "Boxplot по площади", value: "areaBoxplot" },
@@ -613,7 +683,7 @@ const viewsHistoryChartOption = computed(() => {
 
   return {
     title: {
-      text: "История просмотров за последние 10 дней",
+      text: isMobile.value ? wrapText("История просмотров за последние 10 дней", 30) : "История просмотров за последние 10 дней",
       left: "center",
     },
     tooltip: {
@@ -1047,7 +1117,7 @@ function getVerticalPieCentersPx(count: number): { center: [string, number]; tit
   return Array.from({ length: count }, (_, idx) => {
     const blockTop = CHART_TOP_START + idx * CHART_BLOCK_HEIGHT;
 
-    const centerY = blockTop + CHART_TITLE_HEIGHT + 8 + CHART_GRID_HEIGHT / 2;
+    const centerY = blockTop + CHART_TITLE_HEIGHT + 8 + CHART_GRID_HEIGHT / 1.5;
 
     return {
       center: ["50%", centerY],
@@ -1055,7 +1125,21 @@ function getVerticalPieCentersPx(count: number): { center: [string, number]; tit
     };
   });
 }
+function wrapText(text, maxLength = 40) {
+  const words = text.split(" ");
+  let line = "";
+  let result = "";
 
+  for (const word of words) {
+    if ((line + word).length > maxLength) {
+      result += line.trim() + "\n";
+      line = "";
+    }
+    line += word + " ";
+  }
+
+  return result + line.trim();
+}
 const propertyTypesPieOption = computed(() => {
   const chartsData = [
     {
@@ -1071,10 +1155,10 @@ const propertyTypesPieOption = computed(() => {
   ];
 
   const layout = getVerticalPieCentersPx(chartsData.length);
-  const radius = 90; // px — стабильно и предсказуемо
+  const radius = isMobile.value ? 75 : 90; // px — стабильно и предсказуемо
 
   const titles = chartsData.map((chart, idx) => ({
-    text: chart.label,
+    text: isMobile.value ? wrapText(chart.label, 40) : chart.label,
     left: "50%",
     top: layout[idx].titleTop,
     textAlign: "center",
@@ -1127,10 +1211,10 @@ const apartmentsByRoomsPieOption = computed(() => {
   ];
 
   const layout = getVerticalPieCentersPx(chartsData.length);
-  const radius = 90; // px — фиксированный и предсказуемый радиус
+  const radius = isMobile.value ? 75 : 90; // px — фиксированный и предсказуемый радиус
 
   const titles = chartsData.map((chart, idx) => ({
-    text: chart.label,
+    text: isMobile.value ? wrapText(chart.label, 40) : chart.label,
     left: "50%",
     top: layout[idx].titleTop,
     textAlign: "center",
@@ -1189,10 +1273,10 @@ const flatTypePieOption = computed(() => {
   ];
 
   const layout = getVerticalPieCentersPx(chartsData.length);
-  const outerRadius = 90; // px, фиксированный внешний радиус
+  const outerRadius = isMobile.value ? 60 : 90; // px, фиксированный внешний радиус
 
   const titles = chartsData.map((chart, idx) => ({
-    text: chart.label,
+    text: isMobile.value ? wrapText(chart.label, 40) : chart.label,
     left: "50%",
     top: layout[idx].titleTop,
     textAlign: "center",
@@ -1206,7 +1290,7 @@ const flatTypePieOption = computed(() => {
   const series = chartsData.map((chart, idx) => ({
     name: chart.label,
     type: "pie",
-    radius: [`25%`, `${outerRadius}px`], // внутренний радиус 25%, внешний фиксированный
+    radius: isMobile.value ? [`35%`, `${outerRadius}px`] : [`25%`, `${outerRadius}px`], // внутренний радиус 25%, внешний фиксированный
     center: layout[idx].center,
     data: Object.entries(chart.data).map(([name, value]) => ({ name, value })),
   }));
@@ -1214,7 +1298,7 @@ const flatTypePieOption = computed(() => {
   return {
     title: [
       {
-        text: "Новосторйки и вторичка",
+        text: "Новостройки и вторичка",
         left: "center",
         top: 20,
       },
@@ -1251,6 +1335,105 @@ function buildSeriesForFilters(filtersSnapshot: typeof appliedFilters, settlemen
           stack: stackId,
           data: settlements.map((i) => i.price_categories.expensive),
           itemStyle: { color: "#ff4560" },
+        },
+      ];
+    case "priceCategories":
+      return [
+        {
+          name: "Дешёвые",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.price_categories.cheap),
+          itemStyle: { color: "#00e396" },
+        },
+        {
+          name: "Средние",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.price_categories.normal),
+          itemStyle: { color: "#008ffb" },
+        },
+        {
+          name: "Дорогие",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.price_categories.expensive),
+          itemStyle: { color: "#ff4560" },
+        },
+      ];
+
+    case "familyCategories":
+      return [
+        {
+          name: "Низкая",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.family_categories.low),
+          itemStyle: { color: "#fb2c36" },
+        },
+        {
+          name: "Средняя",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.family_categories.medium),
+          itemStyle: { color: "#f0b100" },
+        },
+        {
+          name: "Высокая",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.family_categories.high),
+          itemStyle: { color: "#00c950" },
+        },
+      ];
+
+    case "elderlyCategories":
+      return [
+        {
+          name: "Низкая",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.elderly_categories.low),
+          itemStyle: { color: "#fb2c36" },
+        },
+        {
+          name: "Средняя",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.elderly_categories.medium),
+          itemStyle: { color: "#f0b100" },
+        },
+        {
+          name: "Высокая",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.elderly_categories.high),
+          itemStyle: { color: "#00c950" },
+        },
+      ];
+
+    case "transportAccessCategories":
+      return [
+        {
+          name: "Низкая",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.transport_access_categories.low),
+          itemStyle: { color: "#fb2c36" },
+        },
+        {
+          name: "Средняя",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.transport_access_categories.medium),
+          itemStyle: { color: "#f0b100" },
+        },
+        {
+          name: "Высокая",
+          type: "bar",
+          stack: stackId,
+          data: settlements.map((i) => i.transport_access_categories.high),
+          itemStyle: { color: "#00c950" },
         },
       ];
     case "avgPricePerMeter":
@@ -1318,10 +1501,10 @@ const pieChartInitOptions = computed(() => ({
   height: chartContainerHeight.value,
 }));
 
-const CHART_BLOCK_HEIGHT = 380; // полный блок (title + grid + отступ)
+const CHART_BLOCK_HEIGHT = isMobile.value ? 320 : 380; // полный блок (title + grid + отступ)
 const CHART_TITLE_HEIGHT = 50; // высота тайтла
-const CHART_GRID_HEIGHT = 180;
-const CHART_TOP_START = 80;
+const CHART_GRID_HEIGHT = 160;
+const CHART_TOP_START = 50;
 
 const chartOption = computed(() => {
   const grids: any[] = [];
@@ -1333,7 +1516,7 @@ const chartOption = computed(() => {
 
   /* ---------- MAIN TITLE ---------- */
   titles.push({
-    text: chartMainTitle.value, // ← название ВСЕГО графика
+    text: isMobile.value ? wrapText(chartMainTitle.value, 40) : chartMainTitle.value, // ← название ВСЕГО графика
     left: "center",
     top: 20,
     textStyle: {
@@ -1362,7 +1545,7 @@ const chartOption = computed(() => {
     /* ---------- PER-GRAPH TITLE ---------- */
     if (graph.label) {
       titles.push({
-        text: graph.label,
+        text: isMobile.value ? wrapText(graph.label, 40) : graph.label,
         left: "50%",
         top: blockTop,
         textAlign: "center",
@@ -1573,22 +1756,53 @@ function selectResult(type: AutocompleteField, item: string) {
   Object.values(autocompleteResults).forEach((arr) => arr.splice(0));
 }
 </script>
+
 <style scoped>
 @reference "tailwindcss";
 @reference "@nuxt/ui";
+
 .stat-card {
-  @apply ring ring-default flex flex-col items-center rounded-lg p-4 px-20 text-2xl grow w-1/4;
+  @apply ring ring-default flex flex-col items-center rounded-lg p-3 md:p-4 px-4 md:px-20 text-lg text-nowrap md:text-2xl;
 }
+
 .stat-card span {
   @apply font-bold;
 }
+
 .stat-card h3 {
   @apply text-muted;
 }
+
 .stat-card-info {
-  @apply flex mt-1.5 justify-center items-center gap-2;
+  @apply flex mt-1.5   gap-2 md:items-center;
 }
+
 .stat-card-info span {
-  @apply flex items-center  gap-2;
+  @apply flex items-center gap-2;
+}
+
+@media (max-width: 640px) {
+  .stat-card {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  :deep(.u-radio-group) {
+    font-size: 0.875rem;
+  }
+
+  :deep(.u-checkbox) {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-card {
+    min-height: 80px;
+  }
+
+  :deep(.echarts) {
+    min-height: 300px !important;
+  }
 }
 </style>

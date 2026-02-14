@@ -1,5 +1,5 @@
 <template>
-  <UContainer class="px-3 mt-5">
+  <UContainer class="px-5! mt-5">
     <div class="flex gap-3.5 items-center sm:items-end">
       <p class="font-semibold text-3xl w-min sm:w-max">Избранные объявления</p>
       <UBadge color="success" class="mb-0.5 font-bold">
@@ -240,7 +240,7 @@
           </div>
         </div>
 
-        <!-- <div v-if="selectedCriteria.length > 0 && selectedMethod === 'electre'" class="algorithm-params">
+        <div v-if="selectedCriteria.length > 0 && selectedMethod === 'electre'" class="algorithm-params">
           <h4>Параметры алгоритма ELECTRE:</h4>
           <div class="params-grid">
             <div class="param-group">
@@ -251,12 +251,12 @@
               <label>Beta (порог несогласия):</label>
               <input type="number" v-model.number="electreParams.beta" min="0" max="1" step="0.05" />
             </div>
-            <div class="param-group">
+            <!-- <div class="param-group">
               <label>Шаг изменения:</label>
               <input type="number" v-model.number="electreParams.step" min="0.01" max="0.1" step="0.01" />
-            </div>
+            </div> -->
           </div>
-        </div> -->
+        </div>
 
         <div class="analysis-actions">
           <button @click="runAnalysis" :disabled="analysisLoading || selectedCriteria.length === 0" class="analyze-button">
@@ -292,17 +292,17 @@
           <div class="comparison-section">
             <h4>📊 Сравнительный анализ</h4>
             <div class="comparison-list">
-              <div v-for="offerId in electreResults.allIds" :key="offerId" class="comparison-card">
+              <div v-for="kernelIndex in electreResults.kernel" :key="kernelIndex" class="comparison-card">
                 <div class="comparison-header">
                   <div class="comparison-info">
-                    <div class="comparison-title">{{ getOfferTitle(offerId) }}</div>
-                    <div class="comparison-address">{{ getOfferAddress(offerId) }}</div>
+                    <div class="comparison-title">{{ getOfferTitleByIndex(kernelIndex) }}</div>
+                    <div class="comparison-address">{{ getOfferAddressByIndex(kernelIndex) }}</div>
                   </div>
-                  <a :href="getOfferUrl(offerId)" target="_blank" class="comparison-link"> К объекту </a>
+                  <a :href="getOfferUrlByIndex(kernelIndex)" target="_blank" class="comparison-link"> К объекту </a>
                 </div>
 
                 <div class="dominance-comparisons">
-                  <div v-for="comparison in getDominanceComparisons(offerId)" :key="comparison.otherOfferId" class="dominance-item">
+                  <div v-for="comparison in getDominanceComparisons(electreResults.allIds[kernelIndex])" :key="comparison.otherOfferId" class="dominance-item">
                     <div class="comparison-with"><strong>Сравнение с:</strong> {{ getOfferTitle(comparison.otherOfferId) }}</div>
 
                     <div v-if="comparison.superior.length > 0" class="comparison-category">
@@ -449,7 +449,7 @@ interface AnalysisCriterion {
 
 const { $api } = useNuxtApp();
 
-const { data: favoriteOffers, pending, error, refresh: refreshFavorites } = await useAsyncData("favorites", () => $api("offers/favorites/"));
+const { data: favoriteOffers, pending, error } = await useAsyncData(() => $api("offers/favorites/"));
 
 const showComparisonInterface = ref(false);
 const selectedMethod = ref("electre");
@@ -540,13 +540,19 @@ const selectedCriteriaWithWeights = computed(() => {
 
 // Методы
 const removeFromFavorites = async (offerId: number) => {
+  if (!favoriteOffers.value) return;
+
+  const backup = [...favoriteOffers.value];
+
+  // 1. Удаляем мгновенно из UI
+  favoriteOffers.value = favoriteOffers.value.filter((offer) => offer.id !== offerId);
+
   try {
     await $api(`offers/favorites/${offerId}`, { method: "DELETE" });
-    if (favoriteOffers.value) {
-      favoriteOffers.value = favoriteOffers.value.filter((offer) => offer.id !== offerId);
-    }
-  } catch (err: any) {
-    console.error("Ошибка при удалении из избранного:", err);
+  } catch (err) {
+    // 2. Если сервер упал — возвращаем назад
+    favoriteOffers.value = backup;
+    console.error("Ошибка при удалении:", err);
   }
 };
 
@@ -831,14 +837,9 @@ const formatCriterionRange = (criterion: AnalysisCriterion) => {
     return "Нет данных";
   }
 
-  const formatValue = (value: number) => {
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}к`;
-    }
-    return value.toFixed(0);
-  };
-  return `${criterion.minValue} - ${criterion.maxValue}`;
-  // return `${formatValue(criterion.minValue)} - ${formatValue(criterion.maxValue)}`;
+  const formatValue = (value: number) => (Number.isInteger(value) ? value.toString() : value.toFixed(2));
+
+  return `${formatValue(criterion.minValue)} - ${formatValue(criterion.maxValue)}`;
 };
 
 const radarIndicators = computed(() => {
@@ -860,7 +861,7 @@ const radarSeries = computed(() => {
   if (!filteredOffers.value.length || !selectedCriteria.value.length) return [];
 
   return filteredOffers.value.map((offer) => ({
-    name: offer.title,
+    name: offer.address.full_address || `Объект ${offer.id}`,
     value: selectedCriteria.value.map((key) => {
       const c = availableCriteria.value.find((i) => i.key === key);
       return c?.getValue(offer) ?? 0;
@@ -1168,6 +1169,7 @@ const formatPrice = (price: number) => {
 
 <style scoped>
 @reference "tailwindcss";
+@reference "@nuxt/ui";
 .radar-chart {
   @apply h-130 w-full mt-8 bg-white pb-4 rounded-xl border border-[#e0e0e0];
 }
@@ -1223,7 +1225,7 @@ const formatPrice = (price: number) => {
 }
 
 .offer-card {
-  @apply flex bg-white overflow-hidden transition-all duration-200 p-3.5 rounded-lg border border-[#e0e0e0] sm:p-7;
+  @apply flex bg-white overflow-hidden transition-all duration-200 p-3.5 rounded-lg border border-default sm:p-7;
 }
 
 .offer-gallery {
@@ -1456,7 +1458,7 @@ const formatPrice = (price: number) => {
 }
 
 .params-grid {
-  @apply grid grid-cols-3 gap-3 mt-3;
+  @apply grid grid-cols-2 gap-3 mt-3;
 }
 
 .param-group {

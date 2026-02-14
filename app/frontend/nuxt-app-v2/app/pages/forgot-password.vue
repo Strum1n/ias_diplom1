@@ -2,31 +2,30 @@
   <div class="login-container">
     <UCard class="login-card">
       <template #header>
-        <h2 class="login-title">Вход в систему</h2>
+        <h2 class="login-title">Восстановление пароля</h2>
       </template>
 
-      <!-- Сообщение об успешной регистрации -->
-      <div v-if="registrationSuccess" class="success-message">
-        <p class="success-text">Регистрация прошла успешно! Теперь вы можете войти</p>
+      <!-- Успешная отправка -->
+      <div v-if="success" class="success-message">
+        <p class="success-text">На указанный email отправлена ссылка для восстановления пароля.</p>
+        <div class="button-container" style="margin-top: 1rem">
+          <NuxtLink to="/login">
+            <UButton class="w-full!" color="primary">Вернуться ко входу</UButton>
+          </NuxtLink>
+        </div>
       </div>
 
-      <UForm @submit="handleSubmit" :state="form" :validate="validate" class="login-form">
+      <!-- Форма -->
+      <UForm v-else @submit="handleSubmit" :state="form" :validate="validate" class="login-form">
         <div class="form-field">
           <UFormField label="Email" name="email">
             <UInput v-model="form.email" type="email" placeholder="your@email.com" />
           </UFormField>
         </div>
 
-        <div class="form-field">
-          <UFormField label="Пароль" name="password">
-            <UInput v-model="form.password" type="password" placeholder="••••••••" />
-          </UFormField>
-        </div>
-
         <div class="button-container">
-          <UButton type="submit" class="button-submit" color="primary" :loading="loading"> Войти </UButton>
+          <UButton type="submit" class="button-submit" color="primary" :loading="loading"> Отправить ссылку </UButton>
         </div>
-        <NuxtLink to="/forgot-password" class="footer-link text-sm! w-fit! mx-auto!"> Забыли пароль? </NuxtLink>
       </UForm>
 
       <div v-if="error" class="error-message">
@@ -35,8 +34,8 @@
 
       <template #footer>
         <p class="footer-text">
-          Нет аккаунта?
-          <NuxtLink to="/register" class="footer-link"> Зарегистрироваться </NuxtLink>
+          Вспомнили пароль?
+          <NuxtLink to="/login" class="footer-link w-max!"> Вернуться ко входу </NuxtLink>
         </p>
       </template>
     </UCard>
@@ -45,33 +44,45 @@
 
 <script setup lang="ts">
 import type { FormError } from "@nuxt/ui";
-import { useRoute } from "vue-router";
-import { useAuth } from "~/composables/useAuth";
-
-const { handleLogin, loading, error } = useAuth();
-const route = useRoute();
-
-// Показываем сообщение об успешной регистрации
-const registrationSuccess = computed(() => route.query.registered === "true");
 
 const form = reactive({
   email: "",
-  password: "",
 });
+
+const loading = ref(false);
+const success = ref(false);
+const error = ref<string | null>(null);
 
 const validate = (state: any): FormError[] => {
   const errors = [];
-  if (!state.email) errors.push({ name: "email", message: "Required" });
-  if (!state.password) errors.push({ name: "password", message: "Required" });
+  if (!state.email) {
+    errors.push({ name: "email", message: "Введите email" });
+  }
   return errors;
 };
 
 const handleSubmit = async () => {
-  await handleLogin(form.email, form.password);
+  error.value = null;
+  loading.value = true;
+
+  try {
+    await $fetch("http://localhost:8000/auth/request-password-reset", {
+      method: "POST",
+      body: { email: form.email },
+    });
+
+    success.value = true;
+  } catch (e) {
+    error.value = "Ошибка при отправке запроса. Попробуйте позже.";
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 
 <style scoped>
+/* Тот же layout что login/reset */
+
 .login-container {
   min-height: 100vh;
   display: flex;
@@ -92,22 +103,6 @@ const handleSubmit = async () => {
   text-align: center;
   line-height: 2rem;
   color: #111827;
-}
-
-/* ✅ Добавляем стили для успешного сообщения */
-.success-message {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background-color: #ecfdf5;
-  border: 1px solid #6ee7b7;
-  border-radius: 0.375rem;
-}
-
-.success-text {
-  font-size: 0.875rem;
-  color: #047857;
-  text-align: center;
-  margin: 0;
 }
 
 .login-form {
@@ -154,6 +149,21 @@ const handleSubmit = async () => {
 .error-text {
   font-size: 0.875rem;
   color: #dc2626;
+  text-align: center;
+  margin: 0;
+}
+
+.success-message {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 0.375rem;
+}
+
+.success-text {
+  font-size: 0.875rem;
+  color: #047857;
   text-align: center;
   margin: 0;
 }

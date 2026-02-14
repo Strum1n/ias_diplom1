@@ -3,7 +3,7 @@ export default defineNuxtPlugin(async () => {
     const config = useRuntimeConfig()
     const baseURL = process.server
     ? config.public.apiBase
-     : 'http://ias-diplom.dynv6.net/apiback'
+     : 'http://localhost:8000'
   const api = $fetch.create({
     baseURL: baseURL,
     credentials: 'include',

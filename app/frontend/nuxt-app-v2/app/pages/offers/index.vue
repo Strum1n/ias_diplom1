@@ -11,7 +11,7 @@
         'max-h-0 overflow-hidden md:max-h-none md:overflow-visible': !showFilters,
         'max-h-500 overflow-visible mb-4': showFilters,
       }">
-      <FiltersSidebar ref="filtersRef" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
+      <FiltersSidebar ref="filtersRef" :initial-filters="filters" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>
     <main class="flex-1 w-full">
       <div class="mb-4">
@@ -47,14 +47,14 @@
             }">
           </USelect>
 
-          <SmartAssistantChat />
+          <SmartAssistantChat v-if="userRole == 'Админ'" />
 
           <UButton icon="i-bx:export" @click="exportCsv()" class="sm:absolute sm:right-0" variant="outline" color="info" v-if="userRole == 'Админ'">
             <span class="hidden sm:inline">Экспорт в CSV</span>
           </UButton>
         </div>
       </div>
-      <div v-if="offersPending" class="flex justify-center mt-75">
+      <div v-if="offersPending" class="flex items-center justify-center sm:h-full">
         <UIcon size="70" name="codex:loader" class="loading-icon" />
       </div>
       <div v-else-if="offers.length === 0 && !offersPending" class="no-results">
@@ -99,7 +99,7 @@
                     {{ offer.title || "Без названия" }}
                   </h3>
                   <div class="offer-address mt-1">
-                    <UIcon name="tabler:map-pin" class="size-12 sm:size-5" />
+                    <UIcon name="tabler:map-pin" class="size-5 min-w-5 sm:size-5" />
                     <span class="text-xs sm:text-sm">{{ offer.address?.full_address }}</span>
                   </div>
                   <div class="offer-specs mt-3">
@@ -348,14 +348,50 @@ const sortFields = ref<SelectItem[]>([
     icon: "material-symbols:arrow-downward-alt",
   },
 ]);
-const sortValue = ref(sortFields.value[7]?.value);
+
 const icon = computed(() => sortFields.value.find((item) => item.value === sortValue.value)?.icon);
 const { $api } = useNuxtApp();
-const limit = ref(20);
-const offset = ref(0);
+
 const jumpPage = ref(1);
-const currentFilters = ref<Filters>({});
-const addressForSearch = computed(() => currentFilters.value.address_query);
+const route = useRoute();
+const router = useRouter();
+
+const limit = computed(() => Number(route.query.limit ?? 20));
+const offset = computed(() => Number(route.query.offset ?? 0));
+
+const sortValue = computed({
+  get() {
+    if (route.query.sort_by && route.query.sort_order) {
+      return `${route.query.sort_by}:${route.query.sort_order}`;
+    }
+    return "creation_date_source:desc";
+  },
+  set(val: string) {
+    const [sort_by, sort_order] = val.split(":");
+
+    router.replace({
+      query: {
+        ...route.query,
+        sort_by,
+        sort_order,
+        offset: 0,
+      },
+    });
+  },
+});
+
+const filters = computed(() => {
+  const query = { ...route.query };
+
+  delete query.sort_by;
+  delete query.sort_order;
+  delete query.limit;
+  delete query.offset;
+
+  return query;
+});
+
+const addressForSearch = computed(() => (route.query.address_query as string) || "");
 
 const prepareRequestQuery = () => {
   const query: Record<string, any> = {
@@ -363,23 +399,10 @@ const prepareRequestQuery = () => {
     offset: offset.value,
   };
 
-  if (currentFilters.value && Object.keys(currentFilters.value).length > 0) {
-    Object.entries(currentFilters.value).forEach(([key, value]) => {
-      if (value == null || value === "" || (Array.isArray(value) && value.length === 0)) return;
-
-      if (Array.isArray(value)) {
-        query[key] = value.filter((item) => item != null && item !== "");
-      } else if (typeof value === "boolean") {
-        if (value === true || value === false) {
-          query[key] = String(value);
-        }
-      } else if (typeof value === "object" && !Array.isArray(value)) {
-        query[key] = JSON.stringify(value);
-      } else {
-        query[key] = String(value);
-      }
-    });
-  }
+  Object.entries(filters.value).forEach(([key, value]) => {
+    if (value == null || value === "") return;
+    query[key] = value;
+  });
 
   if (sortValue.value) {
     const [sort_by, sort_order] = sortValue.value.split(":");
@@ -390,19 +413,23 @@ const prepareRequestQuery = () => {
   return query;
 };
 
+const updateQuery = (newParams: Record<string, any>) => {
+  router.replace({
+    query: {
+      ...route.query,
+      ...newParams,
+      offset: 0,
+    },
+  });
+};
+
 const {
   data: offersData,
   pending: offersPending,
   error: offersError,
-  refresh: refreshOffers,
-} = useAsyncData(
-  "offers",
-  () =>
-    $api("/offers", {
-      params: prepareRequestQuery(),
-    }),
-  {},
-);
+} = useAsyncData("offers", () => $api("/offers", { params: prepareRequestQuery() }), {
+  watch: [route],
+});
 
 const offers = computed(() => offersData.value?.offers || []);
 const totalCount = computed(() => offersData.value?.total_count || 0);
@@ -457,68 +484,41 @@ const isFavorite = (offerId: number | null): boolean => {
   return offerId !== null && favoriteOffers.value.has(offerId);
 };
 
-const handleFiltersApply = async (filtersData: Filters) => {
-  console.log("Получены фильтры через событие:", filtersData);
-  offset.value = 0;
-  refreshFavorites();
-
-  currentFilters.value = {
-    ...filtersData,
-    ...("address_query" in currentFilters.value && {
-      address_query: currentFilters.value.address_query,
-    }),
-  };
-
-  console.log("Объединённые фильтры:", currentFilters.value);
-
-  if (window.innerWidth < 768) {
-    showFilters.value = false;
-  }
-
-  refreshOffers();
+const handleFiltersApply = (filtersData: Filters) => {
+  updateQuery(filtersData);
 };
 
-const handleFiltersReset = async () => {
-  offset.value = 0;
+const handleFiltersReset = () => {
+  const { address_query } = route.query;
 
-  const filtersToKeep: Partial<Filters> = {};
-
-  if (currentFilters.value.address_query) {
-    filtersToKeep.address_query = currentFilters.value.address_query;
-  }
-
-  currentFilters.value = { ...filtersToKeep };
-
-  refreshFavorites();
-  refreshOffers();
+  router.replace({
+    query: address_query ? { address_query } : {},
+  });
 };
 
-const handleAddressSearch = async (query: string) => {
+const handleAddressSearch = (query: string) => {
   if (!query.trim()) {
     clearAddressSearch();
     return;
   }
 
-  currentFilters.value = {
-    ...currentFilters.value,
-    address_query: query,
-  };
-
-  offset.value = 0;
-  refreshOffers();
+  updateQuery({ address_query: query });
 };
 
-const clearAddressSearch = async () => {
-  const { address_query, ...filtersWithoutAddress } = currentFilters.value;
-  currentFilters.value = filtersWithoutAddress;
-  offset.value = 0;
-  refreshOffers();
+const clearAddressSearch = () => {
+  const { address_query, ...filtersWithoutAddress } = route.query;
+  router.replace({
+    query: filtersWithoutAddress,
+  });
 };
 
-const goToPage = async (page: number) => {
-  if (page < 1 || page > totalPages.value) return;
-  offset.value = (page - 1) * limit.value;
-  refreshOffers();
+const goToPage = (page: number) => {
+  router.replace({
+    query: {
+      ...route.query,
+      offset: (page - 1) * limit.value,
+    },
+  });
 };
 
 const openOffer = (offer: OfferResponseFull) => {
@@ -579,10 +579,6 @@ const getCategoryLabel = (category: string) => {
       return category;
   }
 };
-watch(sortValue, async () => {
-  offset.value = 0;
-  refreshOffers();
-});
 
 watch(currentPage, (newPage) => {
   jumpPage.value = newPage;
@@ -657,7 +653,7 @@ watch(currentPage, (newPage) => {
 }
 
 .pagination-container {
-  @apply mt-8 pt-6 border-t border-gray-300 bg-white;
+  @apply mt-8 pt-6 border-t border-default bg-white;
 }
 
 .pagination {

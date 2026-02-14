@@ -67,7 +67,7 @@ class FuzzyEvaluator:
             ctrl.Rule(metro_distance["medium"] & bus_distance["medium"] & parking_availability["no"], transport_access["medium"]),
             ctrl.Rule(metro_distance["medium"] & bus_distance["far"] & parking_availability["yes"], transport_access["medium"]),
             ctrl.Rule(metro_distance["medium"] & bus_distance["far"] & parking_availability["no"], transport_access["low"]),
-            ctrl.Rule(metro_distance["far"] & bus_distance["close"] & parking_availability["yes"], transport_access["medium"]),
+            ctrl.Rule(metro_distance["far"] & bus_distance["close"] & parking_availability["yes"], transport_access["high"]),
             ctrl.Rule(metro_distance["far"] & bus_distance["close"] & parking_availability["no"], transport_access["medium"]),
             ctrl.Rule(metro_distance["far"] & bus_distance["medium"] & parking_availability["yes"], transport_access["medium"]),
             ctrl.Rule(metro_distance["far"] & bus_distance["medium"] & parking_availability["no"], transport_access["low"]),
@@ -307,16 +307,16 @@ fuzzy_evaluator = FuzzyEvaluator()
 result = fuzzy_evaluator.evaluate_all(
     {
         "metro_distance": 9999,
-        "bus_distance": 9999,
-        "parking_availability": False,
+        "bus_distance": 302,
+        "parking_availability": True,
         "hospital_distance": 1900,
         "pharmacy_distance": 500,
         "floor": 1,
         "elevator_availability": False,
         "school_distance": 9999,
         "kindergarten_distance": 2358,
-        "total_area": 153,
-        "total_rooms": 2,
+        "total_area": 31,
+        "total_rooms": 1,
     }
 )
 print(result)

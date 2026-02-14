@@ -432,7 +432,6 @@ interface FilterType {
   id: number;
   name: string;
 }
-
 interface FilterTypes {
   property_types: FilterType[];
   bathroom_types: FilterType[];
@@ -446,7 +445,6 @@ interface FilterTypes {
   water_supply_types: FilterType[];
   land_types: FilterType[];
 }
-
 interface Filters {
   property_type: number | null;
   is_new_house: boolean | null;
@@ -507,6 +505,9 @@ interface Filters {
   source: string[];
 }
 
+// Добавляем проп initialFilters
+const props = defineProps<{ initialFilters?: Partial<Filters> }>();
+
 // Emits
 const emit = defineEmits<{
   filtersApply: [filters: Filters];
@@ -515,11 +516,7 @@ const emit = defineEmits<{
 
 const { $api } = useNuxtApp();
 
-const {
-  data: filterTypesData,
-  error: filterTypesError,
-  refresh,
-} = await useAsyncData("filterTypes", () => $api("/offers/filter_types"), {
+const { data: filterTypesData, error: filterTypesError } = await useAsyncData("filterTypes", () => $api("/offers/filter_types"), {
   transform: (response: any) =>
     ({
       property_types: response.property_types || [],
@@ -553,7 +550,7 @@ const filterTypes = computed(
     },
 );
 
-// Инициализация фильтров
+// Инициализация фильтров с возможностью передать активные фильтры при загрузке
 const filters = reactive<Filters>({
   property_type: null,
   is_new_house: null,
@@ -613,6 +610,11 @@ const filters = reactive<Filters>({
   seller_name: null,
   source: [],
 });
+
+// Если пришли initialFilters, подставляем их
+if (props.initialFilters) {
+  Object.assign(filters, props.initialFilters);
+}
 
 // Опции фильтров
 const priceCategoryOptions = [
@@ -674,23 +676,10 @@ const isHouse = computed(() => ["Дом", "Таунхаус", "Коттедж"].
 // Исключаем address_query из подсчета активных фильтров
 const activeFiltersCount = computed(() =>
   Object.entries(filters).reduce((count, [key, value]) => {
-    // Исключаем системные поля
     if (key === "property_type" || key === "address_query") return count;
-
-    // Для массивов
-    if (Array.isArray(value)) {
-      return count + (value.length > 0 ? 1 : 0);
-    }
-
-    // Для булевых значений учитываем только true
-    if (key === "is_new_house") {
-      return count + (value !== null ? 1 : 0);
-    }
-    if (typeof value === "boolean") {
-      return count + (value !== false ? 1 : 0);
-    }
-
-    // Для чисел и строк
+    if (Array.isArray(value)) return count + (value.length > 0 ? 1 : 0);
+    if (key === "is_new_house") return count + (value !== null ? 1 : 0);
+    if (typeof value === "boolean") return count + (value !== false ? 1 : 0);
     return count + (value != null && value !== "" ? 1 : 0);
   }, 0),
 );
@@ -810,6 +799,110 @@ const setPropertyTypeFilter = (value: boolean | null) => {
 defineExpose({
   filters,
 });
+
+const normalizeValue = (key: string, value: any): any => {
+  if (value === null || value === undefined) return null;
+
+  // Числовые поля
+  if (
+    key === "property_type" ||
+    key === "min_price" ||
+    key === "max_price" ||
+    key === "min_price_per_square_meter" ||
+    key === "max_price_per_square_meter" ||
+    key === "min_total_area" ||
+    key === "max_total_area" ||
+    key === "min_living_area" ||
+    key === "max_living_area" ||
+    key === "min_kitchen_area" ||
+    key === "max_kitchen_area" ||
+    key === "min_floor" ||
+    key === "max_floor" ||
+    key === "min_house_floors_count" ||
+    key === "max_house_floors_count" ||
+    key === "min_house_built_year" ||
+    key === "max_house_built_year" ||
+    key === "min_ceiling_height" ||
+    key === "max_ceiling_height" ||
+    key === "min_land_area" ||
+    key === "max_land_area" ||
+    key === "bathrooms_count"
+  ) {
+    return Number(value);
+  }
+
+  // Булевы поля
+  if (key === "is_new_house" || key === "is_build_complete" || key.startsWith("has_")) {
+    if (value === "true") return true;
+    if (value === "false") return false;
+    return Boolean(value);
+  }
+
+  // Массивы чисел
+  if (
+    key === "rooms_count" ||
+    key === "bedrooms_count" ||
+    key.endsWith("_type") // renovation_type, bathroom_type, и т.д.
+  ) {
+    if (Array.isArray(value)) {
+      return value.map((v) => Number(v));
+    } else {
+      return [Number(value)];
+    }
+  }
+
+  // Массивы строк (категории, источники)
+  if (key === "price_category" || key === "elderly_category" || key === "family_category" || key === "transport_access_category" || key === "source") {
+    if (Array.isArray(value)) {
+      return value.map((v) => String(v));
+    } else {
+      return [String(value)];
+    }
+  }
+
+  // Остальные строковые поля (seller_name, address_query)
+  return value;
+};
+
+// Функция полной синхронизации локального состояния с пропсом
+const updateFiltersFromProps = (newProps: Partial<Filters>) => {
+  // Сбрасываем все в дефолтные значения
+  Object.keys(filters).forEach((key) => {
+    if (Array.isArray(filters[key])) {
+      filters[key] = [];
+    } else {
+      filters[key] = null;
+    }
+  });
+
+  // Применяем новые значения с нормализацией
+  Object.entries(newProps).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (key in filters) {
+      filters[key] = normalizeValue(key, value);
+    }
+  });
+};
+
+// Отслеживаем изменения пропса
+watch(
+  () => props.initialFilters,
+  (newVal) => {
+    if (newVal) {
+      updateFiltersFromProps(newVal);
+    } else {
+      // Если пропс пустой – сбрасываем всё
+      Object.keys(filters).forEach((key) => {
+        if (Array.isArray(filters[key])) {
+          filters[key] = [];
+        } else {
+          filters[key] = null;
+        }
+      });
+    }
+  },
+  { deep: true, immediate: true },
+);
 </script>
 
 <style scoped>

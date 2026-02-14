@@ -1434,12 +1434,189 @@ async def get_average_prices_history(
     session: AsyncSession = Depends(get_async_session),
     is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
-    if not any([region_name, settlement_name, municipality_name, district_name, street_name, microdistrict_name, settlement_type_names, is_new_house]):
+    active_filters = [region_name, settlement_name, municipality_name, district_name, street_name, microdistrict_name, settlement_type_names]
+    other_filters = [settlement_name, municipality_name, district_name, street_name, microdistrict_name, settlement_type_names]
+    other_filters1 = [settlement_name, municipality_name, district_name, street_name, microdistrict_name, region_name]
+    print(settlement_type_names)
+    # Проверяем наличие фильтров
+    if is_new_house is None and not any(other_filters):
+        # Нет фильтров и is_new_house=False
         query = text("""
         SELECT 
             date,
             avg_price
         FROM avg_prices_history
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif settlement_type_names == ["город"] and all(
+        x is None for x in [region_name, settlement_name, municipality_name, district_name, microdistrict_name, street_name, is_new_house]
+    ):
+        # Нет фильтров и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_city
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif (
+        settlement_type_names == ["город"]
+        and is_new_house is True
+        and all(x is None for x in [region_name, settlement_name, municipality_name, district_name, microdistrict_name, street_name])
+    ):
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_city_new_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif (
+        settlement_type_names == ["город"]
+        and is_new_house is False
+        and all(x is None for x in [region_name, settlement_name, municipality_name, district_name, microdistrict_name, street_name])
+    ):
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_city_old_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif settlement_type_names == ["деревня"] and all(
+        x is None for x in [region_name, settlement_name, municipality_name, district_name, microdistrict_name, street_name, is_new_house]
+    ):
+        # Нет фильтров и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_village
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif not is_new_house and not any(other_filters):
+        # Нет фильтров и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_old_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif is_new_house and not any(other_filters):
+        # Только is_new_house=True, остальные фильтры пустые
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_new_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif region_name == "Московская область" and not any(other_filters) and not is_new_house:
+        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
+        print("Какого хуя ты сюда не попадаешь")
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_moscow_obl_old_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif region_name == "Московская область" and not any(other_filters) and is_new_house is None:
+        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_moscow_obl
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif region_name == "Московская область" and not any(other_filters) and is_new_house:
+        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_moscow_obl_new_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+
+    elif settlement_name == "г. Москва" and is_new_house is None and district_name is None and microdistrict_name is None:
+        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
+        query = text("""
+        SELECT
+            date,
+            avg_price
+        FROM avg_prices_history_moscow
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif settlement_name == "г. Москва" and is_new_house and district_name is None and microdistrict_name is None:
+        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_moscow_new_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif settlement_name == "г. Москва" and not is_new_house and district_name is None and microdistrict_name is None:
+        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_moscow_old_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif region_name == "Москва" and not is_new_house and not any(other_filters):
+        query = text("SELECT date, avg_price FROM avg_prices_history_moscow ORDER BY date;")
+        result = await session.execute(query)
+        rows = result.fetchall()
+    elif region_name == "Москва" and not any(other_filters) and is_new_house:
+        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_region_moscow_new_house
+        ORDER BY date;
+        """)
+        result = await session.execute(query)
+        rows = result.fetchall()
+
+    elif region_name == "Москва" and not any(other_filters) and not is_new_house:
+        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
+        query = text("""
+        SELECT 
+            date,
+            avg_price
+        FROM avg_prices_history_region_moscow_old_house
         ORDER BY date;
         """)
         result = await session.execute(query)

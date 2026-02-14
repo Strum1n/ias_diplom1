@@ -30,8 +30,8 @@
             <UInput v-model="form.full_name" type="text" placeholder="Ваше полное имя" required />
           </UFormField>
 
-          <UFormField label="Роль" name="role_id">
-            <USelect v-model="form.role_id" :items="roleOptions" required />
+          <UFormField label="Уровень подписки:" name="role_id">
+            <USelect class="w-full" v-model="form.role_id" :items="roleOptions" required />
           </UFormField>
 
           <UButton type="submit" color="primary" class="w-full" :loading="loading" size="lg"> Зарегистрироваться </UButton>
@@ -69,14 +69,18 @@ const form = reactive({
 });
 
 const roleOptions = ref<SelectItem[]>([
-  { value: 2, label: "Пользователь" },
-  { value: 1, label: "Администратор" },
+  { value: 2, label: "Стандарт" },
+  { value: 1, label: "Премиум" },
 ]);
 
 const router = useRouter();
 const config = useRuntimeConfig();
 const handleSubmit = async () => {
   // Проверяем, совпадают ли пароли
+  if (form.password.length < 6) {
+    error.value = "Пароль должен быть не менее 6 символов.";
+    return;
+  }
   if (form.password !== form.confirmPassword) {
     error.value = "Пароли не совпадают!";
     return;
@@ -87,7 +91,7 @@ const handleSubmit = async () => {
   const base = config.apiBase;
   try {
     // Отправляем запрос на сервер с правильными данными
-    const response = await $fetch(`http://ias-diplom.dynv6.net/apiback/auth/register`, {
+    const response = await $fetch(`http://localhost:8000/auth/register`, {
       method: "POST",
       body: {
         user_name: form.user_name, // Имя пользователя

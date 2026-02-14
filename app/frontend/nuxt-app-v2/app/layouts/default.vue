@@ -51,7 +51,7 @@ import { jwtDecode } from "jwt-decode";
 const route = useRoute();
 const { logout, loading, accessToken, isAuthenticated } = useAuth();
 
-const showHeader = computed(() => !["/login", "/register"].includes(route.path));
+const showHeader = computed(() => !["/login", "/register", "/forgot-password", "/reset-password"].includes(route.path));
 
 const userEmail = computed(() => {
   if (!accessToken.value) return "";

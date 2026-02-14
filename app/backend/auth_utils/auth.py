@@ -62,6 +62,80 @@ def create_refresh_token(data: dict, expires_delta: timedelta):
     return jwt.encode(to_encode, REFRESH_SECRET_KEY, algorithm=ALGORITHM)
 
 
+def create_password_reset_token(email: str):
+    expire = datetime.now(timezone.utc) + timedelta(minutes=10)
+    payload = {"sub": email, "exp": expire, "type": "password_reset"}
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+async def send_reset_link_email(to_email: str, reset_link: str) -> bool:
+    try:
+        smtp_server = smtplib.SMTP("smtp.gmail.com", 587)
+        my_email = "keklol0713@gmail.com"
+
+        smtp_server.starttls()
+        smtp_server.login(my_email, APP_PASSWORD)
+
+        msg = MIMEMultipart("alternative")
+        msg["From"] = "Аналитика Недвижимости"
+        msg["To"] = to_email
+        msg["Subject"] = "Восстановление пароля"
+
+        text = f"""
+        Вы запросили восстановление пароля.
+
+        Перейдите по ссылке:
+        {reset_link}
+
+        Ссылка действительна 10 минут.
+
+        Если вы не запрашивали смену пароля — просто проигнорируйте это письмо.
+        """
+
+        html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0;">
+            <div style="max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
+                
+                <div style="background: linear-gradient(90deg, #007BFF, #00b386); color: white; text-align: center; padding: 25px;">
+                    <h2 style="margin: 0;">Восстановление пароля 🔐</h2>
+                </div>
+
+                <div style="padding: 25px; color: #333; line-height: 1.6;">
+                    <p>Вы запросили смену пароля в <b>Аналитике Недвижимости</b>.</p>
+                    
+                    <p style="text-align: center; margin: 30px 0;">
+                        <a href="{reset_link}"
+                           style="display: inline-block; padding: 12px 22px; background-color: #00b386; color: white; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                           Сбросить пароль
+                        </a>
+                    </p>
+
+                    <p>Ссылка действительна 10 минут.</p>
+                    <p>Если вы не запрашивали восстановление — просто проигнорируйте это письмо.</p>
+                </div>
+
+                <div style="background-color: #f0f5f2; text-align: center; font-size: 12px; color: #666; padding: 15px;">
+                    © 2026 Аналитика Недвижимости. Все права защищены.
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        msg.attach(MIMEText(text, "plain"))
+        msg.attach(MIMEText(html, "html"))
+
+        smtp_server.sendmail(my_email, to_email, msg.as_string())
+        smtp_server.quit()
+
+        return True
+
+    except Exception as e:
+        print("Password reset email error:", e)
+        return False
+
+
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session: AsyncSession = Depends(get_async_session)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

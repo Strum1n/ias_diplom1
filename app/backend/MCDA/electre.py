@@ -6,7 +6,7 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
     evaluations = evaluations.astype(float).copy()
     weights = np.array(weights, dtype=float)
 
-    # Инверсия минимизируемых критериев (как во второй версии)
+    # Инверсия минимизируемых критериев
     for j in range(n):
         if is_min[j]:
             evaluations[:, j] = -evaluations[:, j]
@@ -21,13 +21,14 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
     weighted = normalized * weights
     total_weight = np.sum(weights)
 
-    # Диапазон для формулы несогласия (как во второй версии — по evaluations)
+    # Диапазон для формулы несогласия
     L = np.max(evaluations, axis=0) - np.min(evaluations, axis=0)
 
     c = np.zeros((m, m))
     d = np.zeros((m, m))
     dominance_info = {}
 
+    # Вычисляем матрицы c и d и подробную информацию о сравнении всех альтернатив
     for i in range(m):
         dominance_info[i] = {}
         for k in range(m):
@@ -38,7 +39,6 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
             equal = []
             inferior = []
 
-            # ВАЖНО: сравнение как во второй версии — по evaluations
             for j in range(n):
                 if evaluations[i, j] > evaluations[k, j]:
                     superior.append(j)
@@ -48,7 +48,6 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
                     inferior.append(j)
 
             c[i, k] = np.round(sum(weights[j] for j in superior + equal) / total_weight, 2)
-
             if inferior:
                 d[i, k] = np.round(max((evaluations[k, j] - evaluations[i, j]) / L[j] for j in inferior if L[j] != 0), 2)
             else:
@@ -68,9 +67,9 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
     log = []
     step_id = 0
 
+    # Основной цикл поиска ядра
     while alpha <= 1.0 and beta >= 0.0:
         step_id += 1
-
         outranking = (c >= alpha) & (d <= beta)
 
         kernel = [i for i in range(m) if not any(outranking[k, i] for k in range(m) if k != i)]
@@ -90,7 +89,9 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
         if len(kernel) == 1:
             if verbose:
                 print("Найдено одноэлементное ядро")
-            return kernel, dominance_info, outranking
+            best_kernel = kernel
+            final_outranking = outranking
+            break
 
         if best_kernel is None or len(kernel) < len(best_kernel):
             best_kernel = kernel
@@ -99,10 +100,16 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
         alpha += step
         beta -= step
 
-    if verbose:
+    if verbose and len(best_kernel) != 1:
         print("Одноэлементное ядро не найдено")
 
-    return best_kernel, dominance_info, final_outranking
+    # Фильтруем dominance_info только по альтернативам из ядра
+    filtered_dominance = {}
+    if best_kernel is not None:
+        for i in best_kernel:
+            filtered_dominance[i] = {k: dominance_info[i][k] for k in range(m) if k != i}
+
+    return best_kernel, filtered_dominance, final_outranking
 
 
 if __name__ == "__main__":
@@ -119,7 +126,7 @@ if __name__ == "__main__":
     weights = [1, 2, 3]
     is_min = [False, True, True]
 
-    kernel, dominance, outranking, log = electre(
+    kernel, dominance, outranking = electre(
         evaluations,
         weights,
         is_min,
@@ -130,3 +137,16 @@ if __name__ == "__main__":
     )
 
     print("\nИтоговое ядро:", kernel)
+    for k in kernel:
+        print(f"\nАнализ альтернативы {k} (ядро):")
+        for i in range(len(evaluations)):
+            if i == k:
+                continue
+            if outranking[k, i]:
+                print(f"  Превосходит {i}:")
+                print(f"    - По критериям: {dominance[k][i]['superior']}")
+                print(f"    - Равны по критериям: {dominance[k][i]['equal']}")
+                print(f"    - Уступает по: {dominance[k][i]['inferior']}")
+            else:
+                print(f"  Не превосходит {i}:")
+                print(f"    - По критериям: {dominance[k][i]['superior']}")
