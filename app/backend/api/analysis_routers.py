@@ -309,7 +309,7 @@ def electre_endpoint(
     weights = np.array(json.loads(weights), dtype=float)
     is_min = np.array(json.loads(is_min), dtype=bool)
 
-    kernel, dominance_info, outranking = electre(evaluations=evaluations, weights=weights, is_min=is_min, alpha_init=alpha_init, beta_init=beta_init, step=step)
+    kernel, dominance_info, outranking = electre(evaluations=evaluations, weights=weights, is_min=is_min, alpha_init=alpha_init, beta_init=beta_init)
     response = {
         "kernel": convert_to_list(kernel),
         "dominance_info": convert_to_list(dominance_info),

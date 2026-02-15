@@ -219,7 +219,7 @@
         </div>
 
         <div v-if="selectedCriteria.length > 0" class="criteria-weights">
-          <h3>Настройка весов критериев</h3>
+          <h3 class="mb-3">Настройка весов критериев</h3>
 
           <div class="weights-grid">
             <div v-for="criterion in selectedCriteriaWithWeights" :key="criterion.key" class="weight-item">
@@ -234,7 +234,14 @@
                   <option value="max">Максимизация</option>
                   <option value="min">Минимизация</option>
                 </select>
-                <input type="number" :value="criterion.weight" min="1" step="0.5" class="weight-input" @input="updateCriterionWeight(criterion.key, $event.target.value)" />
+                <input
+                  type="number"
+                  :value="criterion.weight"
+                  min="1"
+                  max="10"
+                  step="1"
+                  class="weight-input"
+                  @input="updateCriterionWeight(criterion.key, $event.target.value)" />
               </div>
             </div>
           </div>
@@ -245,11 +252,11 @@
           <div class="params-grid">
             <div class="param-group">
               <label>Alpha (порог согласия):</label>
-              <input type="number" v-model.number="electreParams.alpha" min="0" max="1" step="0.05" />
+              <input type="number" v-model.number="electreParams.alpha" min="0.1" max="0.9" step="0.05" />
             </div>
             <div class="param-group">
               <label>Beta (порог несогласия):</label>
-              <input type="number" v-model.number="electreParams.beta" min="0" max="1" step="0.05" />
+              <input type="number" v-model.number="electreParams.beta" min="0.1" max="0.9" step="0.05" />
             </div>
             <!-- <div class="param-group">
               <label>Шаг изменения:</label>
@@ -283,7 +290,7 @@
                   <div class="kernel-title">{{ getOfferTitleByIndex(kernelIndex) }}</div>
                   <div class="kernel-address">{{ getOfferAddressByIndex(kernelIndex) }}</div>
                 </div>
-                <a :href="getOfferUrlByIndex(kernelIndex)" target="_blank" class="kernel-link"> К объекту </a>
+                <UButton color="info" trailing-icon="i-lucide-arrow-right" :to="`/offers/${getOfferIdByIndex(kernelIndex)}`"> К объекту </UButton>
               </div>
             </div>
           </div>
@@ -298,37 +305,119 @@
                     <div class="comparison-title">{{ getOfferTitleByIndex(kernelIndex) }}</div>
                     <div class="comparison-address">{{ getOfferAddressByIndex(kernelIndex) }}</div>
                   </div>
-                  <a :href="getOfferUrlByIndex(kernelIndex)" target="_blank" class="comparison-link"> К объекту </a>
+                  <UButton color="info" trailing-icon="i-lucide-arrow-right" :to="`/offers/${getOfferIdByIndex(kernelIndex)}`"> К объекту </UButton>
                 </div>
 
                 <div class="dominance-comparisons">
-                  <div v-for="comparison in getDominanceComparisons(electreResults.allIds[kernelIndex])" :key="comparison.otherOfferId" class="dominance-item">
-                    <div class="comparison-with"><strong>Сравнение с:</strong> {{ getOfferTitle(comparison.otherOfferId) }}</div>
-
-                    <div v-if="comparison.superior.length > 0" class="comparison-category">
-                      <div class="category-label superior">✅ Превосходит по:</div>
-                      <div class="criteria-chips">
-                        <span v-for="criterionIndex in comparison.superior" :key="criterionIndex" class="chip superior-chip">
-                          {{ getCriterionShortName(selectedCriteria[criterionIndex]) }}
-                        </span>
+                  <div
+                    v-for="(comparison, idx) in getDominanceComparisons(electreResults.allIds[kernelIndex])"
+                    :key="comparison.otherOfferId"
+                    class="dominance-item mb-4 border rounded-xl overflow-hidden bg-white">
+                    <!-- Заголовок сравнения (кликабельный) -->
+                    <div
+                      class="comparison-header p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                      @click="toggleComparisonDetail(kernelIndex, idx)">
+                      <div class="flex items-center gap-3">
+                        <UIcon name="i-heroicons-arrows-right-left" class="w-5 h-5 text-gray-400" />
+                        <div class="flex flex-col">
+                          <span class="font-medium">
+                            {{ getOfferTitle(comparison.otherOfferId) }}
+                          </span>
+                          <span class="text-sm text-muted">
+                            {{ getOfferAddress(comparison.otherOfferId) }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-base" size="sm"> {{ comparison.superior.length }} ✅ </span>
+                        <span class="text-base" size="sm"> {{ comparison.inferior.length }} ❌ </span>
+                        <span class="text-base" size="sm"> {{ comparison.equal.length }} ⚖️ </span>
+                        <UIcon :name="expandedComparisons[`${kernelIndex}-${idx}`] ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="w-5 h-5 text-gray-500" />
                       </div>
                     </div>
 
-                    <div v-if="comparison.inferior.length > 0" class="comparison-category">
-                      <div class="category-label inferior">❌ Уступает по:</div>
-                      <div class="criteria-chips">
-                        <span v-for="criterionIndex in comparison.inferior" :key="criterionIndex" class="chip inferior-chip">
-                          {{ getCriterionShortName(selectedCriteria[criterionIndex]) }}
-                        </span>
-                      </div>
-                    </div>
+                    <!-- Детализация (раскрывается) -->
+                    <div v-if="expandedComparisons[`${kernelIndex}-${idx}`]" class="comparison-details p-4 border-t bg-gray-50">
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Критерии, по которым превосходит -->
+                        <div v-if="comparison.superior.length" class="space-y-3">
+                          <h5 class="text-sm font-semibold text-green-600 flex items-center gap-1"><UIcon name="i-heroicons-check-circle" class="w-4 h-4" /> Превосходство</h5>
+                          <div v-for="cIdx in comparison.superior" :key="cIdx" class="criterion-detail bg-white p-3 rounded-lg border border-green-100">
+                            <div class="flex justify-between items-center">
+                              <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium">{{ getCriterionShortName(selectedCriteria[cIdx]) }}</span>
+                                <UBadge size="sm" :color="criteriaDirections[selectedCriteria[cIdx]] === 'max' ? 'green' : 'red'" variant="soft">
+                                  {{ criteriaDirections[selectedCriteria[cIdx]] === "max" ? "↑ макс" : "↓ мин" }}
+                                </UBadge>
+                              </div>
+                              <span class="text-xs text-green-600 font-medium">
+                                +{{ calculateAdvantage(electreResults.allIds[kernelIndex], comparison.otherOfferId, selectedCriteria[cIdx]) }}%
+                              </span>
+                            </div>
 
-                    <div v-if="comparison.equal.length > 0" class="comparison-category">
-                      <div class="category-label equal">⚖️ Равны по:</div>
-                      <div class="criteria-chips">
-                        <span v-for="criterionIndex in comparison.equal" :key="criterionIndex" class="chip equal-chip">
-                          {{ getCriterionShortName(selectedCriteria[criterionIndex]) }}
-                        </span>
+                            <!-- Значения критериев -->
+                            <div class="flex justify-between items-center mt-2 text-sm">
+                              <span class="text-gray-600">{{
+                                formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(electreResults.allIds[kernelIndex], selectedCriteria[cIdx]))
+                              }}</span>
+                              <span class="text-gray-400 mx-1">→</span>
+                              <span class="text-gray-600">{{
+                                formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(comparison.otherOfferId, selectedCriteria[cIdx]))
+                              }}</span>
+                            </div>
+
+                            <!-- Индикатор направления -->
+                          </div>
+                        </div>
+
+                        <!-- Критерии, по которым уступает -->
+                        <div v-if="comparison.inferior.length" class="space-y-3">
+                          <h5 class="text-sm font-semibold text-red-600 flex items-center gap-1"><UIcon name="i-heroicons-x-circle" class="w-4 h-4" /> Уступает</h5>
+                          <div v-for="cIdx in comparison.inferior" :key="cIdx" class="criterion-detail bg-white p-3 rounded-lg border border-red-100">
+                            <div class="flex justify-between items-center">
+                              <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium">{{ getCriterionShortName(selectedCriteria[cIdx]) }}</span>
+                                <UBadge size="sm" :color="criteriaDirections[selectedCriteria[cIdx]] === 'max' ? 'green' : 'red'" variant="soft">
+                                  {{ criteriaDirections[selectedCriteria[cIdx]] === "max" ? "↑ макс" : "↓ мин" }}
+                                </UBadge>
+                              </div>
+                              <span class="text-sm text-red-600 font-medium">
+                                -{{ calculateDisadvantage(electreResults.allIds[kernelIndex], comparison.otherOfferId, selectedCriteria[cIdx]) }}%
+                              </span>
+                            </div>
+
+                            <!-- Значения критериев -->
+                            <div class="flex justify-between items-center mt-2 text-sm">
+                              <span class="text-gray-600">{{
+                                formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(electreResults.allIds[kernelIndex], selectedCriteria[cIdx]))
+                              }}</span>
+                              <span class="text-gray-400 mx-1">→</span>
+                              <span class="text-gray-600">{{
+                                formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(comparison.otherOfferId, selectedCriteria[cIdx]))
+                              }}</span>
+                            </div>
+
+                            <!-- Индикатор направления -->
+                          </div>
+                        </div>
+
+                        <!-- Равные критерии -->
+                        <div v-if="comparison.equal.length" class="md:col-span-2 mt-2">
+                          <h5 class="text-sm font-semibold text-gray-500 flex items-center gap-1"><UIcon name="i-heroicons-minus" class="w-4 h-4" /> Равны по критериям</h5>
+                          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                            <div v-for="cIdx in comparison.equal" :key="cIdx" class="bg-white p-2 rounded-lg border border-gray-200">
+                              <div class="flex items-center justify-between gap-1 mb-1">
+                                <span class="text-xs font-medium">{{ getCriterionShortName(selectedCriteria[cIdx]) }}</span>
+                                <UBadge size="sm" :color="criteriaDirections[selectedCriteria[cIdx]] === 'max' ? 'green' : 'red'" variant="soft">
+                                  {{ criteriaDirections[selectedCriteria[cIdx]] === "max" ? "↑ макс" : "↓ мин" }}
+                                </UBadge>
+                              </div>
+                              <div class="text-sm font-semibold text-gray-700 text-center">
+                                {{ formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(electreResults.allIds[kernelIndex], selectedCriteria[cIdx])) }}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -356,7 +445,7 @@
                     <div class="offer-title">{{ getOfferTitle(rank.offerId) }}</div>
                     <div class="offer-address">{{ getOfferAddress(rank.offerId) }}</div>
                   </div>
-                  <a :href="getOfferUrl(rank.offerId)" target="_blank" class="rank-link"> К объекту </a>
+                  <UButton color="info" trailing-icon="i-lucide-arrow-right" :to="`/offers/${rank.offerId}`"> К объекту </UButton>
                 </div>
 
                 <div class="score-section">
@@ -409,13 +498,72 @@ const sortFields = ref<SelectItem[]>([
 ]);
 const sortValue = ref(sortFields.value[7]?.value);
 const icon = computed(() => sortFields.value.find((item) => item.value === sortValue.value)?.icon);
+const expandedComparisons = ref<Record<string, boolean>>({});
+
+const toggleComparisonDetail = (kernelIndex: number, comparisonIndex: number) => {
+  const key = `${kernelIndex}-${comparisonIndex}`;
+  expandedComparisons.value[key] = !expandedComparisons.value[key];
+};
+const calculateAdvantage = (offerIdA: number, offerIdB: number, criterionKey: string): number => {
+  const valueA = getCriterionValueForOffer(offerIdA, criterionKey);
+  const valueB = getCriterionValueForOffer(offerIdB, criterionKey);
+  if (!valueA || !valueB) return 0;
+
+  const direction = criteriaDirections.value[criterionKey] || "max";
+
+  if (direction === "max") {
+    return Math.round(((valueA - valueB) / valueB) * 100);
+  } else {
+    // Для минимизации (меньше = лучше)
+    return Math.round(((valueB - valueA) / valueA) * 100);
+  }
+};
+
+// Расчёт отставания в процентах
+const calculateDisadvantage = (offerIdA: number, offerIdB: number, criterionKey: string): number => {
+  const valueA = getCriterionValueForOffer(offerIdA, criterionKey);
+  const valueB = getCriterionValueForOffer(offerIdB, criterionKey);
+  if (!valueA || !valueB) return 0;
+
+  const direction = criteriaDirections.value[criterionKey] || "max";
+
+  if (direction === "max") {
+    return Math.round(((valueB - valueA) / valueA) * 100);
+  } else {
+    // Для минимизации
+    return Math.round(((valueA - valueB) / valueB) * 100);
+  }
+};
+const getCriterionPercentage = (offerIdA: number, offerIdB: number, criterionKey: string): number => {
+  const valueA = getCriterionValueForOffer(offerIdA, criterionKey);
+  const valueB = getCriterionValueForOffer(offerIdB, criterionKey);
+  if (valueA === null || valueB === null || valueA === 0) return 0;
+
+  const direction = criteriaDirections.value[criterionKey] || "max";
+  // Для максимизации: показываем, насколько A лучше B (отношение)
+  if (direction === "max") {
+    return Math.min(100, (valueA / valueB) * 100);
+  } else {
+    // Для минимизации: показываем обратное отношение (меньше = лучше)
+    return Math.min(100, (valueB / valueA) * 100);
+  }
+};
 
 interface ElectreParams {
   alpha: number;
   beta: number;
-  step: number;
 }
+const getCriterionValueForOffer = (offerId: number, criterionKey: string) => {
+  if (!favoriteOffers.value) return null;
 
+  const offer = favoriteOffers.value.find((o) => o.id === offerId);
+  if (!offer) return null;
+
+  const criterion = availableCriteria.value.find((c) => c.key === criterionKey);
+  if (!criterion) return null;
+
+  return criterion.getValue(offer);
+};
 interface ElectreResults {
   kernel: number[];
   dominance_info: {
@@ -430,7 +578,29 @@ interface ElectreResults {
   outranking: boolean[][];
   allIds: number[];
 }
+const formatCriterionValue = (key: string, value: number | null) => {
+  if (value === null || value === undefined) return "-";
 
+  if (key === "price" || key === "price_per_square_meter") {
+    return `${formatPrice(value)} ₽`;
+  }
+
+  if (key === "total_area" || key === "living_area" || key === "kitchen_area") {
+    return `${value} м²`;
+  }
+
+  if (key === "ceiling_height") {
+    return `${value} м`;
+  }
+  if (key.includes("score") || key === "transport_access_score" || key === "elderly_score" || key === "family_score") {
+    return value.toFixed(2);
+  }
+
+  if (key.includes("infrastructure")) {
+    return `${value} м`;
+  }
+  return value.toString();
+};
 interface TopsisResults {
   scores: number[];
   ranked_indices: number[];
@@ -464,7 +634,6 @@ const propertyType = ref(propertyTypesItems.value[0].value);
 const electreParams = ref<ElectreParams>({
   alpha: 0.4,
   beta: 0.8,
-  step: 0.05,
 });
 
 const electreResults = ref<ElectreResults | null>(null);
@@ -832,14 +1001,15 @@ const toggleCriterion = (key: string) => {
   }
 };
 
-const formatCriterionRange = (criterion: AnalysisCriterion) => {
+const formatCriterionRange = (criterion: AnalysisCriterion | undefined) => {
+  if (!criterion) return "Нет данных";
+
   if (criterion.minValue === undefined || criterion.maxValue === undefined) {
     return "Нет данных";
   }
 
-  const formatValue = (value: number) => (Number.isInteger(value) ? value.toString() : value.toFixed(2));
-
-  return `${formatValue(criterion.minValue)} - ${formatValue(criterion.maxValue)}`;
+  // Используем formatCriterionValue для единообразного форматирования
+  return `${formatCriterionValue(criterion.key, criterion.minValue)} - ${formatCriterionValue(criterion.key, criterion.maxValue)}`;
 };
 
 const radarIndicators = computed(() => {
@@ -861,7 +1031,7 @@ const radarSeries = computed(() => {
   if (!filteredOffers.value.length || !selectedCriteria.value.length) return [];
 
   return filteredOffers.value.map((offer) => ({
-    name: offer.address.full_address || `Объект ${offer.id}`,
+    name: offer.title || `Объект ${offer.id}`,
     value: selectedCriteria.value.map((key) => {
       const c = availableCriteria.value.find((i) => i.key === key);
       return c?.getValue(offer) ?? 0;
@@ -1085,11 +1255,6 @@ const getCriterionShortName = (criterionKey: string) => {
     family_score: "Комфорт для семьи",
   };
 
-  if (criterionKey.startsWith("infrastructure_")) {
-    const typeName = criterion.displayName.replace("Расстояние до ", "");
-    return typeName.length > 15 ? typeName.substring(0, 15) + "..." : typeName;
-  }
-
   return shortNames[criterionKey] || criterion.displayName;
 };
 
@@ -1097,7 +1262,7 @@ const getOfferTitleByIndex = (index: number) => {
   if (!electreResults.value || !electreResults.value.allIds || !favoriteOffers.value) return `Объявление ${index}`;
   const offerId = electreResults.value.allIds[index];
   const offer = favoriteOffers.value.find((o) => o.id === offerId);
-  return offer ? `${offer.title} - ${formatPrice(offer.price)} ₽` : `Объявление ${index}`;
+  return offer ? `${offer.title}` : `Объявление ${index}`;
 };
 
 const getOfferAddressByIndex = (index: number) => {
@@ -1107,17 +1272,17 @@ const getOfferAddressByIndex = (index: number) => {
   return offer ? offer.address.full_address : "Адрес не указан";
 };
 
-const getOfferUrlByIndex = (index: number) => {
+const getOfferIdByIndex = (index: number) => {
   if (!electreResults.value || !electreResults.value.allIds || !favoriteOffers.value) return "#";
   const offerId = electreResults.value.allIds[index];
   const offer = favoriteOffers.value.find((o) => o.id === offerId);
-  return offer ? offer.url : "#";
+  return offer ? offer.id : "#";
 };
 
 const getOfferTitle = (offerId: number) => {
   if (!favoriteOffers.value) return `Объявление ${offerId}`;
   const offer = favoriteOffers.value.find((o) => o.id === offerId);
-  return offer ? `${offer.title} - ${formatPrice(offer.price)} ₽` : `Объявление ${offerId}`;
+  return offer ? `${offer.title}` : `Объявление ${offerId}`;
 };
 
 const getOfferAddress = (offerId: number) => {
@@ -1171,7 +1336,7 @@ const formatPrice = (price: number) => {
 @reference "tailwindcss";
 @reference "@nuxt/ui";
 .radar-chart {
-  @apply h-130 w-full mt-8 bg-white pb-4 rounded-xl border border-[#e0e0e0];
+  @apply h-130 w-full mt-8 bg-white pb-4 rounded-xl border border-default;
 }
 
 .no-criteria-available {
@@ -1205,7 +1370,7 @@ const formatPrice = (price: number) => {
 .loading,
 .error,
 .empty-state {
-  @apply text-center py-15 px-5 bg-white rounded-lg shadow-sm;
+  @apply text-center py-15 px-5 bg-white rounded-lg;
 }
 
 .error h3 {
@@ -1341,11 +1506,11 @@ const formatPrice = (price: number) => {
 }
 
 .compare-btn:hover {
-  @apply bg-[#1e3d6f] translate-y-[-2px] shadow-lg;
+  @apply bg-[#1e3d6f] translate-y-[-2px];
 }
 
 .comparison-interface {
-  @apply bg-white rounded-xl p-7 shadow-lg border border-[#e0e0e0];
+  @apply bg-white rounded-xl p-7  border border-default;
 }
 
 .method-selection {
@@ -1369,7 +1534,7 @@ const formatPrice = (price: number) => {
 }
 
 .criterion-item {
-  @apply flex items-center p-3 border-2 border-[#e0e0e0] rounded-lg cursor-pointer transition-all duration-200 bg-white;
+  @apply flex items-center p-3 border-2 border-default rounded-lg cursor-pointer transition-all duration-200 bg-white;
 }
 
 .criterion-item:hover {
@@ -1426,7 +1591,7 @@ const formatPrice = (price: number) => {
 }
 
 .weight-item {
-  @apply flex justify-between items-center p-3 bg-white rounded-lg border border-[#e0e0e0];
+  @apply flex justify-between items-center p-3 bg-white rounded-lg border border-default;
 }
 
 .weight-info {
@@ -1438,7 +1603,7 @@ const formatPrice = (price: number) => {
 }
 
 .weight-direction {
-  @apply text-xs text-[#666];
+  @apply text-sm text-[#666];
 }
 
 .weight-controls {
@@ -1474,7 +1639,7 @@ const formatPrice = (price: number) => {
 }
 
 .analysis-actions {
-  @apply flex gap-3 justify-center mt-6 pt-4 border-t border-[#e0e0e0];
+  @apply flex gap-3 justify-center mt-6 pt-4 border-t border-default;
 }
 
 .analyze-button {
@@ -1486,11 +1651,11 @@ const formatPrice = (price: number) => {
 }
 
 .results-section {
-  @apply mt-6 border-t-2 border-[#e0e0e0] pt-3;
+  @apply mt-6 border-t-2 border-default pt-3;
 }
 
 .method-header {
-  @apply flex justify-between items-center mb-4 pb-3 border-b border-[#e0e0e0];
+  @apply flex justify-between items-center mb-4 pb-3 border-b border-default;
 }
 
 .method-header h3 {
@@ -1550,7 +1715,7 @@ const formatPrice = (price: number) => {
 }
 
 .comparison-card {
-  @apply p-4 bg-white rounded-lg border border-[#e0e0e0] shadow-sm;
+  @apply p-4 bg-white rounded-lg border border-default;
 }
 
 .comparison-header {
@@ -1578,7 +1743,7 @@ const formatPrice = (price: number) => {
 }
 
 .dominance-item {
-  @apply p-3 bg-[#f8f9fa] rounded-lg border-l-3 border-[#2c5aa0];
+  @apply p-3 bg-[#f8f9fa] rounded-lg  border-[#2c5aa0];
 }
 
 .comparison-with {
@@ -1600,7 +1765,13 @@ const formatPrice = (price: number) => {
 .category-label.inferior {
   @apply text-[#c62828];
 }
+.criterion-detail {
+  transition: all 0.2s;
+}
 
+.comparison-header {
+  user-select: none;
+}
 .category-label.equal {
   @apply text-[#ef6c00];
 }
@@ -1626,7 +1797,7 @@ const formatPrice = (price: number) => {
 }
 
 .topsis-results {
-  @apply mt-6 border-t-2 border-[#e0e0e0] pt-3;
+  @apply mt-6 border-t-2 border-default pt-3;
 }
 
 .ranking-section {
@@ -1638,19 +1809,19 @@ const formatPrice = (price: number) => {
 }
 
 .rank-item {
-  @apply p-4 bg-white rounded-lg border-2 border-[#e0e0e0] transition-all duration-300;
+  @apply p-4 bg-white rounded-lg border-2 border-default transition-all duration-300;
 }
 
 .rank-item-first {
-  @apply border-[#ffd700] bg-[#fff9e6] shadow-lg scale-[1.02];
+  @apply border-[#ffd700] bg-[#fff9e6]  scale-[1.02];
 }
 
 .rank-item-second {
-  @apply border-[#c0c0c0] bg-[#f8f8f8] shadow-md;
+  @apply border-[#c0c0c0] bg-[#f8f8f8];
 }
 
 .rank-item-third {
-  @apply border-[#cd7f32] bg-[#fef4e8] shadow-sm;
+  @apply border-[#cd7f32] bg-[#fef4e8];
 }
 
 .rank-header {

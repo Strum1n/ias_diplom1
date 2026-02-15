@@ -77,7 +77,7 @@ async def send_reset_link_email(to_email: str, reset_link: str) -> bool:
         smtp_server.login(my_email, APP_PASSWORD)
 
         msg = MIMEMultipart("alternative")
-        msg["From"] = "Аналитика Недвижимости"
+        msg["From"] = "RealEstate"
         msg["To"] = to_email
         msg["Subject"] = "Восстановление пароля"
 
@@ -102,7 +102,7 @@ async def send_reset_link_email(to_email: str, reset_link: str) -> bool:
                 </div>
 
                 <div style="padding: 25px; color: #333; line-height: 1.6;">
-                    <p>Вы запросили смену пароля в <b>Аналитике Недвижимости</b>.</p>
+                    <p>Вы запросили смену пароля в <b>RealEstate</b>.</p>
                     
                     <p style="text-align: center; margin: 30px 0;">
                         <a href="{reset_link}"
@@ -116,7 +116,7 @@ async def send_reset_link_email(to_email: str, reset_link: str) -> bool:
                 </div>
 
                 <div style="background-color: #f0f5f2; text-align: center; font-size: 12px; color: #666; padding: 15px;">
-                    © 2026 Аналитика Недвижимости. Все права защищены.
+                    © 2026 RealEstate. Все права защищены.
                 </div>
             </div>
         </body>
@@ -167,20 +167,20 @@ async def send_welcome_email(to_email: str) -> bool:
         smtp_server.login(my_email, APP_PASSWORD)
 
         msg = MIMEMultipart("alternative")
-        msg["From"] = f"Аналитика Недвижимости"
+        msg["From"] = f"RealEstate"
         msg["To"] = to_email
-        msg["Subject"] = "Добро пожаловать в Аналитику Недвижимости 🏙️"
+        msg["Subject"] = "Добро пожаловать в RealEstate 🏙️"
 
         html = """
         <html>
         <body style="font-family: Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0;">
             <div style="max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
                 <div style="background: linear-gradient(90deg, #007BFF, #00b386); color: white; text-align: center; padding: 25px;">
-                    <h2 style="margin: 0;">Добро пожаловать в Аналитику Недвижимости 🏡</h2>
+                    <h2 style="margin: 0;">Добро пожаловать в RealEstate 🏡</h2>
                 </div>
                 <div style="padding: 25px; color: #333; line-height: 1.6;">
                     <p>Привет 👋,</p>
-                    <p>Спасибо за регистрацию в <b>Аналитике Недвижимости</b> — платформе для глубокого анализа рынка жилья и инвестиций.</p>
+                    <p>Спасибо за регистрацию в <b>RealEstate</b> — платформе для глубокого анализа рынка жилья и инвестиций.</p>
                     <p>Теперь вы можете отслеживать динамику цен, сравнивать районы и находить выгодные предложения быстрее, чем когда-либо раньше 💡</p>
                     <p>Чтобы начать работу, войдите в свой аккаунт:</p>
                     <p style="text-align: center;">
@@ -190,10 +190,10 @@ async def send_welcome_email(to_email: str) -> bool:
                         </a>
                     </p>
                     <p>Если у вас возникнут вопросы — просто ответьте на это письмо, и мы с радостью поможем 🧩</p>
-                    <p>С уважением,<br>Команда <b>Аналитики Недвижимости</b> 💚</p>
+                    <p>С уважением,<br>Команда <b>RealEstate</b> 💚</p>
                 </div>
                 <div style="background-color: #f0f5f2; text-align: center; font-size: 12px; color: #666; padding: 15px;">
-                    © 2025 Аналитика Недвижимости. Все права защищены.
+                    © 2025 RealEstate. Все права защищены.
                 </div>
             </div>
         </body>

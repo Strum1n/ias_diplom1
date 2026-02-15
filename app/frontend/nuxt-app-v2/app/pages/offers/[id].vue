@@ -123,7 +123,7 @@
           <div class="info-card">
             <h3 class="text-lg sm:text-xl xl:text-2xl">Оценки</h3>
             <div class="flex flex-col sm:flex-row gap-3 sm:gap-3 justify-between">
-              <div class="category-item w-full sm:w-1/3">
+              <div class="category-item w-full">
                 <p class="text-sm sm:text-base">Для пожилых:</p>
                 <UBadge size="lg" :color="getCategoryColor(offer.elderly_category)">
                   {{ getCategoryLabel(offer.elderly_category) }}
@@ -881,7 +881,7 @@ onMounted(() => {
 
 .stat-item,
 .category-item {
-  @apply flex gap-4 items-center justify-between bg-[#f8fafc] p-4 rounded-lg sm:w-1/3;
+  @apply flex gap-4 items-center justify-between bg-[#f8fafc] p-4 rounded-lg sm:w-1/3 sm:gap-3;
 }
 
 .category-item p {
