@@ -66,7 +66,7 @@ const handleSubmit = async () => {
   loading.value = true;
 
   try {
-    await $fetch("http://localhost:8000/auth/request-password-reset", {
+    await $fetch("https://ias-diplom.dynv6.net/apiback/auth/request-password-reset", {
       method: "POST",
       body: { email: form.email },
     });

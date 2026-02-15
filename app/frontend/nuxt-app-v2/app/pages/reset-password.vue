@@ -83,7 +83,7 @@ onMounted(async () => {
   token.value = queryToken;
 
   try {
-    await $fetch("/api/auth/validate-reset-token", {
+    await $fetch("https://ias-diplom.dynv6.net/apiback/auth/validate-reset-token", {
       method: "POST",
       body: { token: token.value },
     });
@@ -123,7 +123,7 @@ const handleSubmit = async () => {
   submitting.value = true;
 
   try {
-    await $fetch("http://localhost:8000/auth/confirm-password-reset", {
+    await $fetch("https://ias-diplom.dynv6.net/apiback/auth/confirm-password-reset", {
       method: "POST",
       body: {
         token: token.value,

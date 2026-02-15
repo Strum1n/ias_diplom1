@@ -161,6 +161,22 @@ async def refresh_access_token(request: Request):
     return response
 
 
+class ValidateResetTokenRequest(BaseModel):
+    token: str
+
+
+@auth_router.post("/validate-reset-token")
+async def validate_reset_token(request: ValidateResetTokenRequest):
+    try:
+        payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "password_reset":
+            raise HTTPException(status_code=400)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    return {"valid": True}
+
+
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserRequest, session: AsyncSession = Depends(get_async_session)):
     statement = select(User).where(User.email == user_data.email)

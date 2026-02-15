@@ -57,7 +57,7 @@ export function useAuth() {
   // ---------------------------
   const refreshAccessToken = async () => {
     try {
-      const res = await $fetch(`http://localhost:8000/auth/refresh`, {
+      const res = await $fetch(`https://ias-diplom.dynv6.net/apiback/auth/refresh`, {
         method: 'POST',
         credentials: 'include'
       })
