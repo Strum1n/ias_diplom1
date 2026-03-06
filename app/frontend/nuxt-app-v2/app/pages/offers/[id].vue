@@ -18,35 +18,54 @@
       <div class="flex h-full flex-col lg:flex-row lg:gap-8 xl:gap-12 gap-6">
         <div class="w-full lg:max-w-200">
           <div>
-            <h1 class="text-xl sm:text-2xl md:text-3xl xl:text-4xl font-bold my-2 text-black">{{ offer.title }}</h1>
+            <h1
+              class="text-xl sm:text-2xl md:text-3xl xl:text-4xl font-bold my-2 text-black"
+            >
+              {{ offer.title }}
+            </h1>
           </div>
           <div class="text-muted my-3 sm:my-4 text-sm sm:text-base">
             {{ offer.address.full_address }}
-            <ULink class="text-primary cursor-pointer hover:text-info inline-block ml-1" @click="showOnMap(offer)">На карте</ULink>
+            <ULink
+              class="text-primary cursor-pointer hover:text-info inline-block ml-1"
+              @click="showOnMap(offer)"
+              >На карте</ULink
+            >
           </div>
           <div class="mb-4 sm:mb-6">
             <UCarousel
               ref="carousel"
-              v-slot="{ item }"
+              v-slot="{item}"
               arrows
               :items="offer.images_urls"
-              :prev="{ onClick: onClickPrev }"
-              :next="{ onClick: onClickNext }"
+              :prev="{onClick: onClickPrev}"
+              :next="{onClick: onClickNext}"
               :ui="{
-                controls: 'absolute top-20 sm:top-23 inset-x-2 sm:inset-x-8 md:inset-x-12 lg:inset-x-17.5 opasity-0',
+                controls:
+                  'absolute top-20 sm:top-23 inset-x-2 sm:inset-x-8 md:inset-x-12 lg:inset-x-17.5 opasity-0',
               }"
               class="w-full max-w-200 min-h-60 sm:min-h-80 md:min-h-100 lg:min-h-120 mx-auto border-2 border-default"
-              @select="onSelect">
-              <img :src="item" width="2000" height="480" class="rounded-lg w-full h-full object-contain" />
+              @select="onSelect"
+            >
+              <img
+                :src="item"
+                width="2000"
+                height="480"
+                class="rounded-lg w-full h-full object-contain"
+              />
             </UCarousel>
 
-            <div ref="thumbsContainer" class="no-scroll flex gap-3 max-w-200 overflow-x-auto whitespace-nowrap pt-4 mx-auto">
+            <div
+              ref="thumbsContainer"
+              class="no-scroll flex gap-3 max-w-200 overflow-x-auto whitespace-nowrap pt-4 mx-auto"
+            >
               <div
                 v-for="(item, index) in offer.images_urls"
                 :key="index"
                 class="sas h-15 opacity-35 hover:opacity-100 transition-opacity cursor-pointer"
-                :class="{ 'opacity-100': activeIndex === index }"
-                @click="select(index)">
+                :class="{'opacity-100': activeIndex === index}"
+                @click="select(index)"
+              >
                 <img :src="item" width="78" height="100" class="rounded-lg" />
               </div>
             </div>
@@ -55,99 +74,217 @@
             <div class="p-4 sm:p-5 md:p-6 rounded-lg ring ring-default">
               <div>
                 <div class="price">
-                  <p class="flex justify-start items-start flex-col sm:flex-row sm:gap-4 gap-2 items-start sm:items-center">
-                    <span class="text-xl sm:text-2xl md:text-3xl">{{ formatPrice(offer.price) }} ₽</span>
-                    <UBadge class="mb-2" size="sm" :color="getPriceCategoryColor(offer.price_category)">
+                  <p
+                    class="flex justify-start items-start flex-col sm:flex-row sm:gap-4 gap-2 items-start sm:items-center"
+                  >
+                    <span class="text-xl sm:text-2xl md:text-3xl"
+                      >{{ formatPrice(offer.price) }} ₽</span
+                    >
+                    <UBadge
+                      class="mb-2"
+                      size="sm"
+                      :color="getPriceCategoryColor(offer.price_category)"
+                    >
                       {{ getPriceCategoryLabel(offer.price_category) }}
                     </UBadge>
                   </p>
 
-                  <button class="favorite-heart h-10 w-10 sm:h-11.25 sm:w-11.25" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
-                    <UIcon size="24 sm:30" :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" class="heart-icon" />
+                  <button
+                    class="favorite-heart h-10 w-10 sm:h-11.25 sm:w-11.25"
+                    :class="{active: isFavorite(offer.id)}"
+                    @click.stop="toggleFavorite(offer)"
+                  >
+                    <UIcon
+                      size="24 sm:30"
+                      :name="
+                        isFavorite(offer.id)
+                          ? 'material-symbols-light:favorite'
+                          : 'material-symbols-light:favorite-outline'
+                      "
+                      class="heart-icon"
+                    />
                   </button>
                 </div>
 
                 <div class="price-per-meter text-sm sm:text-base">
-                  <span>Цена за метр:</span><span class="font-semibold !text-[#38a169]">{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span>
+                  <span>Цена за метр:</span
+                  ><span class="font-semibold!text-[#38a169]"
+                    >{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span
+                  >
                 </div>
               </div>
               <div>
                 <h3 class="mt-2 mb-2 text-base">Контакты:</h3>
 
-                <div v-if="offer.contact_phone" class="phone-number text-base sm:text-lg">{{ formatPhone(offer.contact_phone) }}</div>
-                <div class="phone-number font-semibold! text-base sm:text-lg" v-else>Временный номер, проверьте в источнике</div>
+                <div
+                  v-if="offer.contact_phone"
+                  class="phone-number text-base sm:text-lg"
+                >
+                  {{ formatPhone(offer.contact_phone) }}
+                </div>
+                <div
+                  class="phone-number font-semibold! text-base sm:text-lg"
+                  v-else
+                >
+                  Временный номер, проверьте в источнике
+                </div>
 
                 <div class="seller-info my-3">
-                  <div class="seller-type text-sm">{{ offer.seller.seller_type?.name }}</div>
-                  <div class="seller-name text-base sm:text-lg">{{ offer.seller.name }}</div>
+                  <div class="seller-type text-sm">
+                    {{ offer.seller.seller_type?.name }}
+                  </div>
+                  <div class="seller-name text-base sm:text-lg">
+                    {{ offer.seller.name }}
+                  </div>
                 </div>
                 <div class="original-link">
                   <p class="flex items-center gap-1 text-sm sm:text-base">
                     <UIcon size="16 sm:18" name="i-heroicons-link"></UIcon>
-                    Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}.RU</a>
+                    Источник:
+                    <a
+                      target="_blank"
+                      :href="offer.url"
+                      class="text-primary font-semibold hover:text-info"
+                    >
+                      {{ offer.source.toUpperCase() }}.RU</a
+                    >
                   </p>
-                  <div class="flex flex-col gap-1 mt-1" v-if="offer.identical_urls && offer.identical_urls[0] && !offer.identical_urls[0].includes(offer.source)">
+                  <div
+                    class="flex flex-col gap-1 mt-1"
+                    v-if="
+                      offer.identical_urls &&
+                      offer.identical_urls[0] &&
+                      !offer.identical_urls[0].includes(offer.source)
+                    "
+                  >
                     <p class="text-sm">В других источниках:</p>
-                    <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black text-sm">
-                      {{ offer.identical_urls[0].match(/([\w-]+)\.ru/)?.[1] || offer.identical_urls[0] }}.ru
+                    <a
+                      target="_blank"
+                      :href="offer.identical_urls[0]"
+                      class="text-info font-semibold hover:text-black text-sm"
+                    >
+                      {{
+                        offer.identical_urls[0].match(/([\w-]+)\.ru/)?.[1] ||
+                        offer.identical_urls[0]
+                      }}.ru
                     </a>
                   </div>
                 </div>
               </div>
             </div>
-            <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-default mt-4 sm:mt-5">
+            <div
+              v-if="offer.price_history?.length > 1"
+              class="price-history-section rounded-lg ring ring-default mt-4 sm:mt-5"
+            >
               <h3 class="text-lg sm:text-xl">История цен</h3>
-              <VChart class="mt-3 sm:mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
-              <div v-else class="text-sm sm:text-base">Нет данных по истории цен</div>
+              <VChart
+                class="mt-3 sm:mt-5"
+                v-if="priceChartOption"
+                :option="priceChartOption"
+                autoresize
+                style="height: 328px"
+              />
+              <div v-else class="text-sm sm:text-base">
+                Нет данных по истории цен
+              </div>
             </div>
 
             <div class="views-section mt-4 sm:mt-5">
-              <h3 class="text-lg sm:text-xl font-semibold mb-4">Статистика просмотров</h3>
+              <h3 class="text-lg sm:text-xl font-semibold mb-4">
+                Статистика просмотров
+              </h3>
               <div class="views-stats">
                 <div class="stat-item">
                   <p class="text-sm sm:text-base">Всего:</p>
-                  <span class="text-sm sm:text-base">{{ offer.views_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.views_count
+                  }}</span>
                 </div>
                 <div class="stat-item">
                   <p class="text-sm sm:text-base">10 дней:</p>
-                  <span class="text-sm sm:text-base">{{ offer.last_ten_days_views_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.last_ten_days_views_count
+                  }}</span>
                 </div>
                 <div class="stat-item">
                   <p class="text-sm sm:text-base">Сегодня:</p>
-                  <span class="text-sm sm:text-base">{{ offer.daily_views_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.daily_views_count
+                  }}</span>
                 </div>
               </div>
-              <VChart class="mt-3 sm:mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
+              <VChart
+                class="mt-3 sm:mt-5"
+                v-if="viewsChartOption"
+                :option="viewsChartOption"
+                autoresize
+                style="height: 328px"
+              />
             </div>
           </div>
           <div class="info-card">
             <h3 class="text-lg sm:text-xl xl:text-2xl">Оценки</h3>
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-3 justify-between">
+            <div
+              class="flex flex-col sm:flex-row gap-3 sm:gap-3 justify-between"
+            >
               <div class="category-item w-full">
                 <p class="text-sm sm:text-base">Для пожилых:</p>
-                <UBadge size="lg" :color="getCategoryColor(offer.elderly_category)">
+                <UBadge
+                  size="lg"
+                  :color="getCategoryColor(offer.elderly_category)"
+                >
                   {{ getCategoryLabel(offer.elderly_category) }}
-                  <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined" class="sm:inline"> ({{ offer.elderly_score.toFixed(2) }}) </span>
+                  <span
+                    v-if="
+                      offer.elderly_score !== null &&
+                      offer.elderly_score !== undefined
+                    "
+                    class="sm:inline"
+                  >
+                    ({{ offer.elderly_score.toFixed(2) }})
+                  </span>
                 </UBadge>
               </div>
               <div class="category-item w-full">
                 <p class="text-sm sm:text-base">Для семьи:</p>
-                <UBadge size="lg" :color="getCategoryColor(offer.family_category)">
+                <UBadge
+                  size="lg"
+                  :color="getCategoryColor(offer.family_category)"
+                >
                   {{ getCategoryLabel(offer.family_category) }}
-                  <span v-if="offer.family_score !== null && offer.family_score !== undefined" class="sm:inline"> ({{ offer.family_score.toFixed(2) }}) </span>
+                  <span
+                    v-if="
+                      offer.family_score !== null &&
+                      offer.family_score !== undefined
+                    "
+                    class="sm:inline"
+                  >
+                    ({{ offer.family_score.toFixed(2) }})
+                  </span>
                 </UBadge>
               </div>
               <div class="category-item w-full">
                 <p class="text-sm sm:text-base">Транспортная доступность:</p>
-                <UBadge size="lg" :color="getCategoryColor(offer.transport_access_category)">
+                <UBadge
+                  size="lg"
+                  :color="getCategoryColor(offer.transport_access_category)"
+                >
                   {{ getCategoryLabel(offer.transport_access_category) }}
-                  <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined" class="sm:inline">
+                  <span
+                    v-if="
+                      offer.transport_access_score !== null &&
+                      offer.transport_access_score !== undefined
+                    "
+                    class="sm:inline"
+                  >
                     ({{ offer.transport_access_score.toFixed(2) }})
                   </span>
                 </UBadge>
               </div>
             </div>
-            <h3 class="text-lg sm:text-xl xl:text-2xl mt-4 sm:mt-6">Описание</h3>
+            <h3 class="text-lg sm:text-xl xl:text-2xl mt-4 sm:mt-6">
+              Описание
+            </h3>
             <UAccordion
               type="multiple"
               :items="items"
@@ -155,42 +292,63 @@
               :ui="{
                 trigger: 'text-sm sm:text-base whitespace-pre-line',
                 body: 'text-sm sm:text-base whitespace-pre-line',
-              }">
-              <template #body="{ item }">
+              }"
+            >
+              <template #body="{item}">
                 <MDC :value="item.content" />
               </template>
             </UAccordion>
-            <div class="flex flex-col lg:flex-row lg:gap-8 xl:gap-10 gap-6" v-if="['Квартира', 'Апартаменты'].includes(offer.property_type.name)">
+            <div
+              class="flex flex-col lg:flex-row lg:gap-8 xl:gap-10 gap-6"
+              v-if="
+                ['Квартира', 'Апартаменты'].includes(offer.property_type.name)
+              "
+            >
               <div class="info-grid">
                 <h3 class="text-lg sm:text-xl">О квартире</h3>
                 <div>
                   <p class="text-sm sm:text-base">Тип:</p>
-                  <span v-if="offer.is_new_house" class="text-sm sm:text-base">Новостройка</span>
+                  <span v-if="offer.is_new_house" class="text-sm sm:text-base"
+                    >Новостройка</span
+                  >
                   <span v-else class="text-sm sm:text-base">Вторичка</span>
                 </div>
                 <div v-if="offer.rooms_count > 0 && offer.rooms_count < 10">
                   <p class="text-sm sm:text-base">Кол-во комнат:</p>
-                  <span class="text-sm sm:text-base">{{ offer.rooms_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.rooms_count
+                  }}</span>
                 </div>
                 <div>
                   <p class="text-sm sm:text-base">Общая площадь:</p>
-                  <span class="text-sm sm:text-base">{{ offer.total_area }} м²</span>
+                  <span class="text-sm sm:text-base"
+                    >{{ offer.total_area }} м²</span
+                  >
                 </div>
                 <div v-if="offer.living_area">
                   <p class="text-sm sm:text-base">Жилая площадь:</p>
-                  <span class="text-sm sm:text-base">{{ offer.living_area }} м²</span>
+                  <span class="text-sm sm:text-base"
+                    >{{ offer.living_area }} м²</span
+                  >
                 </div>
                 <div v-if="offer.kitchen_area">
                   <p class="text-sm sm:text-base">Площадь кухни:</p>
-                  <span class="text-sm sm:text-base">{{ offer.kitchen_area }} м²</span>
+                  <span class="text-sm sm:text-base"
+                    >{{ offer.kitchen_area }} м²</span
+                  >
                 </div>
                 <div v-if="offer.ceiling_height">
                   <p class="text-sm sm:text-base">Высота потолков:</p>
-                  <span class="text-sm sm:text-base">{{ offer.ceiling_height }} м</span>
+                  <span class="text-sm sm:text-base"
+                    >{{ offer.ceiling_height }} м</span
+                  >
                 </div>
                 <div v-if="offer.bathrooms_count">
                   <p class="text-sm sm:text-base">Кол-во санузлов:</p>
-                  <span class="text-sm sm:text-base">{{ offer.bathrooms_count }} {{ offer.bathroom_type?.name }}</span>
+                  <span class="text-sm sm:text-base"
+                    >{{ offer.bathrooms_count }}
+                    {{ offer.bathroom_type?.name }}</span
+                  >
                 </div>
                 <div v-if="offer.has_balcony">
                   <p class="text-sm sm:text-base">Балкон</p>
@@ -202,12 +360,18 @@
                 </div>
                 <div v-if="offer.window_view_type">
                   <p class="text-sm sm:text-base">Вид из окон:</p>
-                  <span class="text-sm sm:text-base">{{ offer.window_view_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.window_view_type?.name
+                  }}</span>
                 </div>
                 <div v-if="offer.renovation_type">
-                  <p v-if="offer.is_new_house" class="text-sm sm:text-base">Отделка:</p>
+                  <p v-if="offer.is_new_house" class="text-sm sm:text-base">
+                    Отделка:
+                  </p>
                   <p v-else class="text-sm sm:text-base">Ремонт:</p>
-                  <span class="text-sm sm:text-base">{{ offer.renovation_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.renovation_type?.name
+                  }}</span>
                 </div>
               </div>
 
@@ -215,27 +379,39 @@
                 <h3 class="text-lg sm:text-xl">О доме</h3>
                 <div v-if="offer.house_built_year">
                   <p class="text-sm sm:text-base">Год постройки:</p>
-                  <span class="text-sm sm:text-base">{{ offer.house_built_year }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.house_built_year
+                  }}</span>
                 </div>
                 <div v-if="offer.house_floors_count">
                   <p class="text-sm sm:text-base">Кол-во этажей:</p>
-                  <span class="text-sm sm:text-base">{{ offer.house_floors_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.house_floors_count
+                  }}</span>
                 </div>
                 <div v-if="offer.elevators_count">
                   <p class="text-sm sm:text-base">Кол-во лифтов:</p>
-                  <span class="text-sm sm:text-base">{{ offer.elevators_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.elevators_count
+                  }}</span>
                 </div>
                 <div v-if="offer.house_material_type">
                   <p class="text-sm sm:text-base">Тип дома:</p>
-                  <span class="text-sm sm:text-base">{{ offer.house_material_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.house_material_type?.name
+                  }}</span>
                 </div>
                 <div v-if="offer.heating_type">
                   <p class="text-sm sm:text-base">Отопление:</p>
-                  <span class="text-sm sm:text-base">{{ offer.heating_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.heating_type?.name
+                  }}</span>
                 </div>
                 <div v-if="offer.parking_type">
                   <p class="text-sm sm:text-base">Парковка:</p>
-                  <span class="text-sm sm:text-base">{{ offer.parking_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.parking_type?.name
+                  }}</span>
                 </div>
                 <div v-if="offer.has_garbage_chute">
                   <p class="text-sm sm:text-base">Мусоропровод:</p>
@@ -249,23 +425,33 @@
                   <h3 class="text-lg sm:text-xl">О доме</h3>
                   <div>
                     <p class="text-sm sm:text-base">Площадь:</p>
-                    <span class="text-sm sm:text-base">{{ offer.total_area }} м²</span>
+                    <span class="text-sm sm:text-base"
+                      >{{ offer.total_area }} м²</span
+                    >
                   </div>
                   <div v-if="offer.house_material_type">
                     <p class="text-sm sm:text-base">Материал дома:</p>
-                    <span class="text-sm sm:text-base">{{ offer.house_material_type?.name }}</span>
+                    <span class="text-sm sm:text-base">{{
+                      offer.house_material_type?.name
+                    }}</span>
                   </div>
                   <div v-if="offer.house_floors_count">
                     <p class="text-sm sm:text-base">Кол-во этажей:</p>
-                    <span class="text-sm sm:text-base">{{ offer.house_floors_count }}</span>
+                    <span class="text-sm sm:text-base">{{
+                      offer.house_floors_count
+                    }}</span>
                   </div>
                   <div v-if="offer.bedrooms_count">
                     <p class="text-sm sm:text-base">Кол-во спален:</p>
-                    <span class="text-sm sm:text-base">{{ offer.bedrooms_count }}</span>
+                    <span class="text-sm sm:text-base">{{
+                      offer.bedrooms_count
+                    }}</span>
                   </div>
                   <div v-if="offer.house_built_year">
                     <p class="text-sm sm:text-base">Год постройки:</p>
-                    <span class="text-sm sm:text-base">{{ offer.house_built_year }}</span>
+                    <span class="text-sm sm:text-base">{{
+                      offer.house_built_year
+                    }}</span>
                   </div>
                 </div>
 
@@ -273,11 +459,15 @@
                   <h3 class="text-lg sm:text-xl">Об участке</h3>
                   <div v-if="offer.land_area">
                     <p class="text-sm sm:text-base">Площадь</p>
-                    <span class="text-sm sm:text-base">{{ offer.land_area }} сот.</span>
+                    <span class="text-sm sm:text-base"
+                      >{{ offer.land_area }} сот.</span
+                    >
                   </div>
                   <div v-if="offer.land_type">
                     <p class="text-sm sm:text-base">Статус участка</p>
-                    <span class="text-sm sm:text-base">{{ offer.land_type?.name }}</span>
+                    <span class="text-sm sm:text-base">{{
+                      offer.land_type?.name
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -286,19 +476,28 @@
                 <h3 class="text-lg sm:text-xl">Коммуникации и удобства</h3>
                 <div v-if="offer.bathrooms_count">
                   <p class="text-sm sm:text-base">Кол-во санузлов:</p>
-                  <span class="text-sm sm:text-base">{{ offer.bathrooms_count }} {{ offer.bathroom_type?.name?.toLowerCase() }}</span>
+                  <span class="text-sm sm:text-base"
+                    >{{ offer.bathrooms_count }}
+                    {{ offer.bathroom_type?.name?.toLowerCase() }}</span
+                  >
                 </div>
                 <div v-if="offer.sewerage_type">
                   <p class="text-sm sm:text-base">Канализация</p>
-                  <span class="text-sm sm:text-base">{{ offer.sewerage_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.sewerage_type?.name
+                  }}</span>
                 </div>
                 <div v-if="offer.water_supply_type">
                   <p class="text-sm sm:text-base">Водоснабжение</p>
-                  <span class="text-sm sm:text-base">{{ offer.water_supply_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.water_supply_type?.name
+                  }}</span>
                 </div>
                 <div v-if="offer.heating_type">
                   <p class="text-sm sm:text-base">Отопление</p>
-                  <span class="text-sm sm:text-base">{{ offer.heating_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.heating_type?.name
+                  }}</span>
                 </div>
                 <div v-if="offer.has_electricity">
                   <p class="text-sm sm:text-base">Электричество</p>
@@ -306,15 +505,35 @@
                 </div>
                 <div v-if="offer.gas_type">
                   <p class="text-sm sm:text-base">Газ</p>
-                  <span class="text-sm sm:text-base">{{ offer.gas_type?.name }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.gas_type?.name
+                  }}</span>
                 </div>
-                <div v-if="offer.has_garage || offer.has_terrace || offer.has_bathhouse || offer.has_pool" class="!items-start">
+                <div
+                  v-if="
+                    offer.has_garage ||
+                    offer.has_terrace ||
+                    offer.has_bathhouse ||
+                    offer.has_pool
+                  "
+                  class="!items-start"
+                >
                   <p class="text-sm sm:text-base">Дополнительно</p>
                   <div class="flex flex-col gap-1">
-                    <span v-if="offer.has_garage" class="text-sm sm:text-base">Гараж</span>
-                    <span v-if="offer.has_terrace" class="text-sm sm:text-base">Терраса</span>
-                    <span v-if="offer.has_bathhouse" class="text-sm sm:text-base">Баня</span>
-                    <span v-if="offer.has_pool" class="text-sm sm:text-base">Бассейн</span>
+                    <span v-if="offer.has_garage" class="text-sm sm:text-base"
+                      >Гараж</span
+                    >
+                    <span v-if="offer.has_terrace" class="text-sm sm:text-base"
+                      >Терраса</span
+                    >
+                    <span
+                      v-if="offer.has_bathhouse"
+                      class="text-sm sm:text-base"
+                      >Баня</span
+                    >
+                    <span v-if="offer.has_pool" class="text-sm sm:text-base"
+                      >Бассейн</span
+                    >
                   </div>
                 </div>
               </div>
@@ -322,7 +541,11 @@
           </div>
 
           <div class="map-container">
-            <h3 class="text-lg sm:text-xl xl:text-2xl ml-0 sm:ml-2 md:ml-4 lg:ml-6.5 my-3 sm:my-4 md:my-5!">Расположение</h3>
+            <h3
+              class="text-lg sm:text-xl xl:text-2xl ml-0 sm:ml-2 md:ml-4 lg:ml-6.5 my-3 sm:my-4 md:my-5!"
+            >
+              Расположение
+            </h3>
             <yandex-map
               v-model="map"
               real-settings-location
@@ -336,8 +559,9 @@
                 showScaleInCopyrights: true,
               }"
               width="100%"
-              height="300px"
-              class="sm:h-[400px] lg:h-[500px]">
+              height="100%"
+              class="sm:h-[400px] lg:h-[500px]"
+            >
               <yandex-map-default-scheme-layer />
               <yandex-map-default-features-layer />
               <yandex-map-marker
@@ -349,31 +573,51 @@
                       zoom: 20,
                     };
                   },
-                }">
+                }"
+              >
                 <div class="house-marker">
-                  <svg class="marker-svg" data-name="Pin" width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M27 0C16.507 0 8 8.507 8 19C8 30.6644 19.5164 38.5163 27 46C34.4076 38.5197 46 30.622 46 19C46 8.507 37.493 0 27 0Z"></path>
+                  <svg
+                    class="marker-svg"
+                    data-name="Pin"
+                    width="54"
+                    height="54"
+                    viewBox="0 0 54 54"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M27 0C16.507 0 8 8.507 8 19C8 30.6644 19.5164 38.5163 27 46C34.4076 38.5197 46 30.622 46 19C46 8.507 37.493 0 27 0Z"
+                    ></path>
                     <path
                       fill-rule="evenodd"
                       clip-rule="evenodd"
                       d="M27 33C34.7317 33 41 26.7317 41 19C41 11.2683 34.7317 5 27 5C19.2683 5 13 11.2683 13 19C13 26.7317 19.2683 33 27 33Z"
-                      fill="white"></path>
+                      fill="white"
+                    ></path>
                     <path
                       fill-rule="evenodd"
                       clip-rule="evenodd"
-                      d="M33.4665 19.5633V12.2365H30.2323V15.6778L27.0001 11.7947L18 22.6071L20.9939 25.099L27.0001 17.8834L33.0061 25.099L36 22.6071L33.4665 19.5633Z"></path>
+                      d="M33.4665 19.5633V12.2365H30.2323V15.6778L27.0001 11.7947L18 22.6071L20.9939 25.099L27.0001 17.8834L33.0061 25.099L36 22.6071L33.4665 19.5633Z"
+                    ></path>
                     <circle cx="27" cy="50" r="3" fill="white"></circle>
                     <circle cx="27" cy="50" r="2"></circle>
                   </svg>
                 </div>
               </yandex-map-marker>
-              <yandex-map-marker v-for="(marker, index) in markers" :key="index" :settings="marker">
+              <yandex-map-marker
+                v-for="(marker, index) in markers"
+                :key="index"
+                :settings="marker"
+              >
                 <div class="marker">
-                  <UIcon size="16 sm:18 lg:20" :name="getInfrastructureIcon(marker.properties?.type_id)" />
+                  <UIcon
+                    size="16 sm:18 lg:20"
+                    :name="getInfrastructureIcon(marker.properties?.type_id)"
+                  />
                 </div>
               </yandex-map-marker>
               <yandex-map-hint hint-property="hint">
-                <template #default="{ content }">
+                <template #default="{content}">
                   <div class="hint" v-html="content" />
                 </template>
               </yandex-map-hint>
@@ -381,7 +625,11 @@
           </div>
 
           <div class="infrastructure-section">
-            <h3 class="text-lg sm:text-xl xl:text-2xl ml-0 sm:ml-2 md:ml-4 lg:ml-6.5 my-3 sm:my-4 md:my-5.5">Ближайшая инфраструктура</h3>
+            <h3
+              class="text-lg sm:text-xl xl:text-2xl ml-0 sm:ml-2 md:ml-4 lg:ml-6.5 my-3 sm:my-4 md:my-5.5"
+            >
+              Ближайшая инфраструктура
+            </h3>
             <div class="infrastructure-list">
               <div
                 v-for="infra in getClosestInfrastructure(offer)"
@@ -392,16 +640,35 @@
                   }),
                 ]"
                 :key="infra.infrastructure.id"
-                class="infrastructure-item w-full sm:w-[48%] lg:w-[30%]">
-                <UIcon size="16 sm:18 lg:20" :name="getInfrastructureIcon(infra.infrastructure.infrastructure_type.id)" />
-                <div v-if="infra.infrastructure.name !== 'unknown'" class="flex flex-col justify-center items-center">
-                  <span class="text-xs sm:text-sm">{{ infra.infrastructure.infrastructure_type.name }}</span>
-                  <span class="font-semibold text-black! text-xs sm:text-sm">{{ infra.infrastructure.name }}</span>
+                class="infrastructure-item w-full sm:w-[48%] lg:w-[30%]"
+              >
+                <UIcon
+                  size="16 sm:18 lg:20"
+                  :name="
+                    getInfrastructureIcon(
+                      infra.infrastructure.infrastructure_type.id,
+                    )
+                  "
+                />
+                <div
+                  v-if="infra.infrastructure.name !== 'unknown'"
+                  class="flex flex-col justify-center items-center"
+                >
+                  <span class="text-xs sm:text-sm">{{
+                    infra.infrastructure.infrastructure_type.name
+                  }}</span>
+                  <span class="font-semibold text-black! text-xs sm:text-sm">{{
+                    infra.infrastructure.name
+                  }}</span>
                 </div>
                 <div v-else class="text-center">
-                  <span class="text-xs sm:text-sm">{{ infra.infrastructure.infrastructure_type.name }}</span>
+                  <span class="text-xs sm:text-sm">{{
+                    infra.infrastructure.infrastructure_type.name
+                  }}</span>
                 </div>
-                <span class="text-xs sm:text-base!">{{ infra.distance }} м</span>
+                <span class="text-xs sm:text-base!"
+                  >{{ infra.distance }} м</span
+                >
               </div>
             </div>
           </div>
@@ -414,67 +681,145 @@
                 <div class="price">
                   <p class="flex flex-col sm:flex-row sm:gap-4 items-center">
                     <span>{{ formatPrice(offer.price) }} ₽</span>
-                    <UBadge size="lg" :color="getPriceCategoryColor(offer.price_category)">
+                    <UBadge
+                      size="lg"
+                      :color="getPriceCategoryColor(offer.price_category)"
+                    >
                       {{ getPriceCategoryLabel(offer.price_category) }}
                     </UBadge>
                   </p>
 
-                  <button class="favorite-heart h-10 w-10 sm:h-11.25 sm:w-11.25" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
-                    <UIcon size="24 sm:30" :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" class="heart-icon" />
+                  <button
+                    class="favorite-heart h-10 w-10 sm:h-11.25 sm:w-11.25"
+                    :class="{active: isFavorite(offer.id)}"
+                    @click.stop="toggleFavorite(offer)"
+                  >
+                    <UIcon
+                      size="24 sm:30"
+                      :name="
+                        isFavorite(offer.id)
+                          ? 'material-symbols-light:favorite'
+                          : 'material-symbols-light:favorite-outline'
+                      "
+                      class="heart-icon"
+                    />
                   </button>
                 </div>
 
                 <div class="price-per-meter text-sm sm:text-base mt-0.5">
-                  <span>Цена за метр:</span><span class="font-semibold !text-[#38a169]">{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span>
+                  <span>Цена за метр:</span
+                  ><span class="font-semibold!text-[#38a169]"
+                    >{{ formatPrice(offer.price_per_square_meter) }} ₽/м²</span
+                  >
                 </div>
               </div>
               <div>
                 <h3 class="mt-2 mb-2 text-base">Контакты:</h3>
 
-                <div v-if="offer.contact_phone" class="phone-number text-base sm:text-lg">{{ formatPhone(offer.contact_phone) }}</div>
-                <div class="phone-number font-semibold! text-base sm:text-lg" v-else>Временный номер, проверьте в источнике</div>
+                <div
+                  v-if="offer.contact_phone"
+                  class="phone-number text-base sm:text-lg"
+                >
+                  {{ formatPhone(offer.contact_phone) }}
+                </div>
+                <div
+                  class="phone-number font-semibold! text-base sm:text-lg"
+                  v-else
+                >
+                  Временный номер, проверьте в источнике
+                </div>
 
                 <div class="seller-info my-3">
-                  <div class="seller-type text-sm">{{ offer.seller.seller_type?.name }}</div>
-                  <div class="seller-name text-base sm:text-lg">{{ offer.seller.name }}</div>
+                  <div class="seller-type text-sm">
+                    {{ offer.seller.seller_type?.name }}
+                  </div>
+                  <div class="seller-name text-base sm:text-lg">
+                    {{ offer.seller.name }}
+                  </div>
                 </div>
                 <div class="original-link">
                   <p class="flex items-center gap-1 text-sm sm:text-base">
                     <UIcon size="16 sm:18" name="i-heroicons-link"></UIcon>
-                    Источник: <a target="_blank" :href="offer.url" class="text-primary font-semibold hover:text-info"> {{ offer.source.toUpperCase() }}.RU</a>
+                    Источник:
+                    <a
+                      target="_blank"
+                      :href="offer.url"
+                      class="text-primary font-semibold hover:text-info"
+                    >
+                      {{ offer.source.toUpperCase() }}.RU</a
+                    >
                   </p>
-                  <div class="flex flex-col gap-1 mt-1" v-if="offer.identical_urls && offer.identical_urls[0] && !offer.identical_urls[0].includes(offer.source)">
+                  <div
+                    class="flex flex-col gap-1 mt-1"
+                    v-if="
+                      offer.identical_urls &&
+                      offer.identical_urls[0] &&
+                      !offer.identical_urls[0].includes(offer.source)
+                    "
+                  >
                     <p class="text-sm">В других источниках:</p>
-                    <a target="_blank" :href="offer.identical_urls[0]" class="text-info font-semibold hover:text-black text-sm">
-                      {{ offer.identical_urls[0].match(/([\w-]+)\.ru/)?.[1] || offer.identical_urls[0] }}.ru
+                    <a
+                      target="_blank"
+                      :href="offer.identical_urls[0]"
+                      class="text-info font-semibold hover:text-black text-sm"
+                    >
+                      {{
+                        offer.identical_urls[0].match(/([\w-]+)\.ru/)?.[1] ||
+                        offer.identical_urls[0]
+                      }}.ru
                     </a>
                   </div>
                 </div>
               </div>
             </div>
-            <div v-if="offer.price_history?.length > 1" class="price-history-section rounded-lg ring ring-default mt-4 sm:mt-5">
+            <div
+              v-if="offer.price_history?.length > 1"
+              class="price-history-section rounded-lg ring ring-default mt-4 sm:mt-5"
+            >
               <h3 class="text-lg sm:text-xl">История цен</h3>
-              <VChart class="mt-3 sm:mt-5" v-if="priceChartOption" :option="priceChartOption" autoresize style="height: 328px" />
-              <div v-else class="text-sm sm:text-base">Нет данных по истории цен</div>
+              <VChart
+                class="mt-3 sm:mt-5"
+                v-if="priceChartOption"
+                :option="priceChartOption"
+                autoresize
+                style="height: 328px"
+              />
+              <div v-else class="text-sm sm:text-base">
+                Нет данных по истории цен
+              </div>
             </div>
 
             <div class="views-section mt-4 sm:mt-5">
-              <h3 class="text-lg sm:text-xl font-semibold mb-4">Статистика просмотров</h3>
+              <h3 class="text-lg sm:text-xl font-semibold mb-4">
+                Статистика просмотров
+              </h3>
               <div class="views-stats">
                 <div class="stat-item">
                   <p class="text-sm sm:text-base">Всего:</p>
-                  <span class="text-sm sm:text-base">{{ offer.views_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.views_count
+                  }}</span>
                 </div>
                 <div class="stat-item">
                   <p class="text-sm sm:text-base">10 дней:</p>
-                  <span class="text-sm sm:text-base">{{ offer.last_ten_days_views_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.last_ten_days_views_count
+                  }}</span>
                 </div>
                 <div class="stat-item">
                   <p class="text-sm sm:text-base">Сегодня:</p>
-                  <span class="text-sm sm:text-base">{{ offer.daily_views_count }}</span>
+                  <span class="text-sm sm:text-base">{{
+                    offer.daily_views_count
+                  }}</span>
                 </div>
               </div>
-              <VChart class="mt-3 sm:mt-5" v-if="viewsChartOption" :option="viewsChartOption" autoresize style="height: 328px" />
+              <VChart
+                class="mt-3 sm:mt-5"
+                v-if="viewsChartOption"
+                :option="viewsChartOption"
+                autoresize
+                style="height: 328px"
+              />
             </div>
           </div>
         </div>
@@ -484,13 +829,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-
-import type { YMap, YMapCameraRequest, YMapMarkerProps } from "@yandex/ymaps3-types";
-import type { YMapLocationRequest } from "@yandex/ymaps3-types/imperative/YMap";
-import { shallowRef } from "vue";
-import { YandexMap, YandexMapDefaultFeaturesLayer, YandexMapDefaultSchemeLayer, YandexMapHint, YandexMapMarker } from "vue-yandex-maps";
-import type { OfferResponseFull, AddressResponseFull, InfrastructureResponseFull, AddressInfrastructureLinkResponseFull } from "~/types/api";
+import type {AccordionItem} from "@nuxt/ui";
+import type {
+  YMap,
+  YMapCameraRequest,
+  YMapMarkerProps,
+} from "@yandex/ymaps3-types";
+import type {YMapLocationRequest} from "@yandex/ymaps3-types/imperative/YMap";
+import {
+  YandexMap,
+  YandexMapDefaultFeaturesLayer,
+  YandexMapDefaultSchemeLayer,
+  YandexMapHint,
+  YandexMapMarker,
+} from "vue-yandex-maps";
+import type {
+  OfferResponseFull,
+  AddressInfrastructureLinkResponseFull,
+} from "~/types/api";
 
 const map = shallowRef<null | YMap>(null);
 const markers = ref<YMapMarkerProps[]>([]);
@@ -534,7 +890,7 @@ function scrollThumbTo(index: number) {
 const getClosestInfrastructure = (offer: Offer) => {
   const typeMap = new Map<number, InfrastructureLink>();
 
-  offer.address.infrastructures_links.forEach((item) => {
+  offer.address.infrastructures_links.forEach(item => {
     const typeId = item.infrastructure.infrastructure_type.id;
     if (!typeMap.has(typeId) || typeMap.get(typeId)!.distance > item.distance) {
       typeMap.set(typeId, item);
@@ -567,14 +923,15 @@ function select(index: number) {
 const mapState = useMapState();
 
 const showOnMap = (offer: Offer) => {
-  ((mapState.value.center = offer.address.coordinates_list), (mapState.value.offerId = offer.id));
+  ((mapState.value.center = offer.address.coordinates_list),
+    (mapState.value.offerId = offer.id));
   navigateTo("/map");
 };
 
 const route = useRoute();
 const offerId = route.params.id as string;
 
-const { $api } = useNuxtApp();
+const {$api} = useNuxtApp();
 
 // const { data: offer, pending, error } = useAsyncData(`offer/${offerId}`,
 //     async () => {
@@ -594,15 +951,18 @@ const {
   pending,
   error,
 } = await useAsyncData(`offers/${offerId}`, () => $api(`offers/${offerId}`), {
-  getCachedData: (key) => {
+  getCachedData: key => {
     return useNuxtData(key).data.value;
   },
 });
 
-const { data: favoritesData, refresh: refreshFavorites } = useAsyncData("favorites", () => $api("offers/favorites/"));
+const {data: favoritesData, refresh: refreshFavorites} = useAsyncData(
+  "favorites",
+  () => $api("offers/favorites/"),
+);
 
 const favoriteOffers = computed(() => {
-  return new Set(favoritesData.value?.map((item) => item.id) || []);
+  return new Set(favoritesData.value?.map(item => item.id) || []);
 });
 
 const toggleFavorite = async (offer: Offer) => {
@@ -613,13 +973,15 @@ const toggleFavorite = async (offer: Offer) => {
 
   try {
     if (wasFavorite) {
-      $api(`offers/favorites/${offerId}`, { method: "DELETE" });
+      $api(`offers/favorites/${offerId}`, {method: "DELETE"});
 
       if (favoritesData.value) {
-        favoritesData.value = favoritesData.value.filter((item) => item.id !== offerId);
+        favoritesData.value = favoritesData.value.filter(
+          item => item.id !== offerId,
+        );
       }
     } else {
-      $api(`offers/favorites/${offerId}`, { method: "POST" });
+      $api(`offers/favorites/${offerId}`, {method: "POST"});
 
       if (favoritesData.value) {
         favoritesData.value = [...favoritesData.value, offer];
@@ -636,36 +998,40 @@ const isFavorite = (offerId: number | null): boolean => {
 
 watch(
   () => offer.value,
-  (newOffer) => {
+  newOffer => {
     if (newOffer) {
       LOCATION.value.center = newOffer.address.coordinates_list;
       console.log("Установили центр");
-      markers.value = newOffer.address.infrastructures_links.map((infra, index) => ({
-        onClick: () => {
-          LOCATION.value = {
-            center: infra.infrastructure.coordinates_list,
-            zoom: 20,
-          };
-        },
-        hideOutsideViewport: true,
-        coordinates: infra.infrastructure.coordinates_list,
-        properties: {
-          hint: `<p>${infra.infrastructure.infrastructure_type?.name}</p><p>${infra.infrastructure.name != "unknown" ? infra.infrastructure.name : ""}</p><p>${
-            infra.distance
-          } м</p>`,
-          name: infra.infrastructure.name,
-          type_id: infra.infrastructure.infrastructure_type.id,
-        },
-      }));
+      markers.value = newOffer.address.infrastructures_links.map(
+        (infra, index) => ({
+          onClick: () => {
+            LOCATION.value = {
+              center: infra.infrastructure.coordinates_list,
+              zoom: 20,
+            };
+          },
+          hideOutsideViewport: true,
+          coordinates: infra.infrastructure.coordinates_list,
+          properties: {
+            hint: `<p>${infra.infrastructure.infrastructure_type?.name}</p><p>${infra.infrastructure.name != "unknown" ? infra.infrastructure.name : ""}</p><p>${
+              infra.distance
+            } м</p>`,
+            name: infra.infrastructure.name,
+            type_id: infra.infrastructure.infrastructure_type.id,
+          },
+        }),
+      );
     }
   },
-  { immediate: true },
+  {immediate: true},
 );
 
 const priceChartOption = computed(() => {
   if (!offer.value?.price_history?.length) return null;
 
-  const data = [...offer.value.price_history].sort((a, b) => +new Date(a.changeTime) - +new Date(b.changeTime)).map((item) => [item.changeTime, item.priceData.price]);
+  const data = [...offer.value.price_history]
+    .sort((a, b) => +new Date(a.changeTime) - +new Date(b.changeTime))
+    .map(item => [item.changeTime, item.priceData.price]);
 
   return {
     tooltip: {
@@ -714,7 +1080,7 @@ const priceChartOption = computed(() => {
 const viewsChartOption = computed(() => {
   if (!offer.value?.views_history?.length) return null;
 
-  const data = offer.value.views_history.map((item) => [item.date, item.views]);
+  const data = offer.value.views_history.map(item => [item.date, item.views]);
 
   return {
     tooltip: {
@@ -779,11 +1145,14 @@ const formatPrice = (price: number) => {
 };
 
 const formatPhone = (phone: string) => {
-  return phone.replace(/(\d{1})(\d{3})(\d{3})(\d{2})(\d{2})/, "$1 ($2) $3-$4-$5");
+  return phone.replace(
+    /(\d{1})(\d{3})(\d{3})(\d{2})(\d{2})/,
+    "$1 ($2) $3-$4-$5",
+  );
 };
 
 const getPriceCategoryLabel = (category: string) => {
-  const labels: { [key: string]: string } = {
+  const labels: {[key: string]: string} = {
     expensive: "Выше рынка",
     normal: "Рыночная цена",
     cheap: "Ниже рынка",
@@ -792,7 +1161,7 @@ const getPriceCategoryLabel = (category: string) => {
 };
 
 const getPriceCategoryColor = (category: string) => {
-  const colors: { [key: string]: string } = {
+  const colors: {[key: string]: string} = {
     expensive: "error",
     normal: "info",
     cheap: "success",
@@ -801,7 +1170,7 @@ const getPriceCategoryColor = (category: string) => {
 };
 
 const getCategoryLabel = (category: string) => {
-  const labels: { [key: string]: string } = {
+  const labels: {[key: string]: string} = {
     low: "Низкая",
     medium: "Средняя",
     high: "Высокая",
@@ -809,7 +1178,7 @@ const getCategoryLabel = (category: string) => {
   return labels[category] || category;
 };
 const getInfrastructureIcon = (typeId: number): string => {
-  const icons: { [key: number]: string } = {
+  const icons: {[key: number]: string} = {
     1: "ic:baseline-school",
     2: "material-symbols:child-hat",
     3: "ic:sharp-local-hospital",
@@ -828,7 +1197,7 @@ const getInfrastructureIcon = (typeId: number): string => {
   return icons[typeId] || "📍";
 };
 const getCategoryColor = (category: string) => {
-  const colors: { [key: string]: string } = {
+  const colors: {[key: string]: string} = {
     low: "error",
     medium: "warning",
     high: "success",
@@ -851,6 +1220,7 @@ onMounted(() => {
 <style scoped>
 @reference "tailwindcss";
 @reference "@nuxt/ui";
+
 :deep(.info-card) span.iconify {
   @apply cursor-pointer;
 }
@@ -889,7 +1259,7 @@ onMounted(() => {
 }
 
 .info-grid {
-  @apply flex  w-full flex-col gap-2.5 sm:w-1/2;
+  @apply flex w-full flex-col gap-2.5 sm:w-1/2;
 }
 
 .info-grid div {
@@ -1005,7 +1375,7 @@ onMounted(() => {
 }
 
 .stat-item {
-  @apply gap-1  w-1/3 flex flex-wrap;
+  @apply gap-1 w-1/3 flex flex-wrap;
 }
 
 .stat-item p {

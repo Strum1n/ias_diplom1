@@ -1,30 +1,26 @@
 <template>
   <div class="flex flex-col md:flex-row gap-2.5 mx-auto p-3 md:p-5 md:gap-5">
     <div class="md:hidden">
-      <UButton icon="i-heroicons-funnel" @click="toggleFiltersSidebar" variant="outline" color="primary" class="w-full justify-center">
+      <UButton icon="i-heroicons-funnel" @click="toggleFiltersSidebar" variant="outline" color="primary"
+        class="w-full justify-center">
         {{ showFilters ? "Скрыть фильтры" : "Показать фильтры" }}
       </UButton>
     </div>
-    <div
-      class="w-full md:w-[22%] md:max-h-full transition-all duration-300 ease-in-out"
-      :class="{
-        'max-h-0 overflow-hidden md:max-h-none md:overflow-visible': !showFilters,
-        'max-h-500 overflow-visible mb-4': showFilters,
-      }">
-      <FiltersSidebar ref="filtersRef" :initial-filters="filters" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
+    <div class="w-full md:w-[22%] md:max-h-full transition-all duration-300 ease-in-out" :class="{
+      'max-h-0 overflow-hidden md:max-h-none md:overflow-visible': !showFilters,
+      'max-h-500 overflow-visible mb-4': showFilters,
+    }">
+      <FiltersSidebar ref="filtersRef" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>
     <main class="flex-1 w-full">
       <div class="mb-4">
         <AddressAutocomplete @address-selected="handleAddressSearch" @search-triggered="handleAddressSearch" />
       </div>
-      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-2 md:px-3 text-xs md:text-sm" color="info">
+      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-2 md:px-3 text-xs md:text-sm"
+        color="info">
         <span class="truncate max-w-50 md:max-w-none">{{ addressForSearch }}</span>
-        <UButton
-          trailing-icon="heroicons:x-mark-16-solid"
-          variant="outline"
-          class="px-0 ring-[#e9f2ff] pt-2 border-0 bg-transparent ml-1"
-          color="info"
-          @click="clearAddressSearch"
+        <UButton trailing-icon="heroicons:x-mark-16-solid" variant="outline"
+          class="px-0 ring-[#e9f2ff] pt-2 border-0 bg-transparent ml-1" color="info" @click="clearAddressSearch"
           size="md"></UButton>
       </UBadge>
       <div v-if="offersError" class="error-message">
@@ -33,23 +29,19 @@
       <div class="flex flex-col sm:flex-row gap-3 sm:gap-8 text-sm items-start sm:items-center relative mb-5">
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
           <span class="font-[550] whitespace-nowrap">Всего объявлений: {{ totalCount.toLocaleString("ru-RU") }}</span>
-          <span class="font-[550] text-primary whitespace-nowrap">Подходящих: {{ filteredCount.toLocaleString("ru-RU") }}</span>
+          <span class="font-[550] text-primary whitespace-nowrap">Подходящих: {{ filteredCount.toLocaleString("ru-RU")
+          }}</span>
         </div>
         <div class="flex items-center gap-4 w-full sm:w-auto">
-          <USelect
-            v-model="sortValue"
-            :items="sortFields"
-            class="w-full sm:w-48"
-            value-key="value"
-            :icon="icon"
-            :ui="{
-              trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
-            }">
+          <USelect v-model="sortValue" :items="sortFields" class="w-full sm:w-48" value-key="value" :icon="icon" :ui="{
+            trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
+          }">
           </USelect>
 
           <SmartAssistantChat v-if="userRole == 'Админ'" />
 
-          <UButton icon="i-bx:export" @click="exportCsv()" class="sm:absolute sm:right-0" variant="outline" color="info" v-if="userRole == 'Админ'">
+          <UButton icon="i-bx:export" @click="exportCsv()" class="sm:absolute sm:right-0" variant="outline" color="info"
+            v-if="userRole == 'Админ'">
             <span class="hidden sm:inline">Экспорт в CSV</span>
           </UButton>
         </div>
@@ -63,34 +55,47 @@
         <p>Попробуйте изменить параметры фильтрации</p>
       </div>
       <div v-else class="flex flex-col gap-4">
-        <div variant="outline" v-for="offer in offers" :key="offer.id" class="offer-card md:p-6!" @click="openOffer(offer)">
+        <div variant="outline" v-for="offer in offers" :key="offer.id" class="offer-card md:p-6!"
+          @click="openOffer(offer)">
           <div class="flex flex-col sm:flex-row h-auto sm:h-42 relative">
-            <button class="favorite-heart top-1! right-1! z-10 sm:-top-5! sm:-right-5!" :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
-              <UIcon :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'" class="heart-icon" />
+            <button class="favorite-heart top-1! right-1! z-10 sm:-top-5! sm:-right-5!"
+              :class="{ active: isFavorite(offer.id) }" @click.stop="toggleFavorite(offer)">
+              <UIcon
+                :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'"
+                class="heart-icon" />
             </button>
             <div class="w-full sm:w-65 relative mb-4 sm:mb-0 h-48 sm:h-auto">
-              <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover w-full h-full rounded-lg" />
+              <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]"
+                class="object-cover w-full h-full rounded-lg" />
               <div v-else class="no-image w-full h-full">
                 <UIcon name="i-heroicons-photo" class="text-gray-400 text-2xl" />
               </div>
-              <UBadge v-if="offer.is_new_house == true" color="neutral" variant="solid" class="absolute top-2 left-2 text-xs"> Новостройка </UBadge>
+              <UBadge v-if="offer.is_new_house == true" color="neutral" variant="solid"
+                class="absolute top-2 left-2 text-xs"> Новостройка </UBadge>
             </div>
             <div class="offer-details w-full md:px-6!">
               <div class="offer-header flex-col sm:flex-row">
                 <div class="offer-title-section w-full sm:flex-1">
                   <div class="flex flex-wrap gap-1 sm:gap-2 mb-2">
-                    <UBadge v-if="offer.family_category" :color="getCategoryColor(offer.family_category)" variant="solid" class="category-badge text-xs">
+                    <UBadge v-if="offer.family_category" :color="getCategoryColor(offer.family_category)"
+                      variant="solid" class="category-badge text-xs">
                       Семья: {{ getCategoryLabel(offer.family_category) }}
-                      <span v-if="offer.family_score !== null && offer.family_score !== undefined" class="sm:inline"> ({{ offer.family_score.toFixed(2) }}) </span>
+                      <span v-if="offer.family_score !== null && offer.family_score !== undefined" class="sm:inline">
+                        ({{ offer.family_score.toFixed(2) }}) </span>
                     </UBadge>
-                    <UBadge v-if="offer.elderly_category" :color="getCategoryColor(offer.elderly_category)" variant="solid" class="category-badge text-xs">
+                    <UBadge v-if="offer.elderly_category" :color="getCategoryColor(offer.elderly_category)"
+                      variant="solid" class="category-badge text-xs">
                       Пожилые: {{ getCategoryLabel(offer.elderly_category) }}
-                      <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined" class="sm:inline"> ({{ offer.elderly_score.toFixed(2) }}) </span>
+                      <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined" class="sm:inline">
+                        ({{ offer.elderly_score.toFixed(2) }}) </span>
                     </UBadge>
-                    <UBadge v-if="offer.transport_access_category" :color="getCategoryColor(offer.transport_access_category)" variant="solid" class="category-badge text-xs">
+                    <UBadge v-if="offer.transport_access_category"
+                      :color="getCategoryColor(offer.transport_access_category)" variant="solid"
+                      class="category-badge text-xs">
                       Транспорт:
                       {{ getCategoryLabel(offer.transport_access_category) }}
-                      <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined" class="sm:inline">
+                      <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined"
+                        class="sm:inline">
                         ({{ offer.transport_access_score.toFixed(2) }})
                       </span>
                     </UBadge>
@@ -115,9 +120,14 @@
                       <UIcon name="temaki:room" class="size-5 sm:size-6" />
                       <span class="text-xs sm:text-sm">{{ offer.rooms_count }} комн.</span>
                     </div>
+                    <div v-if="offer.bedrooms_count" class="spec-item">
+                      <UIcon name="mdi:bed" class="size-5 sm:size-6" />
+                      <span class="text-xs sm:text-sm">{{ offer.bedrooms_count }} спален</span>
+                    </div>
                     <div v-if="offer.floor" class="spec-item">
                       <UIcon name="material-symbols:floor" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm">{{ offer.floor }}{{ offer.house_floors_count ? "/" + offer.house_floors_count : "" }} эт.</span>
+                      <span class="text-xs sm:text-sm">{{ offer.floor }}{{ offer.house_floors_count ? "/" +
+                        offer.house_floors_count : "" }} эт.</span>
                     </div>
                     <div v-if="offer.floor === null && offer.house_floors_count !== null" class="spec-item">
                       <UIcon name="material-symbols:floor" class="size-5 sm:size-6" />
@@ -158,8 +168,7 @@
                   </div>
                 </div>
                 <div class="offer-price-section flex justify-between pr-0! w-full sm:w-auto mt-4 sm:mt-0">
-                  <span class="creation-date spec-item text-xs sm:text-sm"
-                    >Опубликовано:
+                  <span class="creation-date spec-item text-xs sm:text-sm">Опубликовано:
                     {{
                       new Date(offer.creation_date_source).toLocaleString("ru-RU", {
                         timeZone: "Europe/Moscow",
@@ -169,17 +178,18 @@
                         hour: "2-digit",
                         minute: "2-digit",
                       })
-                    }}</span
-                  >
+                    }}</span>
                   <div class="flex flex-col items-center sm:flex-row sm:items-center gap-2 sm:gap-3">
-                    <UBadge v-if="offer.price_category" :color="getPriceCategoryColor(offer.price_category)" variant="solid" class="category-badge text-xs w-fit sm:mb-3.5">
+                    <UBadge v-if="offer.price_category" :color="getPriceCategoryColor(offer.price_category)"
+                      variant="solid" class="category-badge text-xs w-fit sm:mb-3.5">
                       {{ getPriceCategoryLabel(offer.price_category) }}
                     </UBadge>
                     <div class="flex flex-col">
                       <div class="offer-price text-lg sm:text-xl">
                         {{ formatPrice(offer.price) }}
                       </div>
-                      <div class="price-per-meter text-sm sm:text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
+                      <div class="price-per-meter text-sm sm:text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -190,40 +200,38 @@
       </div>
       <div class="pagination-container" v-if="totalPages > 1">
         <div class="pagination sm:flex-row">
-          <UButton @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" variant="outline" class="pagination-button sm:mb-0">
+          <UButton @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" variant="outline"
+            class="pagination-button sm:mb-0">
             <UIcon name="i-heroicons-chevron-left" class="size-4" />
             <span class="hidden sm:inline">Назад</span>
           </UButton>
           <div class="page-numbers flex-wrap justify-center my-2 sm:my-0">
-            <UButton v-if="currentPage > 3" @click="goToPage(1)" :variant="currentPage === 1 ? 'solid' : 'outline'" class="page-button hidden sm:inline-block"> 1 </UButton>
+            <UButton v-if="currentPage > 3" @click="goToPage(1)" :variant="currentPage === 1 ? 'solid' : 'outline'"
+              class="page-button hidden sm:inline-block"> 1 </UButton>
             <span v-if="currentPage > 4" class="page-ellipsis hidden sm:inline">...</span>
-            <UButton
-              v-for="page in visiblePages"
-              :key="page"
-              @click="goToPage(page)"
+            <UButton v-for="page in visiblePages" :key="page" @click="goToPage(page)"
               :variant="page === currentPage ? 'solid' : 'outline'"
-              :color="page === currentPage ? 'primary' : 'neutral'"
-              class="page-button">
+              :color="page === currentPage ? 'primary' : 'neutral'" class="page-button">
               {{ page }}
             </UButton>
             <span v-if="currentPage < totalPages - 3" class="page-ellipsis hidden sm:inline">...</span>
-            <UButton
-              v-if="currentPage < totalPages - 2"
-              @click="goToPage(totalPages)"
-              :variant="currentPage === totalPages ? 'solid' : 'outline'"
-              class="page-button hidden sm:inline-block">
+            <UButton v-if="currentPage < totalPages - 2" @click="goToPage(totalPages)"
+              :variant="currentPage === totalPages ? 'solid' : 'outline'" class="page-button hidden sm:inline-block">
               {{ totalPages }}
             </UButton>
           </div>
-          <UButton @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" variant="outline" class="pagination-button sm:mt-0">
+          <UButton @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" variant="outline"
+            class="pagination-button sm:mt-0">
             <span class="hidden sm:inline">Вперед</span>
             <UIcon name="i-heroicons-chevron-right" class="size-4" />
           </UButton>
         </div>
         <div class="page-jump mt-4">
           <span class="jump-label text-xs sm:text-sm">Перейти на:</span>
-          <UInput v-model.number="jumpPage" type="number" :min="1" :max="totalPages" class="jump-input w-16 sm:w-20" @keyup.enter="goToPage(jumpPage)" />
-          <UButton @click="goToPage(jumpPage)" variant="outline" class="jump-button text-xs sm:text-sm"> Перейти </UButton>
+          <UInput v-model.number="jumpPage" type="number" :min="1" :max="totalPages" class="jump-input w-16 sm:w-20"
+            @keyup.enter="goToPage(jumpPage)" />
+          <UButton @click="goToPage(jumpPage)" variant="outline" class="jump-button text-xs sm:text-sm"> Перейти
+          </UButton>
         </div>
       </div>
     </main>
@@ -231,8 +239,10 @@
 </template>
 
 <script setup lang="ts">
+import type { SelectItem } from "@nuxt/ui";
 import { jwtDecode } from "jwt-decode";
 import type { OfferResponseFull } from "~/types/api";
+
 const { accessToken } = useAuth();
 const userRole = computed(() => {
   if (!accessToken.value) return "";
@@ -252,23 +262,8 @@ const showFilters = ref(false);
 const toggleFiltersSidebar = () => {
   showFilters.value = !showFilters.value;
 };
+const { getCategoryLabel } = useCategoryLabel();
 
-// const handleResize = () => {
-//   if (window.innerWidth >= 768) {
-//     showFilters.value = true;
-//   } else {
-//     showFilters.value = false;
-//   }
-// };
-
-// onMounted(() => {
-//   handleResize();
-//   window.addEventListener("resize", handleResize);
-// });
-
-// onUnmounted(() => {
-//   window.removeEventListener("resize", handleResize);
-// });
 
 const exportCsv = async () => {
   try {
@@ -348,50 +343,14 @@ const sortFields = ref<SelectItem[]>([
     icon: "material-symbols:arrow-downward-alt",
   },
 ]);
-
+const sortValue = ref(sortFields.value[7]?.value);
 const icon = computed(() => sortFields.value.find((item) => item.value === sortValue.value)?.icon);
 const { $api } = useNuxtApp();
-
+const limit = ref(20);
+const offset = ref(0);
 const jumpPage = ref(1);
-const route = useRoute();
-const router = useRouter();
-
-const limit = computed(() => Number(route.query.limit ?? 20));
-const offset = computed(() => Number(route.query.offset ?? 0));
-
-const sortValue = computed({
-  get() {
-    if (route.query.sort_by && route.query.sort_order) {
-      return `${route.query.sort_by}:${route.query.sort_order}`;
-    }
-    return "creation_date_source:desc";
-  },
-  set(val: string) {
-    const [sort_by, sort_order] = val.split(":");
-
-    router.replace({
-      query: {
-        ...route.query,
-        sort_by,
-        sort_order,
-        offset: 0,
-      },
-    });
-  },
-});
-
-const filters = computed(() => {
-  const query = { ...route.query };
-
-  delete query.sort_by;
-  delete query.sort_order;
-  delete query.limit;
-  delete query.offset;
-
-  return query;
-});
-
-const addressForSearch = computed(() => (route.query.address_query as string) || "");
+const currentFilters = ref<Filters>({});
+const addressForSearch = computed(() => currentFilters.value.address_query);
 
 const prepareRequestQuery = () => {
   const query: Record<string, any> = {
@@ -399,10 +358,23 @@ const prepareRequestQuery = () => {
     offset: offset.value,
   };
 
-  Object.entries(filters.value).forEach(([key, value]) => {
-    if (value == null || value === "") return;
-    query[key] = value;
-  });
+  if (currentFilters.value && Object.keys(currentFilters.value).length > 0) {
+    Object.entries(currentFilters.value).forEach(([key, value]) => {
+      if (value == null || value === "" || (Array.isArray(value) && value.length === 0)) return;
+
+      if (Array.isArray(value)) {
+        query[key] = value.filter((item) => item != null && item !== "");
+      } else if (typeof value === "boolean") {
+        if (value === true || value === false) {
+          query[key] = String(value);
+        }
+      } else if (typeof value === "object" && !Array.isArray(value)) {
+        query[key] = JSON.stringify(value);
+      } else {
+        query[key] = String(value);
+      }
+    });
+  }
 
   if (sortValue.value) {
     const [sort_by, sort_order] = sortValue.value.split(":");
@@ -413,23 +385,19 @@ const prepareRequestQuery = () => {
   return query;
 };
 
-const updateQuery = (newParams: Record<string, any>) => {
-  router.replace({
-    query: {
-      ...route.query,
-      ...newParams,
-      offset: 0,
-    },
-  });
-};
-
 const {
   data: offersData,
   pending: offersPending,
   error: offersError,
-} = useAsyncData("offers", () => $api("/offers", { params: prepareRequestQuery() }), {
-  watch: [route],
-});
+  refresh: refreshOffers,
+} = useAsyncData(
+  "offers",
+  () =>
+    $api("/offers", {
+      params: prepareRequestQuery(),
+    }),
+  {},
+);
 
 const offers = computed(() => offersData.value?.offers || []);
 const totalCount = computed(() => offersData.value?.total_count || 0);
@@ -484,41 +452,68 @@ const isFavorite = (offerId: number | null): boolean => {
   return offerId !== null && favoriteOffers.value.has(offerId);
 };
 
-const handleFiltersApply = (filtersData: Filters) => {
-  updateQuery(filtersData);
+const handleFiltersApply = async (filtersData: Filters) => {
+  console.log("Получены фильтры через событие:", filtersData);
+  offset.value = 0;
+  refreshFavorites();
+
+  currentFilters.value = {
+    ...filtersData,
+    ...("address_query" in currentFilters.value && {
+      address_query: currentFilters.value.address_query,
+    }),
+  };
+
+  console.log("Объединённые фильтры:", currentFilters.value);
+
+  if (window.innerWidth < 768) {
+    showFilters.value = false;
+  }
+
+  refreshOffers();
 };
 
-const handleFiltersReset = () => {
-  const { address_query } = route.query;
+const handleFiltersReset = async () => {
+  offset.value = 0;
 
-  router.replace({
-    query: address_query ? { address_query } : {},
-  });
+  const filtersToKeep: Partial<Filters> = {};
+
+  if (currentFilters.value.address_query) {
+    filtersToKeep.address_query = currentFilters.value.address_query;
+  }
+
+  currentFilters.value = { ...filtersToKeep };
+
+  refreshFavorites();
+  refreshOffers();
 };
 
-const handleAddressSearch = (query: string) => {
+const handleAddressSearch = async (query: string) => {
   if (!query.trim()) {
     clearAddressSearch();
     return;
   }
 
-  updateQuery({ address_query: query });
+  currentFilters.value = {
+    ...currentFilters.value,
+    address_query: query,
+  };
+
+  offset.value = 0;
+  refreshOffers();
 };
 
-const clearAddressSearch = () => {
-  const { address_query, ...filtersWithoutAddress } = route.query;
-  router.replace({
-    query: filtersWithoutAddress,
-  });
+const clearAddressSearch = async () => {
+  const { address_query, ...filtersWithoutAddress } = currentFilters.value;
+  currentFilters.value = filtersWithoutAddress;
+  offset.value = 0;
+  refreshOffers();
 };
 
-const goToPage = (page: number) => {
-  router.replace({
-    query: {
-      ...route.query,
-      offset: (page - 1) * limit.value,
-    },
-  });
+const goToPage = async (page: number) => {
+  if (page < 1 || page > totalPages.value) return;
+  offset.value = (page - 1) * limit.value;
+  refreshOffers();
 };
 
 const openOffer = (offer: OfferResponseFull) => {
@@ -567,18 +562,10 @@ const getCategoryColor = (category: string) => {
   }
 };
 
-const getCategoryLabel = (category: string) => {
-  switch (category) {
-    case "high":
-      return "Высокая";
-    case "medium":
-      return "Средняя";
-    case "low":
-      return "Низкая";
-    default:
-      return category;
-  }
-};
+watch(sortValue, async () => {
+  offset.value = 0;
+  refreshOffers();
+});
 
 watch(currentPage, (newPage) => {
   jumpPage.value = newPage;
@@ -588,6 +575,7 @@ watch(currentPage, (newPage) => {
 <style scoped>
 @reference "tailwindcss";
 @reference "@nuxt/ui";
+
 .offer-card {
   @apply cursor-pointer ring-1 ring-default rounded-lg transition-all duration-250 p-2 hover:ring-[#c1f4eb] hover:bg-[#c1f4eb];
 }
@@ -597,7 +585,7 @@ watch(currentPage, (newPage) => {
 }
 
 .favorite-heart {
-  @apply absolute  bg-white/90 rounded-full w-8 h-8 flex justify-center items-center hover:text-red-500 hover:bg-neutral-100;
+  @apply absolute bg-white/90 rounded-full w-8 h-8 flex justify-center items-center hover:text-red-500 hover:bg-neutral-100;
 }
 
 .favorite-heart.active {
@@ -721,9 +709,11 @@ watch(currentPage, (newPage) => {
   .creation-date {
     @apply static text-xs mt-2;
   }
+
   .offer-price-section {
     @apply flex flex-row;
   }
+
   .favorite-heart {
     @apply absolute -top-55 right-2;
   }

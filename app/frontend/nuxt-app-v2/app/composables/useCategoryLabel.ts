@@ -6,11 +6,11 @@ export const useCategoryLabel = () => {
   ): string => {
     switch (category) {
       case "high":
-        return "Высокая"
+        return "Высокий"
       case "medium":
-        return "Средняя"
+        return "Средний"
       case "low":
-        return "Низкая"
+        return "Низкий"
       case "cheap":
         return "Ниже рынка"
       case "normal":

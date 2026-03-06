@@ -45,8 +45,7 @@
 
 <script setup lang="ts">
 import type { FormError } from "@nuxt/ui";
-import { useRoute } from "vue-router";
-import { useAuth } from "~/composables/useAuth";
+
 
 const { handleLogin, loading, error } = useAuth();
 const route = useRoute();

@@ -6,9 +6,11 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.backend.db.config import BaseModel
-from app.backend.db.models import *  # noqa: F403
+from app.backend.db.models.offer import Offer
 
+from app.backend.db.config import BaseModel
+
+print("Alembic видит таблицы:", BaseModel.metadata.tables.keys())
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -30,18 +32,6 @@ target_metadata = BaseModel.metadata
 # ... etc.
 
 
-def include_object(object, name, type_, reflected, compare_to):
-    if type_ == "table":
-        exclude_tables = config.get_section("alembic").get("exclude_tables", "")
-
-        if exclude_tables:
-            excluded_tables = [t.strip() for t in exclude_tables.split(",")]
-            if name in excluded_tables:
-                return False
-
-    return True
-
-
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -55,14 +45,19 @@ def run_migrations_offline() -> None:
 
     """
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url, target_metadata=target_metadata, literal_binds=True, dialect_opts={"paramstyle": "named"}, include_object=include_object)
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
 
     with context.begin_transaction():
         context.run_migrations()
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata, include_object=include_object)
+    context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
         context.run_migrations()

@@ -8,9 +8,16 @@ from geopy.distance import geodesic
 import time
 from geoalchemy2 import WKTElement
 import overpy
-from app.backend.db.models import *
+from app.backend.db.models1 import *
 
-from app.backend.parsers.utils import add_address_infrastructure_link, add_offer_to_db, check_existens_offers, check_identical_offers, create_offer_from_data, find_types
+from app.backend.parsers.utils import (
+    add_address_infrastructure_link,
+    add_offer_to_db,
+    check_existens_offers,
+    check_identical_offers,
+    create_offer_from_data,
+    find_types,
+)
 import fake_useragent
 import utils
 from zendriver.core.connection import ProtocolException
@@ -49,14 +56,19 @@ async def parse_offers_cian():
                 params = params.replace(f"&{filters}={config[filters]}", "")
             params = params.replace("room", f"room{config['room']}")
             logging.info(params)
-            parse_url = "https://cian.ru/cat.php?deal_type=sale&engine_version=2&sort=creation_date_asc&" + params
+            parse_url = (
+                "https://cian.ru/cat.php?deal_type=sale&engine_version=2&sort=creation_date_asc&"
+                + params
+            )
 
             page = await browser.get(parse_url)
 
             await page.wait_for_ready_state("loading", timeout=30)
             no_properties = None
             try:
-                no_properties = await page.find(text="У нас ещё нет таких объявлений", best_match=True, timeout=3)
+                no_properties = await page.find(
+                    text="У нас ещё нет таких объявлений", best_match=True, timeout=3
+                )
             except TimeoutError:
                 pass
             has_properties = True if not no_properties else False
@@ -68,7 +80,9 @@ async def parse_offers_cian():
                 )
                 tasks = []
                 for url in urls:
-                    task = asyncio.create_task(parse_offer_to_db(browser, url.attrs["href"]))
+                    task = asyncio.create_task(
+                        parse_offer_to_db(browser, url.attrs["href"])
+                    )
                     tasks.append(task)
                     await asyncio.sleep(random.uniform(0, 0.1))
                 results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -80,10 +94,14 @@ async def parse_offers_cian():
                         if "Уже есть в БД" in str(result):
                             duplicates += 1
                         else:
-                            print(f"Ошибка в задаче {idx} (URL: {urls[idx].attrs['href']}): {str(result)}")
+                            print(
+                                f"Ошибка в задаче {idx} (URL: {urls[idx].attrs['href']}): {str(result)}"
+                            )
                             errors += 1
                         if errors > 10:
-                            print("Сработал антибот, завершаем работу, попробуй спарсить позже")
+                            print(
+                                "Сработал антибот, завершаем работу, попробуй спарсить позже"
+                            )
                             await browser.stop()
                             return
                     else:
@@ -94,11 +112,17 @@ async def parse_offers_cian():
                     f"Спарсили страницу {config['p']}, где добавлено в БД: {successful_page_tasks}, ошибок: {errors}, пропущено: {duplicates}, ВСЕГО спаршено {successful_tasks_total} / {total_offers}"
                 )
                 try:
-                    btn_next = await page.wait_for(selector='[data-name="Pagination"] > :last-child', timeout=3)
+                    btn_next = await page.wait_for(
+                        selector='[data-name="Pagination"] > :last-child', timeout=3
+                    )
                 except TimeoutError:
                     btn_next = None
 
-                is_last_page = True if btn_next is None or "disabled" in btn_next.attributes else False
+                is_last_page = (
+                    True
+                    if btn_next is None or "disabled" in btn_next.attributes
+                    else False
+                )
 
                 if is_last_page:
                     break
@@ -113,7 +137,9 @@ async def parse_offers_cian():
                     "--ignore-gpu-blocklist",
                     f"--user-agent={UA_DESKTOP.random}",
                 ]
-                browser = await zendriver.start(browser_args=browser_args_desktop, headless=True)
+                browser = await zendriver.start(
+                    browser_args=browser_args_desktop, headless=True
+                )
                 # await asyncio.sleep(5.33)
             else:
                 if config["offer_type"] == "suburban":
@@ -138,7 +164,9 @@ async def parse_offers_cian():
 
 
 async def parse_offer_to_db(browser: zendriver.Browser, url: str) -> Offer | None:
-    already_exist = await check_existens_offers(url, session_factory=async_session_maker)
+    already_exist = await check_existens_offers(
+        url, session_factory=async_session_maker
+    )
     if already_exist:
         logging.warning(f"{url} Уже есть в БД")
         raise Exception("Уже есть в БД")
@@ -158,19 +186,31 @@ async def parse_offer_to_db(browser: zendriver.Browser, url: str) -> Offer | Non
             await property_page.wait_for_ready_state("interactive", timeout=30)
             info_els = await property_page.find_all('phones":[{"countryCode', timeout=2)
             info = await info_els[0].get_html()
-            json_info_text = "{" + re.findall(r"\"offerData.*?seoData\"", info)[0] + ':""}}'
+            json_info_text = (
+                "{" + re.findall(r"\"offerData.*?seoData\"", info)[0] + ':""}}'
+            )
             offer_json = json.loads(json_info_text)
             creation_date = offer_json["offerData"]["offer"].get("creationDate")
             offerId = offer_json["offerData"]["offer"].get("id")
-            await property_page.get(f"https://api.cian.ru/offer-card/v1/get-offer-card-statistic/?offerCreationDate={creation_date[0:10]}&offerId={offerId}")
+            await property_page.get(
+                f"https://api.cian.ru/offer-card/v1/get-offer-card-statistic/?offerCreationDate={creation_date[0:10]}&offerId={offerId}"
+            )
             views_stats_text = await property_page.get_content()
             await property_page.close()
             views_stats_json = json.loads(re.findall(r"{\".+}", views_stats_text)[0])
             offer_json = offer_json["offerData"]
-            offer_json["dailyViews"] = views_stats_json.get("daily", {}).get("dailyViews", {})
+            offer_json["dailyViews"] = views_stats_json.get("daily", {}).get(
+                "dailyViews", {}
+            )
             offer_json["lastTenDaysViewsCount"] = (
-                int(re.findall(r"\d+", views_stats_json.get("daily", {}).get("totalViews", ""))[0])
-                if re.findall(r"\d+", views_stats_json.get("daily", {}).get("totalViews", ""))
+                int(
+                    re.findall(
+                        r"\d+", views_stats_json.get("daily", {}).get("totalViews", "")
+                    )[0]
+                )
+                if re.findall(
+                    r"\d+", views_stats_json.get("daily", {}).get("totalViews", "")
+                )
                 else 0
             )
             offer_json["url"] = url
@@ -187,9 +227,13 @@ async def parse_offer_to_db(browser: zendriver.Browser, url: str) -> Offer | Non
                 url,
             )
             if identical_offers:
-                print(f"Идентичные объявления {[offer.url for offer in identical_offers]} для {url}")
+                print(
+                    f"Идентичные объявления {[offer.url for offer in identical_offers]} для {url}"
+                )
                 raise Exception("Уже есть в БД", {url})
-            type_ids = await find_types(async_session_maker, address_info, new_offer_info)
+            type_ids = await find_types(
+                async_session_maker, address_info, new_offer_info
+            )
 
             if "suburban" in url:
                 infrastructure_info = await parse_infrastructure(
@@ -197,31 +241,47 @@ async def parse_offer_to_db(browser: zendriver.Browser, url: str) -> Offer | Non
                     radius=5000,
                 )
             else:
-                infrastructure_info = await parse_infrastructure(coordinates=(address_info["latitude"], address_info["longitude"]))
+                infrastructure_info = await parse_infrastructure(
+                    coordinates=(address_info["latitude"], address_info["longitude"])
+                )
 
-            new_offer = create_offer_from_data(new_offer_info=new_offer_info, address_info=address_info, type_ids=type_ids)
+            new_offer = create_offer_from_data(
+                new_offer_info=new_offer_info,
+                address_info=address_info,
+                type_ids=type_ids,
+            )
 
             address_id = await add_offer_to_db(new_offer, async_session_maker)
             if infrastructure_info:
-                await add_address_infrastructure_link(async_session_maker, address_id, infrastructure_info)
+                await add_address_infrastructure_link(
+                    async_session_maker, address_id, infrastructure_info
+                )
             # await property_page.close() if property_page else None
             # async with async_session_maker() as session:
             #     await update_price_categories_in_db(session)
             end_time = time.time()
-            logging.info(f"Удачно добавлено в бд за {(end_time - start_time):.3f} - {url}")
+            logging.info(
+                f"Удачно добавлено в бд за {(end_time - start_time):.3f} - {url}"
+            )
             return new_offer
         except ProtocolException as e:
-            print(f"Ошибка: {e} на странице: {url},  попытка {attempt + 1} из {max_retries}")
+            print(
+                f"Ошибка: {e} на странице: {url},  попытка {attempt + 1} из {max_retries}"
+            )
             await property_page.close() if property_page else None
             await asyncio.sleep(5 * (attempt))
         except TimeoutError as e:
-            print(f"Ошибка: {e} на странице: {url},  попытка {attempt + 1} из {max_retries}")
+            print(
+                f"Ошибка: {e} на странице: {url},  попытка {attempt + 1} из {max_retries}"
+            )
             await property_page.close() if property_page else None
             await asyncio.sleep(5 * (attempt))
         except Exception as e:
             if "Уже есть в БД" in str(e):
                 raise Exception("Уже есть в БД")
-            print(f"Ошибка: {e} на странице: {url},  попытка {attempt + 1} из {max_retries}")
+            print(
+                f"Ошибка: {e} на странице: {url},  попытка {attempt + 1} из {max_retries}"
+            )
             await property_page.close() if property_page else None
             await asyncio.sleep(5 * (attempt))
     print(f"НЕУДАЧА {url}")
@@ -238,31 +298,59 @@ async def parse_offer_info(
         seller = offer_info_json.get("agent", {})
         features = offer_info_json.get("features", [])
 
-        flat_info = next((f["features"] for f in features if f["title"] == "О квартире"), []) or next((f["features"] for f in features if f["title"] == "О доме"), [])
+        flat_info = next(
+            (f["features"] for f in features if f["title"] == "О квартире"), []
+        ) or next((f["features"] for f in features if f["title"] == "О доме"), [])
         flat_info += next(
-            (f["features"] for f in features if f["title"] == "Коммуникации и удобства"),
+            (
+                f["features"]
+                for f in features
+                if f["title"] == "Коммуникации и удобства"
+            ),
             [],
         )
         flat_info = {fi["label"]: fi["value"] for fi in flat_info}
 
-        building_info = next((f["features"] for f in features if f["title"] == "Об участке"), None) or next((f["features"] for f in features if f["title"] == "О доме"), {})
+        building_info = next(
+            (f["features"] for f in features if f["title"] == "Об участке"), None
+        ) or next((f["features"] for f in features if f["title"] == "О доме"), {})
         building_info = {bi["label"]: bi["value"] for bi in building_info}
 
         new_offer = {
             "url": offer_info_json.get("url"),
             "source": "cian",
             "update_date_source": offer.get("editDate"),
-            "views_count": int(re.findall(r"(\d+)", offer_info_json.get("stats", {}).get("totalViewsFormattedString"))[0])
-            if re.findall(r"(\d+)", offer_info_json.get("stats", {}).get("totalViewsFormattedString"))
+            "views_count": int(
+                re.findall(
+                    r"(\d+)",
+                    offer_info_json.get("stats", {}).get("totalViewsFormattedString"),
+                )[0]
+            )
+            if re.findall(
+                r"(\d+)",
+                offer_info_json.get("stats", {}).get("totalViewsFormattedString"),
+            )
             else 0,
-            "daily_views_count": re.findall(r" (\d+) за", offer_info_json.get("stats", {}).get("totalViewsFormattedString", ""))[0]
-            if re.findall(r" (\d+) за", offer_info_json.get("stats", {}).get("totalViewsFormattedString", ""))
+            "daily_views_count": re.findall(
+                r" (\d+) за",
+                offer_info_json.get("stats", {}).get("totalViewsFormattedString", ""),
+            )[0]
+            if re.findall(
+                r" (\d+) за",
+                offer_info_json.get("stats", {}).get("totalViewsFormattedString", ""),
+            )
             else 0,
             "views_history": offer_info_json.get("dailyViews"),
             "last_ten_days_views_count": offer_info_json.get("lastTenDaysViewsCount"),
             "creation_date_source": offer.get("creationDate"),
-            "is_new_house": True if "Новостройка" in flat_info.get("Тип жилья", []) else False if "Вторичка" in flat_info.get("Тип жилья", []) else None,
-            "images_urls": [img["fullUrl"] for img in offer.get("photos")] if offer.get("photos") else None,
+            "is_new_house": True
+            if "Новостройка" in flat_info.get("Тип жилья", [])
+            else False
+            if "Вторичка" in flat_info.get("Тип жилья", [])
+            else None,
+            "images_urls": [img["fullUrl"] for img in offer.get("photos")]
+            if offer.get("photos")
+            else None,
             "offer_type": "Продажа" if offer.get("dealType") == "sale" else "Аренда",
             "property_type": "Апартаменты"
             if offer.get("offerType") == "flat" and offer.get("isApartments")
@@ -278,10 +366,17 @@ async def parse_offer_info(
             or flat_info.get("Год постройки")
             or offer.get("building", {}).get("buildYear")
             or offer.get("building", {}).get("deadline", {}).get("year"),
-            "is_build_complete": offer.get("building", {}).get("deadline", {}).get("isComplete")
-            if offer.get("building", {}).get("deadline", {}).get("isComplete") is not None
+            "is_build_complete": offer.get("building", {})
+            .get("deadline", {})
+            .get("isComplete")
+            if offer.get("building", {}).get("deadline", {}).get("isComplete")
+            is not None
             else False
-            if datetime.now().year < offer.get("newbuilding", {}).get("house", {}).get("finishDate", {}).get("year", 0)
+            if datetime.now().year
+            < offer.get("newbuilding", {})
+            .get("house", {})
+            .get("finishDate", {})
+            .get("year", 0)
             else None,
             "description": offer.get("description"),
             "contact_phone": "+7" + offer.get("phones")[0]["number"],
@@ -294,29 +389,49 @@ async def parse_offer_info(
                 if seller.get("name")
                 else "Автор объявления"
             ),
-            "seller_name": seller.get("name") if seller.get("companyName") == "Частный маклер" else seller.get("companyName") or seller.get("name") or str(seller.get("id")),
+            "seller_name": seller.get("name")
+            if seller.get("companyName") == "Частный маклер"
+            else seller.get("companyName")
+            or seller.get("name")
+            or str(seller.get("id")),
             "seller_foundation_date": (
                 offer_info_json.get("company", {}).get("yearFoundation")
                 if seller.get("userType") == "developer"
-                else seller.get("masterAgent", {}).get("experience") or (re.findall(r"\d+", seller.get("experience"))[0] if seller.get("experience") else None)
+                else seller.get("masterAgent", {}).get("experience")
+                or (
+                    re.findall(r"\d+", seller.get("experience"))[0]
+                    if seller.get("experience")
+                    else None
+                )
             ),
             "price": offer.get("priceTotal"),
             "price_history": offer_info_json.get("priceChanges"),
             "price_per_square_meter": next(
-                (re.findall(r"\d+", item["value"].replace(" ", ""))[0] for item in offer_info_json.get("sidebar") if item["title"] == "Цена за метр"),
+                (
+                    re.findall(r"\d+", item["value"].replace(" ", ""))[0]
+                    for item in offer_info_json.get("sidebar")
+                    if item["title"] == "Цена за метр"
+                ),
                 None,
             ),
-            "rooms_count": 0 if offer.get("flatType") == "studio" else 10 if offer.get("offerType") == "flat" and offer.get("roomsCount") is None else offer.get("roomsCount"),
+            "rooms_count": 0
+            if offer.get("flatType") == "studio"
+            else 10
+            if offer.get("offerType") == "flat" and offer.get("roomsCount") is None
+            else offer.get("roomsCount"),
             "bedrooms_count": offer.get("bedroomsCount"),
             "total_area": offer.get("totalArea"),
             "living_area": offer.get("livingArea"),
             "land_area": offer.get("land", {}).get("area"),
             "kitchen_area": offer.get("kitchenArea"),
             "floor": offer.get("floorNumber"),
-            "house_floors_count": offer.get("building", {}).get("floorsCount") or flat_info.get("Количество этажей"),
+            "house_floors_count": offer.get("building", {}).get("floorsCount")
+            or flat_info.get("Количество этажей"),
             "ceiling_height": offer.get("building", {}).get("ceilingHeight"),
             "balconies_count": offer.get("loggiasCount") or offer.get("balconiesCount"),
-            "bathrooms_count": offer.get("combinedWcsCount") or offer.get("separateWcsCount") or offer.get("wcsCount"),
+            "bathrooms_count": offer.get("combinedWcsCount")
+            or offer.get("separateWcsCount")
+            or offer.get("wcsCount"),
             "bathroom_type": "Раздельный"
             if offer.get("separateWcsCount")
             else "Совмещенный"
@@ -340,36 +455,53 @@ async def parse_offer_info(
             "has_furniture": offer.get("hasFurniture"),
             "renovation_type": flat_info.get("Отделка") or flat_info.get("Ремонт"),
             "window_view_type": flat_info.get("Вид из окон"),
-            "house_material_type": building_info.get("Тип дома") or flat_info.get("Материал дома"),
+            "house_material_type": building_info.get("Тип дома")
+            or flat_info.get("Материал дома"),
             "parking_type": building_info.get("Парковка"),
-            "heating_type": building_info.get("Отопление") or flat_info.get("Отопление"),
-            "water_supply_type": building_info.get("Водоснабжение") or flat_info.get("Водоснабжение"),
-            "gas_type": building_info.get("Газоснабжение") or (flat_info.get("Газ").replace("\xa0", " ") if flat_info.get("Газ") else None),
-            "sewerage_type": building_info.get("Канализация") or flat_info.get("Канализация"),
+            "heating_type": building_info.get("Отопление")
+            or flat_info.get("Отопление"),
+            "water_supply_type": building_info.get("Водоснабжение")
+            or flat_info.get("Водоснабжение"),
+            "gas_type": building_info.get("Газоснабжение")
+            or (
+                flat_info.get("Газ").replace("\xa0", " ")
+                if flat_info.get("Газ")
+                else None
+            ),
+            "sewerage_type": building_info.get("Канализация")
+            or flat_info.get("Канализация"),
             "land_type": building_info.get("Статус участка"),
             "has_electricity": offer.get("hasElectricity"),
             "has_sewerage": offer.get("hasDrainage"),
             "has_gas": False
             if (flat_info.get("Газ") or building_info.get("Газоснабжение")) == "Нет"
             else True
-            if (flat_info.get("Газ") or building_info.get("Газоснабжение")) and (flat_info.get("Газ") or building_info.get("Газоснабжение")) != "Нет информации"
+            if (flat_info.get("Газ") or building_info.get("Газоснабжение"))
+            and (flat_info.get("Газ") or building_info.get("Газоснабжение"))
+            != "Нет информации"
             else None,
             "has_heating": False
             if (flat_info.get("Отопление") or building_info.get("Отопление")) == "Нет"
             else True
-            if (flat_info.get("Отопление") or building_info.get("Отопление")) and (flat_info.get("Отопление") or building_info.get("Отопление")) != "Нет информации"
+            if (flat_info.get("Отопление") or building_info.get("Отопление"))
+            and (flat_info.get("Отопление") or building_info.get("Отопление"))
+            != "Нет информации"
             else None,
             "has_water_supply": False
-            if (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение")) == "Нет"
+            if (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение"))
+            == "Нет"
             else True
             if (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение"))
-            and (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение")) != "Нет информации"
+            and (flat_info.get("Водоснабжение") or building_info.get("Водоснабжение"))
+            != "Нет информации"
             else None,
             "has_garage": offer.get("hasGarage"),
             "has_pool": offer.get("hasPool"),
             "has_bathhouse": offer.get("hasBathhouse"),
             "has_guard": offer.get("hasSecurity"),
-            "has_terrace": "Терраса" in flat_info.get("Дополнительно") if flat_info.get("Дополнительно") else None,
+            "has_terrace": "Терраса" in flat_info.get("Дополнительно")
+            if flat_info.get("Дополнительно")
+            else None,
             "has_garbage_chute": offer.get("building", {}).get("hasGarbageChute"),
         }
         new_offer["has_elevator"] = True if new_offer["elevators_count"] else None
@@ -377,10 +509,14 @@ async def parse_offer_info(
         address = await parse_address(offer_info_json)
         return new_offer, address
     except Exception as e:
-        logging.error(f"Произошла ошибка: {e} в {offer_info_json['url']}", exc_info=True)
+        logging.error(
+            f"Произошла ошибка: {e} в {offer_info_json['url']}", exc_info=True
+        )
 
 
-async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1500, timeout: int = 25) -> dict[str, list[dict[str, str | tuple[float, float]]]] | None:
+async def parse_infrastructure(
+    coordinates: tuple[float, float], radius: int = 1500, timeout: int = 25
+) -> dict[str, list[dict[str, str | tuple[float, float]]]] | None:
     lat, lon = coordinates
     result = {
         "Супермаркет": [],
@@ -442,7 +578,10 @@ async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1
                 result["Парк"].append(coords_with_name)
             elif tags.get("highway") == "bus_stop":
                 result["Остановка"].append(coords_with_name)
-            elif tags.get("station") == "subway" or tags.get("railway") == "subway_entrance":
+            elif (
+                tags.get("station") == "subway"
+                or tags.get("railway") == "subway_entrance"
+            ):
                 result["Станция метро"].append(coords_with_name)
             elif tags.get("place") in ["city", "town"]:
                 settlement_candidates.append(coords_with_name)
@@ -502,34 +641,64 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
             "latitude": geo["coordinates"]["lat"],
             "longitude": geo["coordinates"]["lng"],
             "house_number": next(
-                (item["fullName"] for item in address_info if item["type"] == "house" or item["locationTypeId"] == 288),
+                (
+                    item["fullName"]
+                    for item in address_info
+                    if item["type"] == "house" or item["locationTypeId"] == 288
+                ),
                 None,
             ),
         }
 
         if region_match := next(
-            (item for item in address_info if item["locationTypeId"] == 2 or "Москва" in item["fullName"]),
+            (
+                item
+                for item in address_info
+                if item["locationTypeId"] == 2 or "Москва" in item["fullName"]
+            ),
             None,
         ):
             address["region_full_name"] = region_match["fullName"]
             address["region_name"] = region_match["name"]
             address["region_short_name"] = region_match["shortName"]
 
-        city_matches = [item["shortName"] for item in address_info if item["locationTypeId"] in [161, 1, 149] and len(item["fullName"].split()) == 1]
+        city_matches = [
+            item["shortName"]
+            for item in address_info
+            if item["locationTypeId"] in [161, 1, 149]
+            and len(item["fullName"].split()) == 1
+        ]
 
         if address.get("region_name") and address["region_name"] != "Москва":
             city = next(
-                (item for item in address_info if item["locationTypeId"] in [161, 1, 149] and len(item["fullName"].split()) == 1),
+                (
+                    item
+                    for item in address_info
+                    if item["locationTypeId"] in [161, 1, 149]
+                    and len(item["fullName"].split()) == 1
+                ),
                 None,
             )
         elif city_matches == 2:
             city = next(
-                (item for item in address_info if item["locationTypeId"] in [161, 1, 149] and item["name"] != "Москва" and len(item["fullName"].split()) == 1),
+                (
+                    item
+                    for item in address_info
+                    if item["locationTypeId"] in [161, 1, 149]
+                    and item["name"] != "Москва"
+                    and len(item["fullName"].split()) == 1
+                ),
                 None,
             )
         else:
             city = next(
-                (item for item in address_info if item["locationTypeId"] in [161, 1, 149] and item["name"] and len(item["fullName"].split()) == 1),
+                (
+                    item
+                    for item in address_info
+                    if item["locationTypeId"] in [161, 1, 149]
+                    and item["name"]
+                    and len(item["fullName"].split()) == 1
+                ),
                 None,
             )
         if city:
@@ -538,19 +707,33 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
         # TODO ДОБАВИТЬ СУПЕРМУНИЦИПАЛИТИ
 
         if super_municipality_match := next(
-            (item for item in address_info if item["locationTypeId"] in [141, -1] and item["type"] == "location"),
+            (
+                item
+                for item in address_info
+                if item["locationTypeId"] in [141, -1] and item["type"] == "location"
+            ),
             None,
         ):
-            address["super_municipality_full_name"] = super_municipality_match["fullName"]
+            address["super_municipality_full_name"] = super_municipality_match[
+                "fullName"
+            ]
             address["super_municipality_full_name"] = (
-                address["super_municipality_full_name"][0] + " " + address["super_municipality_full_name"][1:]
+                address["super_municipality_full_name"][0]
+                + " "
+                + address["super_municipality_full_name"][1:]
                 if len(address["super_municipality_full_name"]) == 3
-                else address["super_municipality_full_name"][0] + " " + address["super_municipality_full_name"][1] + " " + address["super_municipality_full_name"][2:]
+                else address["super_municipality_full_name"][0]
+                + " "
+                + address["super_municipality_full_name"][1]
+                + " "
+                + address["super_municipality_full_name"][2:]
                 if len(address["super_municipality_full_name"]) == 4
                 else address["super_municipality_full_name"]
             )
             address["super_municipality_name"] = super_municipality_match["name"]
-            address["super_municipality_short_name"] = super_municipality_match["shortName"]
+            address["super_municipality_short_name"] = super_municipality_match[
+                "shortName"
+            ]
 
         if municipality_match := next(
             (
@@ -559,22 +742,35 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
                 if item["locationTypeId"] in [210, 197, 219, 282, 325, -1, 197]
                 and item["type"] not in ["raion", "street", "house", "mikroraion"]
                 and address.get("super_municipality_full_name") is None
-                or (item["type"] == "okrug" and address.get("super_municipality_full_name") is None)
+                or (
+                    item["type"] == "okrug"
+                    and address.get("super_municipality_full_name") is None
+                )
             ),
             None,
         ):
             address["municipality_full_name"] = municipality_match["fullName"]
             address["municipality_full_name"] = (
-                address["municipality_full_name"][0] + " " + address["municipality_full_name"][1:]
+                address["municipality_full_name"][0]
+                + " "
+                + address["municipality_full_name"][1:]
                 if len(address["municipality_full_name"]) == 3
-                else address["municipality_full_name"][0] + " " + address["municipality_full_name"][1] + " " + address["municipality_full_name"][2:]
+                else address["municipality_full_name"][0]
+                + " "
+                + address["municipality_full_name"][1]
+                + " "
+                + address["municipality_full_name"][2:]
                 if len(address["municipality_full_name"]) == 4
                 else address["municipality_full_name"]
             )
             address["municipality_name"] = municipality_match["name"]
             address["municipality_short_name"] = municipality_match["shortName"]
 
-        if settlement_matches := [item for item in address_info if item["locationTypeId"] in [161, 1, 149, 186, 185, 187, 177]]:
+        if settlement_matches := [
+            item
+            for item in address_info
+            if item["locationTypeId"] in [161, 1, 149, 186, 185, 187, 177]
+        ]:
             address["settlement_full_name"] = settlement_matches[0]["shortName"]
             address["settlement_name"] = settlement_matches[0]["name"]
             address["settlement_short_name"] = settlement_matches[0]["fullName"]
@@ -584,7 +780,11 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
                 address["settlement_short_name"] = settlement_matches[1]["fullName"]
 
         if partnership_match := next(
-            (item for item in address_info if item["locationTypeId"] in [415, 373, 249, 260, 325, 142, 199]),
+            (
+                item
+                for item in address_info
+                if item["locationTypeId"] in [415, 373, 249, 260, 325, 142, 199]
+            ),
             None,
         ):
             address["partnership_full_name"] = partnership_match["shortName"]
@@ -592,7 +792,11 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
             address["partnership_short_name"] = partnership_match["fullName"]
 
         if district_match := next(
-            (item for item in address_info if item["type"] == "raion" or item["locationTypeId"] in [141]),
+            (
+                item
+                for item in address_info
+                if item["type"] == "raion" or item["locationTypeId"] in [141]
+            ),
             None,
         ):
             address["district_full_name"] = district_match["fullName"]
@@ -600,27 +804,45 @@ async def parse_address(json_info: dict) -> dict[str, str | int | float] | None:
             address["district_short_name"] = district_match["shortName"]
 
         if microdistrict_match := next(
-            (item for item in address_info if item["type"] == "mikroraion" or item["locationTypeId"] == 174),
+            (
+                item
+                for item in address_info
+                if item["type"] == "mikroraion" or item["locationTypeId"] == 174
+            ),
             None,
         ):
             address["microdistrict_full_name"] = microdistrict_match["fullName"]
             address["microdistrict_name"] = microdistrict_match["name"]
             address["microdistrict_short_name"] = microdistrict_match["shortName"]
 
-        if street_match := next((item for item in address_info if item["type"] == "street"), None):
+        if street_match := next(
+            (item for item in address_info if item["type"] == "street"), None
+        ):
             address["street_full_name"] = street_match["fullName"]
             address["street_name"] = street_match["name"]
             address["street_short_name"] = street_match["shortName"]
 
         if residential_complex_match := next(
-            (item for item in address_info if item["locationTypeId"] in [213, 193, 208]),
+            (
+                item
+                for item in address_info
+                if item["locationTypeId"] in [213, 193, 208]
+            ),
             None,
         ):
-            address["residential_complex_full_name"] = residential_complex_match["fullName"]
+            address["residential_complex_full_name"] = residential_complex_match[
+                "fullName"
+            ]
             address["residential_complex_name"] = residential_complex_match["name"]
-            address["residential_complex_short_name"] = residential_complex_match["shortName"]
+            address["residential_complex_short_name"] = residential_complex_match[
+                "shortName"
+            ]
 
-            address["is_complex_suburban"] = True if "коттеджный поселок" in address["residential_complex_short_name"] else False
+            address["is_complex_suburban"] = (
+                True
+                if "коттеджный поселок" in address["residential_complex_short_name"]
+                else False
+            )
 
         address["full_address"] = ", ".join(item["fullName"] for item in address_info)
 

@@ -16,7 +16,7 @@ from fake_useragent import UserAgent
 from geopy.distance import geodesic
 from jsonpath_ng import parse
 
-from app.backend.db.models import *
+from app.backend.db.models1 import *
 from app.backend.parsers.parser_cian import parse_offer_to_db
 from app.backend.parsers.utils import (
     add_address_infrastructure_link,

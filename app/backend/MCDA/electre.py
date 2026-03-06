@@ -6,29 +6,18 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
     evaluations = evaluations.astype(float).copy()
     weights = np.array(weights, dtype=float)
 
-    # Инверсия минимизируемых критериев
     for j in range(n):
         if is_min[j]:
             evaluations[:, j] = -evaluations[:, j]
 
-    # Нормализация (евклидова)
-    normalized = np.zeros_like(evaluations, dtype=float)
-    for j in range(n):
-        norm = np.sqrt(np.sum(evaluations[:, j] ** 2))
-        if norm != 0:
-            normalized[:, j] = evaluations[:, j] / norm
-
-    weighted = normalized * weights
     total_weight = np.sum(weights)
 
-    # Диапазон для формулы несогласия
     L = np.max(evaluations, axis=0) - np.min(evaluations, axis=0)
 
     c = np.zeros((m, m))
     d = np.zeros((m, m))
     dominance_info = {}
 
-    # Вычисляем матрицы c и d и подробную информацию о сравнении всех альтернатив
     for i in range(m):
         dominance_info[i] = {}
         for k in range(m):
@@ -67,7 +56,6 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
     log = []
     step_id = 0
 
-    # Основной цикл поиска ядра
     while alpha <= 1.0 and beta >= 0.0:
         step_id += 1
         outranking = (c >= alpha) & (d <= beta)
@@ -103,7 +91,6 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
     if verbose and len(best_kernel) != 1:
         print("Одноэлементное ядро не найдено")
 
-    # Фильтруем dominance_info только по альтернативам из ядра
     filtered_dominance = {}
     if best_kernel is not None:
         for i in best_kernel:

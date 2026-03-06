@@ -7,7 +7,7 @@ from app.backend.api.analysis_routers import analysis_router
 from app.backend.api.auth_routers import auth_router
 from app.backend.api.offer_routers import offer_router
 from app.backend.auth_utils.auth import get_current_user, oauth2_scheme
-from app.backend.db.models import User
+from app.backend.db.models1 import User
 
 app = FastAPI()
 app.include_router(auth_router)
@@ -25,7 +25,11 @@ app.include_router(analysis_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # Nuxt dev server
+        "http://localhost:3000",
+        "http://localhost",
+        "http://localhost:8000",
+        "http://frontend:3000",
+        "http://127.0.0.1:3000",  # Nuxt dev server
         "http://192.168.0.168:3000",  # Ваш локальный IP с портом
         "http://192.168.1.*:3000",  # Все устройства в сети
         "http://192.168.0.168:8000",

@@ -1,9 +1,13 @@
 import csv
 import io
-from typing import Annotated, Literal
+from typing import Annotated, Literal, cast
+from wsgiref import headers
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi.responses import StreamingResponse
+from shapely import Geometry
 from sqlalchemy.orm import selectinload
 from sqlmodel import and_, asc, desc, select, text
+import xlsxwriter
 from app.backend.auth_utils.auth import oauth2_scheme
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.backend.api.response_models import (
@@ -12,15 +16,21 @@ from app.backend.api.response_models import (
 )
 from app.backend.auth_utils.auth import get_current_user
 from app.backend.db.config import get_async_session
-from app.backend.db.models import *
+from app.backend.db.models1 import *
+from sqlalchemy import literal_column
 
 offer_router = APIRouter(prefix="/offers", tags=["Offers"])
 
 
-@offer_router.get("/export", response_class=Response)
-async def export_offers_csv(
+@offer_router.get("/export")
+async def export_offers_excel(
     session: AsyncSession = Depends(get_async_session),
     address_query: Optional[str] = None,
+    sort_by: Optional[str] = Query(
+        None,
+        description="Field to sort by: price, price_per_square_meter, creation_date_source, views_count, total_area",
+    ),
+    sort_order: Optional[str] = Query("desc", description="Sort order: asc or desc"),
     is_new_house: Optional[bool] = None,
     has_furniture: Optional[bool] = None,
     is_build_complete: Optional[bool] = None,
@@ -39,6 +49,8 @@ async def export_offers_csv(
     has_balcony: Optional[bool] = None,
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
+    min_price_per_square_meter: Optional[int] = None,
+    max_price_per_square_meter: Optional[int] = None,
     min_total_area: Optional[float] = None,
     max_total_area: Optional[float] = None,
     min_living_area: Optional[float] = None,
@@ -55,8 +67,6 @@ async def export_offers_csv(
     max_ceiling_height: Optional[float] = None,
     min_land_area: Optional[float] = None,
     max_land_area: Optional[float] = None,
-    min_price_per_square_meter: Optional[int] = None,
-    max_price_per_square_meter: Optional[int] = None,
     rooms_count: Optional[List[int]] = Query(None),
     bathrooms_count: Optional[List[int]] = Query(None),
     bedrooms_count: Optional[List[int]] = Query(None),
@@ -81,11 +91,7 @@ async def export_offers_csv(
 ):
     filters = []
 
-    if address_query:
-        ts_query = " & ".join(f"{w}:*" for w in address_query.lower().split() if w.strip())
-        address_subquery = select(Address.id).where(Address.search_vector.op("@@")(func.to_tsquery("russian", ts_query))).scalar_subquery()
-        filters.append(Offer.address_id.in_(address_subquery))
-
+    # --- Boolean filters ---
     bool_filters = {
         "is_new_house": is_new_house,
         "has_furniture": has_furniture,
@@ -104,29 +110,34 @@ async def export_offers_csv(
         "has_elevator": has_elevator,
         "has_balcony": has_balcony,
     }
-
     for field, value in bool_filters.items():
         if value is not None:
             filters.append(getattr(Offer, field) == value)
 
+    # --- Range filters ---
     range_filters = [
-        ("price", min_price, max_price),
-        ("total_area", min_total_area, max_total_area),
-        ("living_area", min_living_area, max_living_area),
-        ("kitchen_area", min_kitchen_area, max_kitchen_area),
-        ("floor", min_floor, max_floor),
-        ("house_floors_count", min_house_floors_count, max_house_floors_count),
-        ("house_built_year", min_house_built_year, max_house_built_year),
-        ("ceiling_height", min_ceiling_height, max_ceiling_height),
-        ("land_area", min_land_area, max_land_area),
-        ("price_per_square_meter", min_price_per_square_meter, max_price_per_square_meter),
+        (Offer.price, min_price, max_price),
+        (
+            Offer.price_per_square_meter,
+            min_price_per_square_meter,
+            max_price_per_square_meter,
+        ),
+        (Offer.total_area, min_total_area, max_total_area),
+        (Offer.living_area, min_living_area, max_living_area),
+        (Offer.kitchen_area, min_kitchen_area, max_kitchen_area),
+        (Offer.floor, min_floor, max_floor),
+        (Offer.house_floors_count, min_house_floors_count, max_house_floors_count),
+        (Offer.house_built_year, min_house_built_year, max_house_built_year),
+        (Offer.ceiling_height, min_ceiling_height, max_ceiling_height),
+        (Offer.land_area, min_land_area, max_land_area),
     ]
     for field, min_val, max_val in range_filters:
         if min_val is not None:
-            filters.append(getattr(Offer, field) >= min_val)
+            filters.append(field >= min_val)
         if max_val is not None:
-            filters.append(getattr(Offer, field) <= max_val)
+            filters.append(field <= max_val)
 
+    # --- List filters ---
     list_filters = {
         "rooms_count": rooms_count,
         "bathrooms_count": bathrooms_count,
@@ -154,54 +165,146 @@ async def export_offers_csv(
         if values:
             filters.append(getattr(Offer, field).in_(values))
 
-    stmt = select(Offer).options(
-        selectinload(Offer.address).selectinload(Address.region),
-        selectinload(Offer.address).selectinload(Address.municipality),
-        selectinload(Offer.address).selectinload(Address.settlement),
-        selectinload(Offer.address).selectinload(Address.district),
-        selectinload(Offer.address).selectinload(Address.street),
-        selectinload(Offer.offer_type),
-        selectinload(Offer.property_type),
-        selectinload(Offer.land_type),
-        selectinload(Offer.bathroom_type),
-        selectinload(Offer.renovation_type),
-        selectinload(Offer.window_view_type),
-        selectinload(Offer.parking_type),
-        selectinload(Offer.house_material_type),
-        selectinload(Offer.heating_type),
-        selectinload(Offer.gas_type),
-        selectinload(Offer.sewerage_type),
-        selectinload(Offer.water_supply_type),
-        selectinload(Offer.seller).selectinload(Seller.seller_type),
+    # --- Address search (partial) ---
+    if address_query:
+        ts_query = " & ".join(
+            f"{w}:*" for w in address_query.lower().split() if w.strip()
+        )
+        address_subquery = (
+            select(Address.id)
+            .where(Address.search_vector.op("@@")(func.to_tsquery("russian", ts_query)))
+            .scalar_subquery()
+        )
+        filters.append(Offer.address_id.in_(address_subquery))
+
+    # --- Построение SELECT без list полей ---
+    stmt = (
+        select(
+            Offer.id,
+            Offer.source,
+            Offer.price,
+            Offer.price_per_square_meter,
+            Offer.price_category,
+            Offer.total_area,
+            Offer.living_area,
+            Offer.kitchen_area,
+            Offer.floor,
+            Offer.house_floors_count,
+            Offer.ceiling_height,
+            Offer.is_new_house,
+            Offer.house_built_year,
+            Offer.is_build_complete,
+            Offer.has_water_supply,
+            Offer.has_electricity,
+            Offer.has_gas,
+            Offer.has_sewerage,
+            Offer.has_heating,
+            Offer.elevators_count,
+            Offer.has_elevator,
+            Offer.balconies_count,
+            Offer.has_balcony,
+            Offer.has_garbage_chute,
+            Offer.has_furniture,
+            Offer.has_guard,
+            Offer.has_garage,
+            Offer.has_bathhouse,
+            Offer.has_pool,
+            Offer.has_terrace,
+            Offer.title,
+            Offer.description,
+            Offer.url,
+            Offer.transport_access_score,
+            Offer.transport_access_category,
+            Offer.elderly_score,
+            Offer.elderly_category,
+            Offer.family_score,
+            Offer.family_category,
+            Offer.views_count,
+            Offer.daily_views_count,
+            Offer.last_ten_days_views_count,
+            Offer.contact_phone,
+            Offer.creation_date_source,
+            Offer.update_date_source,
+            Offer.update_date,
+            Region.name,
+            Municipality.name,
+            Settlement.name,
+            District.name,
+            Street.name,
+            Address.house_number,
+            Address.full_address,
+            func.ST_X(literal_column("address.coordinates::geometry")).label(
+                "longitude"
+            ),
+            func.ST_Y(literal_column("address.coordinates::geometry")).label(
+                "latitude"
+            ),
+            Seller.name,
+            Seller.rating,
+            Seller.foundation_date,
+            SellerType.name,
+            OfferType.name,
+            PropertyType.name,
+            LandType.name,
+            BathroomType.name,
+            RenovationType.name,
+            WindowViewType.name,
+            ParkingType.name,
+            HouseMaterialType.name,
+            HeatingType.name,
+            GasType.name,
+            SewerageType.name,
+            WaterSupplyType.name,
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .outerjoin(Region, Address.region_id == Region.id)
+        .outerjoin(Municipality, Address.municipality_id == Municipality.id)
+        .outerjoin(Settlement, Address.settlement_id == Settlement.id)
+        .outerjoin(District, Address.district_id == District.id)
+        .outerjoin(Street, Address.street_id == Street.id)
+        .outerjoin(Seller, Offer.seller_id == Seller.id)
+        .outerjoin(SellerType, Seller.seller_type_id == SellerType.id)
+        .outerjoin(OfferType, Offer.offer_type_id == OfferType.id)
+        .outerjoin(PropertyType, Offer.property_type_id == PropertyType.id)
+        .outerjoin(LandType, Offer.land_type_id == LandType.id)
+        .outerjoin(BathroomType, Offer.bathroom_type_id == BathroomType.id)
+        .outerjoin(RenovationType, Offer.renovation_type_id == RenovationType.id)
+        .outerjoin(WindowViewType, Offer.window_view_type_id == WindowViewType.id)
+        .outerjoin(ParkingType, Offer.parking_type_id == ParkingType.id)
+        .outerjoin(
+            HouseMaterialType, Offer.house_material_type_id == HouseMaterialType.id
+        )
+        .outerjoin(HeatingType, Offer.heating_type_id == HeatingType.id)
+        .outerjoin(GasType, Offer.gas_type_id == GasType.id)
+        .outerjoin(SewerageType, Offer.sewerage_type_id == SewerageType.id)
+        .outerjoin(WaterSupplyType, Offer.water_supply_type_id == WaterSupplyType.id)
+        .order_by(desc(Offer.creation_date_source).nulls_last())
     )
 
     if filters:
         stmt = stmt.where(and_(*filters))
 
-    stmt = stmt.order_by(desc(Offer.creation_date_source).nulls_last())
+    output = io.BytesIO()
+    workbook = xlsxwriter.Workbook(
+        output, {"in_memory": True, "remove_timezone": True, "strings_to_urls": False}
+    )
+    worksheet = workbook.add_worksheet(
+        "Offers",
+    )
 
-    result = await session.exec(stmt)
-    offers = result.all()
-
-    output = io.StringIO()
-    writer = csv.writer(output, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
+    # --- Заголовки (в том же порядке, что SELECT) ---
     headers = [
         "ID",
         "Источник",
-        "Цена (руб)",
-        "Цена за кв.м (руб)",
+        "Цена",
+        "Цена за кв.м",
         "Ценовая категория",
-        "Общая площадь (кв.м)",
-        "Жилая площадь (кв.м)",
-        "Площадь кухни (кв.м)",
-        "Площадь участка (кв.м)",
-        "Количество комнат",
-        "Количество спален",
-        "Количество санузлов",
+        "Общая площадь",
+        "Жилая площадь",
+        "Площадь кухни",
         "Этаж",
         "Этажность дома",
-        "Высота потолков (м)",
+        "Высота потолков",
         "Новостройка",
         "Год постройки дома",
         "Строительство завершено",
@@ -224,7 +327,6 @@ async def export_offers_csv(
         "Заголовок",
         "Описание",
         "URL",
-        "Дублирующие URL",
         "Транспортная доступность (балл)",
         "Транспортная доступность (категория)",
         "Для пожилых (балл)",
@@ -245,8 +347,8 @@ async def export_offers_csv(
         "Улица",
         "Номер дома",
         "Полный адрес",
-        "Координаты (широта)",
         "Координаты (долгота)",
+        "Координаты (широта)",
         "Продавец",
         "Рейтинг продавца",
         "Год основания продавца",
@@ -264,121 +366,50 @@ async def export_offers_csv(
         "Тип канализации",
         "Тип водоснабжения",
     ]
-    writer.writerow(headers)
+    worksheet.write_row(0, 0, headers)
+    row_index = 1
 
-    def get_value(obj, attr, default=""):
-        if obj and hasattr(obj, attr):
-            value = getattr(obj, attr)
-            return value if value is not None else default
-        return default
-
-    def bool_to_str(value):
-        if value is True:
+    # --- bool конвертер ---
+    def bool_to_str(v):
+        if v is True:
             return "Да"
-        elif value is False:
+        if v is False:
             return "Нет"
         return ""
 
-    for offer in offers:
-        lat = ""
-        lon = ""
-        if offer.address and offer.address.coordinates_list:
-            lon = offer.address.coordinates_list[0] if len(offer.address.coordinates_list) > 0 else ""
-            lat = offer.address.coordinates_list[1] if len(offer.address.coordinates_list) > 1 else ""
+    # --- Стриминг данных ---
+    result = await session.stream(stmt)
 
-        images_urls_str = ", ".join(offer.images_urls) if offer.images_urls else ""
-        identical_urls_str = ", ".join(offer.identical_urls) if offer.identical_urls else ""
+    async for row in result:
+        row = list(row)
 
-        row_data = [
-            get_value(offer, "id"),
-            get_value(offer, "source"),
-            get_value(offer, "price"),
-            get_value(offer, "price_per_square_meter"),
-            get_value(offer, "price_category"),
-            get_value(offer, "total_area"),
-            get_value(offer, "living_area"),
-            get_value(offer, "kitchen_area"),
-            get_value(offer, "land_area"),
-            get_value(offer, "rooms_count"),
-            get_value(offer, "bedrooms_count"),
-            get_value(offer, "bathrooms_count"),
-            get_value(offer, "floor"),
-            get_value(offer, "house_floors_count"),
-            get_value(offer, "ceiling_height"),
-            bool_to_str(get_value(offer, "is_new_house")),
-            get_value(offer, "house_built_year"),
-            bool_to_str(get_value(offer, "is_build_complete")),
-            bool_to_str(get_value(offer, "has_water_supply")),
-            bool_to_str(get_value(offer, "has_electricity")),
-            bool_to_str(get_value(offer, "has_gas")),
-            bool_to_str(get_value(offer, "has_sewerage")),
-            bool_to_str(get_value(offer, "has_heating")),
-            get_value(offer, "elevators_count"),
-            bool_to_str(get_value(offer, "has_elevator")),
-            get_value(offer, "balconies_count"),
-            bool_to_str(get_value(offer, "has_balcony")),
-            bool_to_str(get_value(offer, "has_garbage_chute")),
-            bool_to_str(get_value(offer, "has_furniture")),
-            bool_to_str(get_value(offer, "has_guard")),
-            bool_to_str(get_value(offer, "has_garage")),
-            bool_to_str(get_value(offer, "has_bathhouse")),
-            bool_to_str(get_value(offer, "has_pool")),
-            bool_to_str(get_value(offer, "has_terrace")),
-            get_value(offer, "title"),
-            get_value(offer, "description"),
-            get_value(offer, "url"),
-            identical_urls_str,
-            get_value(offer, "transport_access_score"),
-            get_value(offer, "transport_access_category"),
-            get_value(offer, "elderly_score"),
-            get_value(offer, "elderly_category"),
-            get_value(offer, "family_score"),
-            get_value(offer, "family_category"),
-            get_value(offer, "views_count"),
-            get_value(offer, "daily_views_count"),
-            get_value(offer, "last_ten_days_views_count"),
-            get_value(offer, "contact_phone"),
-            get_value(offer, "creation_date_source"),
-            get_value(offer, "update_date_source"),
-            get_value(offer, "update_date"),
-            get_value(offer.address.region, "name") if offer.address and offer.address.region else "",
-            get_value(offer.address.municipality, "name") if offer.address and offer.address.municipality else "",
-            get_value(offer.address.settlement, "name") if offer.address and offer.address.settlement else "",
-            get_value(offer.address.district, "name") if offer.address and offer.address.district else "",
-            get_value(offer.address.street, "name") if offer.address and offer.address.street else "",
-            get_value(offer.address, "house_number"),
-            get_value(offer.address, "full_address"),
-            lat,
-            lon,
-            get_value(offer.seller, "name") if offer.seller else "",
-            get_value(offer.seller, "rating") if offer.seller else "",
-            get_value(offer.seller, "foundation_date") if offer.seller else "",
-            get_value(offer.seller.seller_type, "name") if offer.seller and offer.seller.seller_type else "",
-            get_value(offer.offer_type, "name") if offer.offer_type else "",
-            get_value(offer.property_type, "name") if offer.property_type else "",
-            get_value(offer.land_type, "name") if offer.land_type else "",
-            get_value(offer.bathroom_type, "name") if offer.bathroom_type else "",
-            get_value(offer.renovation_type, "name") if offer.renovation_type else "",
-            get_value(offer.window_view_type, "name") if offer.window_view_type else "",
-            get_value(offer.parking_type, "name") if offer.parking_type else "",
-            get_value(offer.house_material_type, "name") if offer.house_material_type else "",
-            get_value(offer.heating_type, "name") if offer.heating_type else "",
-            get_value(offer.gas_type, "name") if offer.gas_type else "",
-            get_value(offer.sewerage_type, "name") if offer.sewerage_type else "",
-            get_value(offer.water_supply_type, "name") if offer.water_supply_type else "",
-        ]
+        # Индексы колонок, которые boolean
+        bool_indexes = [11, 13, 14, 15, 16, 17, 18, 20, 22, 23, 24, 25, 26, 27, 28]
+        for idx in bool_indexes:
+            row[idx] = bool_to_str(row[idx])
 
-        row_data = [str(v).replace("\n", " ").replace("\r", " ") if v is not None and not isinstance(v, bool) else "" if v is None else str(v) for v in row_data]
+        # --- Записываем в Excel ---
+        clean_row = []
+        for value in row:
+            if isinstance(value, datetime) and value.tzinfo is not None:
+                value = value.replace(tzinfo=None)
+            if value is None:
+                value = ""
+            clean_row.append(value)
 
-        writer.writerow(row_data)
+        worksheet.write_row(row_index, 0, clean_row)
+        row_index += 1
 
-    csv_content = output.getvalue()
-    output.close()
+    workbook.close()
+    output.seek(0)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"offers_export_{timestamp}.csv"
+    filename = f"offers_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
 
-    return Response(content=csv_content, media_type="text/csv", headers={"Content-Disposition": f"attachment; filename={filename}", "Content-Type": "text/csv; charset=utf-8"})
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
 
 
 @offer_router.get("", response_model=OfferResponseWithPagination)
@@ -388,7 +419,10 @@ async def get_offers(
     limit: int = Query(50, ge=1, le=100000),
     offset: int = Query(0, ge=0),
     address_query: Optional[str] = None,
-    sort_by: Optional[str] = Query(None, description="Field to sort by: price, price_per_square_meter, creation_date_source, views_count, total_area"),
+    sort_by: Optional[str] = Query(
+        None,
+        description="Field to sort by: price, price_per_square_meter, creation_date_source, views_count, total_area",
+    ),
     sort_order: Optional[str] = Query(
         "desc",
         description="Sort order: asc or desc",
@@ -458,8 +492,14 @@ async def get_offers(
     filters = []
 
     if address_query:
-        ts_query = " & ".join(f"{w}:*" for w in address_query.lower().split() if w.strip())
-        address_subquery = select(Address.id).where(Address.search_vector.op("@@")(func.to_tsquery("russian", ts_query))).scalar_subquery()
+        ts_query = " & ".join(
+            f"{w}:*" for w in address_query.lower().split() if w.strip()
+        )
+        address_subquery = (
+            select(Address.id)
+            .where(Address.search_vector.op("@@")(func.to_tsquery("russian", ts_query)))
+            .scalar_subquery()
+        )
         filters.append(Offer.address_id.in_(address_subquery))
 
     bool_filters = {
@@ -495,7 +535,11 @@ async def get_offers(
         ("house_built_year", min_house_built_year, max_house_built_year),
         ("ceiling_height", min_ceiling_height, max_ceiling_height),
         ("land_area", min_land_area, max_land_area),
-        ("price_per_square_meter", min_price_per_square_meter, max_price_per_square_meter),
+        (
+            "price_per_square_meter",
+            min_price_per_square_meter,
+            max_price_per_square_meter,
+        ),
     ]
     for field, min_val, max_val in range_filters:
         if min_val is not None:
@@ -644,7 +688,9 @@ async def get_offers_for_map(
     params = {}
 
     if address_query:
-        ts_query = " & ".join(f"{w}:*" for w in address_query.lower().split() if w.strip())
+        ts_query = " & ".join(
+            f"{w}:*" for w in address_query.lower().split() if w.strip()
+        )
         where_clauses.append("""
             a.id IN (
                 SELECT id FROM address 
@@ -686,7 +732,10 @@ async def get_offers_for_map(
         "house_built_year": (min_house_built_year, max_house_built_year),
         "ceiling_height": (min_ceiling_height, max_ceiling_height),
         "land_area": (min_land_area, max_land_area),
-        "price_per_square_meter": (min_price_per_square_meter, max_price_per_square_meter),
+        "price_per_square_meter": (
+            min_price_per_square_meter,
+            max_price_per_square_meter,
+        ),
     }
     for field, (min_val, max_val) in range_filters.items():
         if min_val is not None:
@@ -730,7 +779,9 @@ async def get_offers_for_map(
         where_clauses.append("""
             a.coordinates::geometry && ST_MakeEnvelope(:sw_lng, :sw_lat, :ne_lng, :ne_lat, 4326)
         """)
-        params.update({"sw_lat": sw_lat, "sw_lng": sw_lng, "ne_lat": ne_lat, "ne_lng": ne_lng})
+        params.update(
+            {"sw_lat": sw_lat, "sw_lng": sw_lng, "ne_lat": ne_lat, "ne_lng": ne_lng}
+        )
 
     where_sql = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
 
@@ -763,7 +814,11 @@ async def get_offers_for_map(
             "land_area": o[4],
             "living_area": o[5],
             "title": o[6],
-            "address": {"house_number": o[7], "full_address": o[8], "coordinates_list": [o[9], o[10]]},
+            "address": {
+                "house_number": o[7],
+                "full_address": o[8],
+                "coordinates_list": [o[9], o[10]],
+            },
             "price_category": o[11],
             "image_url": o[12],
             "is_new_house": o[13],
@@ -795,18 +850,32 @@ async def autocomplete_addresses(
     "/filter_types",
 )
 async def get_types_for_filter(session: AsyncSession = Depends(get_async_session)):
-    bathroom_types = await session.exec(select(BathroomType).order_by((BathroomType.name)))
-    renovation_types = await session.exec(select(RenovationType).order_by((RenovationType.name)))
-    window_view_types = await session.exec(select(WindowViewType).order_by((WindowViewType.name)))
+    bathroom_types = await session.exec(
+        select(BathroomType).order_by((BathroomType.name))
+    )
+    renovation_types = await session.exec(
+        select(RenovationType).order_by((RenovationType.name))
+    )
+    window_view_types = await session.exec(
+        select(WindowViewType).order_by((WindowViewType.name))
+    )
     parking_types = await session.exec(select(ParkingType).order_by((ParkingType.name)))
-    house_material_types = await session.exec(select(HouseMaterialType).order_by((HouseMaterialType.name)))
+    house_material_types = await session.exec(
+        select(HouseMaterialType).order_by((HouseMaterialType.name))
+    )
     heating_types = await session.exec(select(HeatingType).order_by((HeatingType.name)))
     gas_types = await session.exec(select(GasType).order_by((GasType.name)))
-    sewerage_types = await session.exec(select(SewerageType).order_by((SewerageType.name)))
-    water_supply_types = await session.exec(select(WaterSupplyType).order_by((WaterSupplyType.name)))
+    sewerage_types = await session.exec(
+        select(SewerageType).order_by((SewerageType.name))
+    )
+    water_supply_types = await session.exec(
+        select(WaterSupplyType).order_by((WaterSupplyType.name))
+    )
     land_types = await session.exec(select(LandType).order_by((LandType.name)))
     offer_types = await session.exec(select(OfferType).order_by((OfferType.name)))
-    property_types = await session.exec(select(PropertyType).order_by(desc(PropertyType.id)))
+    property_types = await session.exec(
+        select(PropertyType).order_by(desc(PropertyType.id))
+    )
     return {
         "bathroom_types": bathroom_types.all(),
         "renovation_types": renovation_types.all(),
@@ -826,7 +895,9 @@ async def get_types_for_filter(session: AsyncSession = Depends(get_async_session
 @offer_router.get("/autocomplete-filters")
 async def autocomplete(
     query: str = Query(..., min_length=2),
-    type: Literal["region", "municipality", "settlement", "street", "district", "microdistrict"] = Query(...),
+    type: Literal[
+        "region", "municipality", "settlement", "street", "district", "microdistrict"
+    ] = Query(...),
     session: AsyncSession = Depends(get_async_session),
 ):
     query_like = f"%{query}%"
@@ -834,13 +905,19 @@ async def autocomplete(
     if type == "region":
         stmt = select(Region.short_name).where(Region.short_name.ilike(query_like))
     elif type == "municipality":
-        stmt = select(Municipality.short_name).where(Municipality.short_name.ilike(query_like))
+        stmt = select(Municipality.short_name).where(
+            Municipality.short_name.ilike(query_like)
+        )
     elif type == "settlement":
-        stmt = select(Settlement.short_name).where(Settlement.short_name.ilike(query_like))
+        stmt = select(Settlement.short_name).where(
+            Settlement.short_name.ilike(query_like)
+        )
     elif type == "district":
         stmt = select(District.short_name).where(District.short_name.ilike(query_like))
     elif type == "microdistrict":
-        stmt = select(Microdistrict.short_name).where(Microdistrict.short_name.ilike(query_like))
+        stmt = select(Microdistrict.short_name).where(
+            Microdistrict.short_name.ilike(query_like)
+        )
     elif type == "street":
         stmt = select(Street.short_name).where(Street.short_name.ilike(query_like))
     else:
@@ -867,11 +944,19 @@ async def get_offer(
 
 
 @offer_router.delete("/favorites/{offer_id}")
-async def delete_from_favorites(offer_id: int, current_user: Annotated[User, Depends(get_current_user)], session: AsyncSession = Depends(get_async_session)):
+async def delete_from_favorites(
+    offer_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(get_async_session),
+):
     if offer_id not in [offer.id for offer in current_user.offers]:
         raise HTTPException(status_code=400, detail="Not in favorites")
     try:
-        result = await session.exec(select(Favorite).where(Favorite.user_id == current_user.id, Favorite.offer_id == offer_id))
+        result = await session.exec(
+            select(Favorite).where(
+                Favorite.user_id == current_user.id, Favorite.offer_id == offer_id
+            )
+        )
         offer_for_delete = result.first()
         await session.delete(offer_for_delete)
         await session.commit()
@@ -881,7 +966,11 @@ async def delete_from_favorites(offer_id: int, current_user: Annotated[User, Dep
 
 
 @offer_router.post("/favorites/{offer_id}")
-async def add_to_favorites(offer_id: int, current_user: Annotated[User, Depends(get_current_user)], session: AsyncSession = Depends(get_async_session)):
+async def add_to_favorites(
+    offer_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(get_async_session),
+):
     if offer_id in [offer.id for offer in current_user.offers]:
         raise HTTPException(status_code=400, detail="Already in favorites")
     else:

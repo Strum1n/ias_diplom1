@@ -9,20 +9,51 @@
         @focus="showSuggestions = true"
         @blur="hideSuggestions"
         @keyup.enter="searchOffers"
-        class="autocomplete-input" />
+        class="autocomplete-input"
+      />
 
-      <ul v-if="showSuggestions && addressSuggestions && addressSuggestions.length > 0" class="suggestions-list">
-        <li v-for="(suggestion, index) in addressSuggestions" :key="index" @mousedown="selectSuggestion(suggestion)" class="suggestion-item">
+      <ul
+        v-if="
+          showSuggestions && addressSuggestions && addressSuggestions.length > 0
+        "
+        class="suggestions-list"
+      >
+        <li
+          v-for="(suggestion, index) in addressSuggestions"
+          :key="index"
+          @mousedown="selectSuggestion(suggestion)"
+          class="suggestion-item"
+        >
           {{ suggestion }}
         </li>
       </ul>
 
-      <ul v-if="showSuggestions && searchQuery && !pending && addressSuggestions && addressSuggestions.length === 0" class="suggestions-list">
-        <li class="suggestion-item !cursor-default text-center text-muted hover:!bg-white">Адреса не найдены</li>
+      <ul
+        v-if="
+          showSuggestions &&
+          searchQuery &&
+          !pending &&
+          addressSuggestions &&
+          addressSuggestions.length === 0
+        "
+        class="suggestions-list"
+      >
+        <li
+          class="suggestion-item !cursor-default text-center text-muted hover:!bg-white"
+        >
+          Адреса не найдены
+        </li>
       </ul>
     </div>
 
-    <UButton icon="i-lucide-search" color="info" @click="searchOffers" class="search-button font-semibold"> Найти </UButton>
+    <UButton
+      icon="i-lucide-search"
+      color="info"
+      @click="searchOffers"
+      class="search-button font-semibold"
+    >
+      Найти
+    </UButton>
   </div>
 </template>
 
@@ -36,24 +67,23 @@ const searchQuery = ref("");
 
 const showSuggestions = ref(false);
 
-const hideSuggestions = () => {
+function hideSuggestions() {
   setTimeout(() => {
     showSuggestions.value = false;
   }, 200);
-};
+}
 
-const handleInput = () => {
+function handleInput() {
   if (searchQuery.value.length === 0) {
     addressSuggestions.value = [];
     showSuggestions.value = false;
-
     return;
   }
 
   showSuggestions.value = true;
-};
+}
 
-const { $api } = useNuxtApp();
+const {$api} = useNuxtApp();
 
 const {
   data: addressSuggestions,
@@ -75,22 +105,22 @@ const {
   },
 );
 
-const selectSuggestion = (suggestion: string) => {
+function selectSuggestion(suggestion: string) {
   searchQuery.value = "";
   addressSuggestions.value = [];
   showSuggestions.value = false;
   emit("address-selected", suggestion);
-};
+}
 
-const searchOffers = () => {
+function searchOffers() {
   const addressForSearch = searchQuery.value;
   searchQuery.value = "";
 
   showSuggestions.value = false;
   emit("search-triggered", addressForSearch);
-};
+}
 
-watch(searchQuery, (newValue) => {
+watch(searchQuery, newValue => {
   if (newValue === "") {
     addressSuggestions.value = [];
     showSuggestions.value = false;

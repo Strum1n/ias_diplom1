@@ -24,7 +24,11 @@ export default defineNuxtConfig({
   experimental: {
     asyncContext: true
   },
-  debug: process.env.NODE_ENV !== 'production',
+   vite: {
+    build: {
+      sourcemap: false // отключить sourcemaps полностью
+    }
+  },
   devServer: {
     host: '127.0.0.1',
     port: 3000
@@ -37,10 +41,11 @@ export default defineNuxtConfig({
    ui: {
     colorMode: false
   },
+  
   runtimeConfig: {
-    apiBase: process.env.NUXT_PUBLIC_API_NOTBASE || '/apiback',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/apiback',
+      isDev: process.env.NODE_ENV === 'development'
     },
   }
 

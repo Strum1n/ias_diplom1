@@ -12,7 +12,13 @@
     <div class="filters-section">
       <div class="filter-group">
         <label>Тип недвижимости:</label>
-        <USelect v-model="propertyType" :items="propertyTypesItems" class="w-48" value-key="value"> </USelect>
+        <USelect
+          v-model="propertyType"
+          :items="propertyTypesItems"
+          class="w-48"
+          value-key="value"
+        >
+        </USelect>
       </div>
 
       <div class="filter-group">
@@ -24,8 +30,10 @@
           value-key="value"
           :icon="icon"
           :ui="{
-            trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
-          }">
+            trailingIcon:
+              'group-data-[state=open]:rotate-180 transition-transform duration-200',
+          }"
+        >
         </USelect>
       </div>
     </div>
@@ -40,7 +48,10 @@
     </div>
 
     <div v-else-if="filteredOffers.length === 0" class="empty-state">
-      <UIcon name="material-symbols-light:favorite" class="size-25 bg-red-500" />
+      <UIcon
+        name="material-symbols-light:favorite"
+        class="size-25 bg-red-500"
+      />
       <h3>В избранном пока пусто</h3>
     </div>
 
@@ -50,30 +61,56 @@
           <div class="offer-header">
             <div class="offer-gallery aspect-4/3 overflow-hidden">
               <img class="gallery-image" :src="offer.images_urls[0]" />
-              <UBadge v-if="offer.is_new_house == true" color="info" variant="solid" class="type-badge"> Новостройка </UBadge>
+              <UBadge
+                v-if="offer.is_new_house == true"
+                color="info"
+                variant="solid"
+                class="type-badge"
+              >
+                Новостройка
+              </UBadge>
             </div>
             <div class="flex flex-col flex-2">
               <div class="flex flex-col w-full gap-1 pt-2.5">
                 <div class="title-container">
                   <div class="flex gap-1 flex-wrap sm:gap-2.5">
-                    <UBadge v-if="offer.transport_access_score" :color="getCategoryColor(offer.transport_access_category)"
-                      >Транспорт {{ offer.transport_access_score?.toFixed(2) }}</UBadge
+                    <UBadge
+                      v-if="offer.transport_access_score"
+                      :color="getCategoryColor(offer.transport_access_category)"
+                      >Транспорт
+                      {{ offer.transport_access_score?.toFixed(2) }}</UBadge
                     >
-                    <UBadge v-if="offer.elderly_score" :color="getCategoryColor(offer.elderly_category)">Пожилые {{ offer.elderly_score?.toFixed(2) }} </UBadge>
-                    <UBadge v-if="offer.family_score" :color="getCategoryColor(offer.family_category)">Семья {{ offer.family_score?.toFixed(2) }} </UBadge>
+                    <UBadge
+                      v-if="offer.elderly_score"
+                      :color="getCategoryColor(offer.elderly_category)"
+                      >Пожилые {{ offer.elderly_score?.toFixed(2) }}
+                    </UBadge>
+                    <UBadge
+                      v-if="offer.family_score"
+                      :color="getCategoryColor(offer.family_category)"
+                      >Семья {{ offer.family_score?.toFixed(2) }}
+                    </UBadge>
                   </div>
 
                   <span class="price">
-                    <UBadge v-if="offer.price_category" :color="getPriceCategoryColor(offer.price_category)">{{ getPriceCategoryLabel(offer.price_category) }}</UBadge
+                    <UBadge
+                      v-if="offer.price_category"
+                      :color="getPriceCategoryColor(offer.price_category)"
+                      >{{ getPriceCategoryLabel(offer.price_category) }}</UBadge
                     >{{ formatPrice(offer.price) }} ₽
                   </span>
                 </div>
                 <div class="title-container">
                   <h3 class="offer-title">{{ offer.title }}</h3>
-                  <span class="price-per-meter"> {{ formatPrice(offer.price_per_square_meter) }} ₽/м² </span>
+                  <span class="price-per-meter">
+                    {{ formatPrice(offer.price_per_square_meter) }} ₽/м²
+                  </span>
                 </div>
                 <div class="address">
-                  <UIcon class="size-13 sm:size-5" name="tabler:map-pin"></UIcon>
+                  <UIcon
+                    class="size-13 sm:size-5"
+                    name="tabler:map-pin"
+                  ></UIcon>
                   {{ offer.address.full_address }}
                 </div>
               </div>
@@ -93,25 +130,51 @@
                 </div>
                 <div v-if="offer.floor !== null" class="char-item">
                   <span class="char-label">Этаж:</span>
-                  <span class="char-value">{{ offer.floor }}/{{ offer.house_floors_count }}</span>
+                  <span class="char-value"
+                    >{{ offer.floor }}/{{ offer.house_floors_count }}</span
+                  >
                 </div>
                 <div v-else="offer.floor !== null" class="char-item">
                   <span class="char-label">Этажей в доме:</span>
                   <span class="char-value">{{ offer.house_floors_count }}</span>
                 </div>
-                <div v-if="offer.rooms_count !== null && offer.rooms_count !== 0 && offer.rooms_count !== 10" class="char-item">
+                <div
+                  v-if="
+                    offer.rooms_count !== null &&
+                    offer.rooms_count !== 0 &&
+                    offer.rooms_count !== 10
+                  "
+                  class="char-item"
+                >
                   <span class="char-label">Комнаты:</span>
                   <span class="char-value">{{ offer.rooms_count }}</span>
+                </div>
+                <div
+                  v-if="
+                    offer.bedrooms_count !== null &&
+                    offer.bedrooms_count !== 0 &&
+                    offer.bedrooms_count !== 10
+                  "
+                  class="char-item"
+                >
+                  <span class="char-label">Спальни:</span>
+                  <span class="char-value">{{ offer.bedrooms_count }}</span>
                 </div>
                 <div v-if="offer.ceiling_height" class="char-item">
                   <span class="char-label">Высота потолков:</span>
                   <span class="char-value">{{ offer.ceiling_height }} м</span>
                 </div>
-                <div v-if="offer.house_built_year && offer.is_new_house === null" class="char-item">
+                <div
+                  v-if="offer.house_built_year && offer.is_new_house === null"
+                  class="char-item"
+                >
                   <span class="char-label">Год постройки:</span>
                   <span class="char-value">{{ offer.house_built_year }}</span>
                 </div>
-                <div v-if="offer.house_built_year && offer.is_new_house === true" class="char-item">
+                <div
+                  v-if="offer.house_built_year && offer.is_new_house === true"
+                  class="char-item"
+                >
                   <span class="char-label">Год сдачи:</span>
                   <span class="char-value">{{ offer.house_built_year }}</span>
                 </div>
@@ -119,10 +182,23 @@
               <div class="infrastructure">
                 <h4>Ближайшая инфраструктура</h4>
                 <div class="infrastructure-list">
-                  <div v-for="item in getClosestInfrastructure(offer)" :key="item.infrastructure.id" class="infrastructure-item">
-                    <UIcon size="20" :name="getInfrastructureIcon(item.infrastructure.infrastructure_type.id)" />
+                  <div
+                    v-for="item in getClosestInfrastructure(offer)"
+                    :key="item.infrastructure.id"
+                    class="infrastructure-item"
+                  >
+                    <UIcon
+                      size="20"
+                      :name="
+                        getInfrastructureIcon(
+                          item.infrastructure.infrastructure_type.id,
+                        )
+                      "
+                    />
                     <div class="infra-info">
-                      <span class="infra-type">{{ item.infrastructure.infrastructure_type.name }}</span>
+                      <span class="infra-type">{{
+                        item.infrastructure.infrastructure_type.name
+                      }}</span>
                     </div>
                     <span class="infra-distance">{{ item.distance }} м</span>
                   </div>
@@ -156,8 +232,20 @@
             </div>
 
             <div class="actions">
-              <UButton color="info" trailing-icon="i-lucide-arrow-right" :to="`/offers/${offer.id}`"> К объекту </UButton>
-              <UButton color="error" icon="material-symbols:delete-forever" @click="removeFromFavorites(offer.id)">Удалить </UButton>
+              <UButton
+                color="info"
+                trailing-icon="i-lucide-arrow-right"
+                :to="`/offers/${offer.id}`"
+              >
+                К объекту
+              </UButton>
+              <UButton
+                color="error"
+                icon="material-symbols:delete-forever"
+                @click="removeFromFavorites(offer.id)"
+              >
+                Удалить
+              </UButton>
             </div>
           </div>
         </div>
@@ -168,7 +256,10 @@
     <div v-if="filteredOffers.length > 1" class="comparison-section-bottom">
       <div class="section-header">
         <h2>Помощь в выборе</h2>
-        <p>Воспользуйтесь методами многокритериального принятия решений, для выбора объекта недвижимости</p>
+        <p>
+          Воспользуйтесь методами многокритериального принятия решений, для
+          выбора объекта недвижимости
+        </p>
       </div>
 
       <div class="comparison-controls">
@@ -189,12 +280,20 @@
         <!-- Выбор критериев -->
         <div class="criteria-selection">
           <h3>Выбор критериев для сравнения</h3>
-          <p class="selection-info">Доступны только критерии, присутствующие у всех объектов</p>
+          <p class="selection-info">
+            Доступны только критерии, присутствующие у всех объектов
+          </p>
 
-          <div v-if="availableCriteria.length === 0" class="no-criteria-available">
+          <div
+            v-if="availableCriteria.length === 0"
+            class="no-criteria-available"
+          >
             <div class="no-criteria-icon">⚠️</div>
             <h4>Нет доступных критериев для сравнения</h4>
-            <p>У выбранных объектов нет общих критериев. Попробуйте изменить фильтры или добавить больше объектов в избранное.</p>
+            <p>
+              У выбранных объектов нет общих критериев. Попробуйте изменить
+              фильтры или добавить больше объектов в избранное.
+            </p>
           </div>
 
           <div v-else class="criteria-grid">
@@ -202,35 +301,59 @@
               v-for="criterion in availableCriteria"
               :key="criterion.key"
               class="criterion-item"
-              :class="{ selected: isCriterionSelected(criterion.key) }"
-              @click="toggleCriterion(criterion.key)">
+              :class="{selected: isCriterionSelected(criterion.key)}"
+              @click="toggleCriterion(criterion.key)"
+            >
               <div class="criterion-checkbox">
-                <input type="checkbox" :checked="isCriterionSelected(criterion.key)" @change="toggleCriterion(criterion.key)" />
+                <input
+                  type="checkbox"
+                  :checked="isCriterionSelected(criterion.key)"
+                  @change="toggleCriterion(criterion.key)"
+                />
                 <span class="checkmark"></span>
               </div>
               <div class="criterion-info">
                 <div class="criterion-name">{{ criterion.displayName }}</div>
-                <div class="criterion-range">{{ formatCriterionRange(criterion) }}</div>
+                <div class="criterion-range">
+                  {{ formatCriterionRange(criterion) }}
+                </div>
               </div>
             </div>
           </div>
 
-          <div v-if="selectedCriteria.length === 0 && availableCriteria.length > 0" class="no-criteria-warning">⚠️ Выберите хотя бы один критерий для анализа</div>
+          <div
+            v-if="selectedCriteria.length === 0 && availableCriteria.length > 0"
+            class="no-criteria-warning"
+          >
+            ⚠️ Выберите хотя бы один критерий для анализа
+          </div>
         </div>
 
         <div v-if="selectedCriteria.length > 0" class="criteria-weights">
           <h3 class="mb-3">Настройка весов критериев</h3>
 
           <div class="weights-grid">
-            <div v-for="criterion in selectedCriteriaWithWeights" :key="criterion.key" class="weight-item">
+            <div
+              v-for="criterion in selectedCriteriaWithWeights"
+              :key="criterion.key"
+              class="weight-item"
+            >
               <div class="weight-info">
                 <span class="weight-name">{{ criterion.displayName }}</span>
                 <span class="weight-direction">
-                  {{ criterion.direction === "max" ? "↑ максимум" : "↓ минимум" }}
+                  {{
+                    criterion.direction === "max" ? "↑ максимум" : "↓ минимум"
+                  }}
                 </span>
               </div>
               <div class="weight-controls">
-                <select :value="criterion.direction" @change="updateCriterionDirection(criterion.key, $event.target.value)" class="direction-select">
+                <select
+                  :value="criterion.direction"
+                  @change="
+                    updateCriterionDirection(criterion.key, $event.target.value)
+                  "
+                  class="direction-select"
+                >
                   <option value="max">Максимизация</option>
                   <option value="min">Минимизация</option>
                 </select>
@@ -241,22 +364,40 @@
                   max="10"
                   step="1"
                   class="weight-input"
-                  @input="updateCriterionWeight(criterion.key, $event.target.value)" />
+                  @input="
+                    updateCriterionWeight(criterion.key, $event.target.value)
+                  "
+                />
               </div>
             </div>
           </div>
         </div>
 
-        <div v-if="selectedCriteria.length > 0 && selectedMethod === 'electre'" class="algorithm-params">
+        <div
+          v-if="selectedCriteria.length > 0 && selectedMethod === 'electre'"
+          class="algorithm-params"
+        >
           <h4>Параметры алгоритма ELECTRE:</h4>
           <div class="params-grid">
             <div class="param-group">
               <label>Alpha (порог согласия):</label>
-              <input type="number" v-model.number="electreParams.alpha" min="0.1" max="0.9" step="0.05" />
+              <input
+                type="number"
+                v-model.number="electreParams.alpha"
+                min="0.1"
+                max="0.9"
+                step="0.05"
+              />
             </div>
             <div class="param-group">
               <label>Beta (порог несогласия):</label>
-              <input type="number" v-model.number="electreParams.beta" min="0.1" max="0.9" step="0.05" />
+              <input
+                type="number"
+                v-model.number="electreParams.beta"
+                min="0.1"
+                max="0.9"
+                step="0.05"
+              />
             </div>
             <!-- <div class="param-group">
               <label>Шаг изменения:</label>
@@ -266,31 +407,59 @@
         </div>
 
         <div class="analysis-actions">
-          <button @click="runAnalysis" :disabled="analysisLoading || selectedCriteria.length === 0" class="analyze-button">
+          <button
+            @click="runAnalysis"
+            :disabled="analysisLoading || selectedCriteria.length === 0"
+            class="analyze-button"
+          >
             <span v-if="analysisLoading">Анализ...</span>
             <span v-else>Запустить анализ</span>
           </button>
-          <button @click="resetWeights" class="reset-button">Сбросить настройки</button>
+          <button @click="resetWeights" class="reset-button">
+            Сбросить настройки
+          </button>
         </div>
 
         <!-- Результаты анализа ELECTRE -->
         <div v-if="electreResults" class="results-section electre-results">
           <div class="method-header">
             <h3>Результаты метода ELECTRE</h3>
-            <button @click="electreResults = null" class="close-method-button">×</button>
+            <button @click="electreResults = null" class="close-method-button">
+              ×
+            </button>
           </div>
-          <p class="results-description">Метод ELECTRE выявляет недоминируемые объекты (ядро) и показывает сравнение объектов.</p>
+          <p class="results-description">
+            Метод ELECTRE выявляет недоминируемые объекты (ядро) и показывает
+            сравнение объектов.
+          </p>
 
           <!-- Ядро недоминируемых объектов -->
-          <div class="kernel-section" v-if="electreResults.kernel && electreResults.kernel.length > 0">
+          <div
+            class="kernel-section"
+            v-if="electreResults.kernel && electreResults.kernel.length > 0"
+          >
             <h4>🎯 Ядро (недоминируемые объекты)</h4>
             <div class="kernel-list">
-              <div v-for="kernelIndex in electreResults.kernel" :key="kernelIndex" class="kernel-item">
+              <div
+                v-for="kernelIndex in electreResults.kernel"
+                :key="kernelIndex"
+                class="kernel-item"
+              >
                 <div class="kernel-offer">
-                  <div class="kernel-title">{{ getOfferTitleByIndex(kernelIndex) }}</div>
-                  <div class="kernel-address">{{ getOfferAddressByIndex(kernelIndex) }}</div>
+                  <div class="kernel-title">
+                    {{ getOfferTitleByIndex(kernelIndex) }}
+                  </div>
+                  <div class="kernel-address">
+                    {{ getOfferAddressByIndex(kernelIndex) }}
+                  </div>
                 </div>
-                <UButton color="info" trailing-icon="i-lucide-arrow-right" :to="`/offers/${getOfferIdByIndex(kernelIndex)}`"> К объекту </UButton>
+                <UButton
+                  color="info"
+                  trailing-icon="i-lucide-arrow-right"
+                  :to="`/offers/${getOfferIdByIndex(kernelIndex)}`"
+                >
+                  К объекту
+                </UButton>
               </div>
             </div>
           </div>
@@ -299,26 +468,47 @@
           <div class="comparison-section">
             <h4>📊 Сравнительный анализ</h4>
             <div class="comparison-list">
-              <div v-for="kernelIndex in electreResults.kernel" :key="kernelIndex" class="comparison-card">
+              <div
+                v-for="kernelIndex in electreResults.kernel"
+                :key="kernelIndex"
+                class="comparison-card"
+              >
                 <div class="comparison-header">
                   <div class="comparison-info">
-                    <div class="comparison-title">{{ getOfferTitleByIndex(kernelIndex) }}</div>
-                    <div class="comparison-address">{{ getOfferAddressByIndex(kernelIndex) }}</div>
+                    <div class="comparison-title">
+                      {{ getOfferTitleByIndex(kernelIndex) }}
+                    </div>
+                    <div class="comparison-address">
+                      {{ getOfferAddressByIndex(kernelIndex) }}
+                    </div>
                   </div>
-                  <UButton color="info" trailing-icon="i-lucide-arrow-right" :to="`/offers/${getOfferIdByIndex(kernelIndex)}`"> К объекту </UButton>
+                  <UButton
+                    color="info"
+                    trailing-icon="i-lucide-arrow-right"
+                    :to="`/offers/${getOfferIdByIndex(kernelIndex)}`"
+                  >
+                    К объекту
+                  </UButton>
                 </div>
 
                 <div class="dominance-comparisons">
                   <div
-                    v-for="(comparison, idx) in getDominanceComparisons(electreResults.allIds[kernelIndex])"
+                    v-for="(comparison, idx) in getDominanceComparisons(
+                      electreResults.allIds[kernelIndex],
+                    )"
                     :key="comparison.otherOfferId"
-                    class="dominance-item mb-4 border rounded-xl overflow-hidden bg-white">
+                    class="dominance-item mb-4 border rounded-xl overflow-hidden bg-white"
+                  >
                     <!-- Заголовок сравнения (кликабельный) -->
                     <div
                       class="comparison-header p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
-                      @click="toggleComparisonDetail(kernelIndex, idx)">
+                      @click="toggleComparisonDetail(kernelIndex, idx)"
+                    >
                       <div class="flex items-center gap-3">
-                        <UIcon name="i-heroicons-arrows-right-left" class="w-5 h-5 text-gray-400" />
+                        <UIcon
+                          name="i-heroicons-arrows-right-left"
+                          class="w-5 h-5 text-gray-400"
+                        />
                         <div class="flex flex-col">
                           <span class="font-medium">
                             {{ getOfferTitle(comparison.otherOfferId) }}
@@ -329,40 +519,109 @@
                         </div>
                       </div>
                       <div class="flex items-center gap-2">
-                        <span class="text-base" size="sm"> {{ comparison.superior.length }} ✅ </span>
-                        <span class="text-base" size="sm"> {{ comparison.inferior.length }} ❌ </span>
-                        <span class="text-base" size="sm"> {{ comparison.equal.length }} ⚖️ </span>
-                        <UIcon :name="expandedComparisons[`${kernelIndex}-${idx}`] ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" class="w-5 h-5 text-gray-500" />
+                        <span class="text-base" size="sm">
+                          {{ comparison.superior.length }} ✅
+                        </span>
+                        <span class="text-base" size="sm">
+                          {{ comparison.inferior.length }} ❌
+                        </span>
+                        <span class="text-base" size="sm">
+                          {{ comparison.equal.length }} ⚖️
+                        </span>
+                        <UIcon
+                          :name="
+                            expandedComparisons[`${kernelIndex}-${idx}`]
+                              ? 'i-heroicons-chevron-up'
+                              : 'i-heroicons-chevron-down'
+                          "
+                          class="w-5 h-5 text-gray-500"
+                        />
                       </div>
                     </div>
 
                     <!-- Детализация (раскрывается) -->
-                    <div v-if="expandedComparisons[`${kernelIndex}-${idx}`]" class="comparison-details p-4 border-t bg-gray-50">
+                    <div
+                      v-if="expandedComparisons[`${kernelIndex}-${idx}`]"
+                      class="comparison-details p-4 border-t bg-gray-50"
+                    >
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Критерии, по которым превосходит -->
-                        <div v-if="comparison.superior.length" class="space-y-3">
-                          <h5 class="text-sm font-semibold text-green-600 flex items-center gap-1"><UIcon name="i-heroicons-check-circle" class="w-4 h-4" /> Превосходство</h5>
-                          <div v-for="cIdx in comparison.superior" :key="cIdx" class="criterion-detail bg-white p-3 rounded-lg border border-green-100">
+                        <div
+                          v-if="comparison.superior.length"
+                          class="space-y-3"
+                        >
+                          <h5
+                            class="text-sm font-semibold text-green-600 flex items-center gap-1"
+                          >
+                            <UIcon
+                              name="i-heroicons-check-circle"
+                              class="w-4 h-4"
+                            />
+                            Превосходство
+                          </h5>
+                          <div
+                            v-for="cIdx in comparison.superior"
+                            :key="cIdx"
+                            class="criterion-detail bg-white p-3 rounded-lg border border-green-100"
+                          >
                             <div class="flex justify-between items-center">
                               <div class="flex items-center gap-2">
-                                <span class="text-sm font-medium">{{ getCriterionShortName(selectedCriteria[cIdx]) }}</span>
-                                <UBadge size="sm" :color="criteriaDirections[selectedCriteria[cIdx]] === 'max' ? 'green' : 'red'" variant="soft">
-                                  {{ criteriaDirections[selectedCriteria[cIdx]] === "max" ? "↑ макс" : "↓ мин" }}
+                                <span class="text-sm font-medium">{{
+                                  getCriterionShortName(selectedCriteria[cIdx])
+                                }}</span>
+                                <UBadge
+                                  size="sm"
+                                  :color="
+                                    criteriaDirections[
+                                      selectedCriteria[cIdx]
+                                    ] === 'max'
+                                      ? 'green'
+                                      : 'red'
+                                  "
+                                  variant="soft"
+                                >
+                                  {{
+                                    criteriaDirections[
+                                      selectedCriteria[cIdx]
+                                    ] === "max"
+                                      ? "↑ макс"
+                                      : "↓ мин"
+                                  }}
                                 </UBadge>
                               </div>
                               <span class="text-xs text-green-600 font-medium">
-                                +{{ calculateAdvantage(electreResults.allIds[kernelIndex], comparison.otherOfferId, selectedCriteria[cIdx]) }}%
+                                +{{
+                                  calculateAdvantage(
+                                    electreResults.allIds[kernelIndex],
+                                    comparison.otherOfferId,
+                                    selectedCriteria[cIdx],
+                                  )
+                                }}%
                               </span>
                             </div>
 
                             <!-- Значения критериев -->
-                            <div class="flex justify-between items-center mt-2 text-sm">
+                            <div
+                              class="flex justify-between items-center mt-2 text-sm"
+                            >
                               <span class="text-gray-600">{{
-                                formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(electreResults.allIds[kernelIndex], selectedCriteria[cIdx]))
+                                formatCriterionValue(
+                                  selectedCriteria[cIdx],
+                                  getCriterionValueForOffer(
+                                    electreResults.allIds[kernelIndex],
+                                    selectedCriteria[cIdx],
+                                  ),
+                                )
                               }}</span>
                               <span class="text-gray-400 mx-1">→</span>
                               <span class="text-gray-600">{{
-                                formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(comparison.otherOfferId, selectedCriteria[cIdx]))
+                                formatCriterionValue(
+                                  selectedCriteria[cIdx],
+                                  getCriterionValueForOffer(
+                                    comparison.otherOfferId,
+                                    selectedCriteria[cIdx],
+                                  ),
+                                )
                               }}</span>
                             </div>
 
@@ -371,29 +630,82 @@
                         </div>
 
                         <!-- Критерии, по которым уступает -->
-                        <div v-if="comparison.inferior.length" class="space-y-3">
-                          <h5 class="text-sm font-semibold text-red-600 flex items-center gap-1"><UIcon name="i-heroicons-x-circle" class="w-4 h-4" /> Уступает</h5>
-                          <div v-for="cIdx in comparison.inferior" :key="cIdx" class="criterion-detail bg-white p-3 rounded-lg border border-red-100">
+                        <div
+                          v-if="comparison.inferior.length"
+                          class="space-y-3"
+                        >
+                          <h5
+                            class="text-sm font-semibold text-red-600 flex items-center gap-1"
+                          >
+                            <UIcon
+                              name="i-heroicons-x-circle"
+                              class="w-4 h-4"
+                            />
+                            Уступает
+                          </h5>
+                          <div
+                            v-for="cIdx in comparison.inferior"
+                            :key="cIdx"
+                            class="criterion-detail bg-white p-3 rounded-lg border border-red-100"
+                          >
                             <div class="flex justify-between items-center">
                               <div class="flex items-center gap-2">
-                                <span class="text-sm font-medium">{{ getCriterionShortName(selectedCriteria[cIdx]) }}</span>
-                                <UBadge size="sm" :color="criteriaDirections[selectedCriteria[cIdx]] === 'max' ? 'green' : 'red'" variant="soft">
-                                  {{ criteriaDirections[selectedCriteria[cIdx]] === "max" ? "↑ макс" : "↓ мин" }}
+                                <span class="text-sm font-medium">{{
+                                  getCriterionShortName(selectedCriteria[cIdx])
+                                }}</span>
+                                <UBadge
+                                  size="sm"
+                                  :color="
+                                    criteriaDirections[
+                                      selectedCriteria[cIdx]
+                                    ] === 'max'
+                                      ? 'green'
+                                      : 'red'
+                                  "
+                                  variant="soft"
+                                >
+                                  {{
+                                    criteriaDirections[
+                                      selectedCriteria[cIdx]
+                                    ] === "max"
+                                      ? "↑ макс"
+                                      : "↓ мин"
+                                  }}
                                 </UBadge>
                               </div>
                               <span class="text-sm text-red-600 font-medium">
-                                -{{ calculateDisadvantage(electreResults.allIds[kernelIndex], comparison.otherOfferId, selectedCriteria[cIdx]) }}%
+                                -{{
+                                  calculateDisadvantage(
+                                    electreResults.allIds[kernelIndex],
+                                    comparison.otherOfferId,
+                                    selectedCriteria[cIdx],
+                                  )
+                                }}%
                               </span>
                             </div>
 
                             <!-- Значения критериев -->
-                            <div class="flex justify-between items-center mt-2 text-sm">
+                            <div
+                              class="flex justify-between items-center mt-2 text-sm"
+                            >
                               <span class="text-gray-600">{{
-                                formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(electreResults.allIds[kernelIndex], selectedCriteria[cIdx]))
+                                formatCriterionValue(
+                                  selectedCriteria[cIdx],
+                                  getCriterionValueForOffer(
+                                    electreResults.allIds[kernelIndex],
+                                    selectedCriteria[cIdx],
+                                  ),
+                                )
                               }}</span>
                               <span class="text-gray-400 mx-1">→</span>
                               <span class="text-gray-600">{{
-                                formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(comparison.otherOfferId, selectedCriteria[cIdx]))
+                                formatCriterionValue(
+                                  selectedCriteria[cIdx],
+                                  getCriterionValueForOffer(
+                                    comparison.otherOfferId,
+                                    selectedCriteria[cIdx],
+                                  ),
+                                )
                               }}</span>
                             </div>
 
@@ -402,18 +714,62 @@
                         </div>
 
                         <!-- Равные критерии -->
-                        <div v-if="comparison.equal.length" class="md:col-span-2 mt-2">
-                          <h5 class="text-sm font-semibold text-gray-500 flex items-center gap-1"><UIcon name="i-heroicons-minus" class="w-4 h-4" /> Равны по критериям</h5>
-                          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                            <div v-for="cIdx in comparison.equal" :key="cIdx" class="bg-white p-2 rounded-lg border border-gray-200">
-                              <div class="flex items-center justify-between gap-1 mb-1">
-                                <span class="text-xs font-medium">{{ getCriterionShortName(selectedCriteria[cIdx]) }}</span>
-                                <UBadge size="sm" :color="criteriaDirections[selectedCriteria[cIdx]] === 'max' ? 'green' : 'red'" variant="soft">
-                                  {{ criteriaDirections[selectedCriteria[cIdx]] === "max" ? "↑ макс" : "↓ мин" }}
+                        <div
+                          v-if="comparison.equal.length"
+                          class="md:col-span-2 mt-2"
+                        >
+                          <h5
+                            class="text-sm font-semibold text-gray-500 flex items-center gap-1"
+                          >
+                            <UIcon name="i-heroicons-minus" class="w-4 h-4" />
+                            Равны по критериям
+                          </h5>
+                          <div
+                            class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2"
+                          >
+                            <div
+                              v-for="cIdx in comparison.equal"
+                              :key="cIdx"
+                              class="bg-white p-2 rounded-lg border border-gray-200"
+                            >
+                              <div
+                                class="flex items-center justify-between gap-1 mb-1"
+                              >
+                                <span class="text-xs font-medium">{{
+                                  getCriterionShortName(selectedCriteria[cIdx])
+                                }}</span>
+                                <UBadge
+                                  size="sm"
+                                  :color="
+                                    criteriaDirections[
+                                      selectedCriteria[cIdx]
+                                    ] === 'max'
+                                      ? 'green'
+                                      : 'red'
+                                  "
+                                  variant="soft"
+                                >
+                                  {{
+                                    criteriaDirections[
+                                      selectedCriteria[cIdx]
+                                    ] === "max"
+                                      ? "↑ макс"
+                                      : "↓ мин"
+                                  }}
                                 </UBadge>
                               </div>
-                              <div class="text-sm font-semibold text-gray-700 text-center">
-                                {{ formatCriterionValue(selectedCriteria[cIdx], getCriterionValueForOffer(electreResults.allIds[kernelIndex], selectedCriteria[cIdx])) }}
+                              <div
+                                class="text-sm font-semibold text-gray-700 text-center"
+                              >
+                                {{
+                                  formatCriterionValue(
+                                    selectedCriteria[cIdx],
+                                    getCriterionValueForOffer(
+                                      electreResults.allIds[kernelIndex],
+                                      selectedCriteria[cIdx],
+                                    ),
+                                  )
+                                }}
                               </div>
                             </div>
                           </div>
@@ -431,31 +787,54 @@
         <div v-if="topsisResults" class="topsis-results">
           <div class="method-header">
             <h3>Результаты метода TOPSIS</h3>
-            <button @click="topsisResults = null" class="close-method-button">×</button>
+            <button @click="topsisResults = null" class="close-method-button">
+              ×
+            </button>
           </div>
           <div class="ranking-section">
             <h4 class="mb-2">Рейтинг объектов</h4>
             <div class="ranking-list">
-              <div v-for="(rank, index) in topsisRanking" :key="rank.offerId" class="rank-item" :class="getRankItemClass(index)">
+              <div
+                v-for="(rank, index) in topsisRanking"
+                :key="rank.offerId"
+                class="rank-item"
+                :class="getRankItemClass(index)"
+              >
                 <div class="rank-header">
                   <div class="rank-number" :class="getRankNumberClass(index)">
                     {{ index + 1 }}
                   </div>
                   <div class="rank-info">
-                    <div class="offer-title">{{ getOfferTitle(rank.offerId) }}</div>
-                    <div class="offer-address">{{ getOfferAddress(rank.offerId) }}</div>
+                    <div class="offer-title">
+                      {{ getOfferTitle(rank.offerId) }}
+                    </div>
+                    <div class="offer-address">
+                      {{ getOfferAddress(rank.offerId) }}
+                    </div>
                   </div>
-                  <UButton color="info" trailing-icon="i-lucide-arrow-right" :to="`/offers/${rank.offerId}`"> К объекту </UButton>
+                  <UButton
+                    color="info"
+                    trailing-icon="i-lucide-arrow-right"
+                    :to="`/offers/${rank.offerId}`"
+                  >
+                    К объекту
+                  </UButton>
                 </div>
 
                 <div class="score-section">
                   <div class="score-info">
                     <div>
                       <span class="score-label">Коэффициент близости: </span>
-                      <span class="score-value">{{ rank.score.toFixed(4) }}</span>
+                      <span class="score-value">{{
+                        rank.score.toFixed(4)
+                      }}</span>
                     </div>
                     <div class="progress-bar">
-                      <div class="progress-fill" :style="{ width: rank.score * 100 + '%' }" :class="getProgressFillClass(index)"></div>
+                      <div
+                        class="progress-fill"
+                        :style="{width: rank.score * 100 + '%'}"
+                        :class="getProgressFillClass(index)"
+                      ></div>
                     </div>
                   </div>
                 </div>
@@ -463,48 +842,103 @@
             </div>
           </div>
         </div>
-        <VChart v-if="radarSeries.length && (electreResults || topsisResults)" :option="radarOption" autoresize class="radar-chart" />
+        <VChart
+          v-if="radarSeries.length && (electreResults || topsisResults)"
+          :option="radarOption"
+          autoresize
+          class="radar-chart"
+        />
       </div>
     </div>
   </UContainer>
 </template>
 
 <script setup lang="ts">
-import type { OfferResponseFull } from "~/types/api";
+import type {SelectItem} from "@nuxt/ui";
+import type {OfferResponseFull} from "~/types/api";
 
 // Используем типы из API
 type Offer = OfferResponseFull;
 
 const propertyTypesItems = ref<SelectItem[]>([
-  { label: "Все типы", value: "Все типы" },
-  { label: "Квартира", value: "Квартира" },
-  { label: "Апартаменты", value: "Апартаменты" },
-  { label: "Дом", value: "Дом" },
-  { label: "Коттедж", value: "Коттедж" },
-  { label: "Таунхаус", value: "Таунхаус" },
+  {label: "Все типы", value: "Все типы"},
+  {label: "Квартира", value: "Квартира"},
+  {label: "Апартаменты", value: "Апартаменты"},
+  {label: "Дом", value: "Дом"},
+  {label: "Коттедж", value: "Коттедж"},
+  {label: "Таунхаус", value: "Таунхаус"},
 ]);
 
 const sortFields = ref<SelectItem[]>([
-  { label: "Цена", value: "price:asc", icon: "material-symbols:arrow-upward-alt" },
-  { label: "Цена", value: "price:desc", icon: "material-symbols:arrow-downward-alt" },
-  { label: "Цена за м²", value: "price_per_square_meter:asc", icon: "material-symbols:arrow-upward-alt" },
-  { label: "Цена за м²", value: "price_per_square_meter:desc", icon: "material-symbols:arrow-downward-alt" },
-  { label: "Площадь", value: "total_area:asc", icon: "material-symbols:arrow-upward-alt" },
-  { label: "Площадь", value: "total_area:desc", icon: "material-symbols:arrow-downward-alt" },
-  { label: "Дата публикации", value: "creation_date_source:asc", icon: "material-symbols:arrow-upward-alt" },
-  { label: "Дата публикации", value: "creation_date_source:desc", icon: "material-symbols:arrow-downward-alt" },
-  { label: "Просмотры", value: "views_count:asc", icon: "material-symbols:arrow-upward-alt" },
-  { label: "Просмотры", value: "views_count:desc", icon: "material-symbols:arrow-downward-alt" },
+  {
+    label: "Цена",
+    value: "price:asc",
+    icon: "material-symbols:arrow-upward-alt",
+  },
+  {
+    label: "Цена",
+    value: "price:desc",
+    icon: "material-symbols:arrow-downward-alt",
+  },
+  {
+    label: "Цена за м²",
+    value: "price_per_square_meter:asc",
+    icon: "material-symbols:arrow-upward-alt",
+  },
+  {
+    label: "Цена за м²",
+    value: "price_per_square_meter:desc",
+    icon: "material-symbols:arrow-downward-alt",
+  },
+  {
+    label: "Площадь",
+    value: "total_area:asc",
+    icon: "material-symbols:arrow-upward-alt",
+  },
+  {
+    label: "Площадь",
+    value: "total_area:desc",
+    icon: "material-symbols:arrow-downward-alt",
+  },
+  {
+    label: "Дата публикации",
+    value: "creation_date_source:asc",
+    icon: "material-symbols:arrow-upward-alt",
+  },
+  {
+    label: "Дата публикации",
+    value: "creation_date_source:desc",
+    icon: "material-symbols:arrow-downward-alt",
+  },
+  {
+    label: "Просмотры",
+    value: "views_count:asc",
+    icon: "material-symbols:arrow-upward-alt",
+  },
+  {
+    label: "Просмотры",
+    value: "views_count:desc",
+    icon: "material-symbols:arrow-downward-alt",
+  },
 ]);
 const sortValue = ref(sortFields.value[7]?.value);
-const icon = computed(() => sortFields.value.find((item) => item.value === sortValue.value)?.icon);
+const icon = computed(
+  () => sortFields.value.find(item => item.value === sortValue.value)?.icon,
+);
 const expandedComparisons = ref<Record<string, boolean>>({});
 
-const toggleComparisonDetail = (kernelIndex: number, comparisonIndex: number) => {
+const toggleComparisonDetail = (
+  kernelIndex: number,
+  comparisonIndex: number,
+) => {
   const key = `${kernelIndex}-${comparisonIndex}`;
   expandedComparisons.value[key] = !expandedComparisons.value[key];
 };
-const calculateAdvantage = (offerIdA: number, offerIdB: number, criterionKey: string): number => {
+const calculateAdvantage = (
+  offerIdA: number,
+  offerIdB: number,
+  criterionKey: string,
+): number => {
   const valueA = getCriterionValueForOffer(offerIdA, criterionKey);
   const valueB = getCriterionValueForOffer(offerIdB, criterionKey);
   if (!valueA || !valueB) return 0;
@@ -520,7 +954,11 @@ const calculateAdvantage = (offerIdA: number, offerIdB: number, criterionKey: st
 };
 
 // Расчёт отставания в процентах
-const calculateDisadvantage = (offerIdA: number, offerIdB: number, criterionKey: string): number => {
+const calculateDisadvantage = (
+  offerIdA: number,
+  offerIdB: number,
+  criterionKey: string,
+): number => {
   const valueA = getCriterionValueForOffer(offerIdA, criterionKey);
   const valueB = getCriterionValueForOffer(offerIdB, criterionKey);
   if (!valueA || !valueB) return 0;
@@ -534,7 +972,11 @@ const calculateDisadvantage = (offerIdA: number, offerIdB: number, criterionKey:
     return Math.round(((valueA - valueB) / valueB) * 100);
   }
 };
-const getCriterionPercentage = (offerIdA: number, offerIdB: number, criterionKey: string): number => {
+const getCriterionPercentage = (
+  offerIdA: number,
+  offerIdB: number,
+  criterionKey: string,
+): number => {
   const valueA = getCriterionValueForOffer(offerIdA, criterionKey);
   const valueB = getCriterionValueForOffer(offerIdB, criterionKey);
   if (valueA === null || valueB === null || valueA === 0) return 0;
@@ -556,10 +998,10 @@ interface ElectreParams {
 const getCriterionValueForOffer = (offerId: number, criterionKey: string) => {
   if (!favoriteOffers.value) return null;
 
-  const offer = favoriteOffers.value.find((o) => o.id === offerId);
+  const offer = favoriteOffers.value.find(o => o.id === offerId);
   if (!offer) return null;
 
-  const criterion = availableCriteria.value.find((c) => c.key === criterionKey);
+  const criterion = availableCriteria.value.find(c => c.key === criterionKey);
   if (!criterion) return null;
 
   return criterion.getValue(offer);
@@ -592,7 +1034,12 @@ const formatCriterionValue = (key: string, value: number | null) => {
   if (key === "ceiling_height") {
     return `${value} м`;
   }
-  if (key.includes("score") || key === "transport_access_score" || key === "elderly_score" || key === "family_score") {
+  if (
+    key.includes("score") ||
+    key === "transport_access_score" ||
+    key === "elderly_score" ||
+    key === "family_score"
+  ) {
     return value.toFixed(2);
   }
 
@@ -617,17 +1064,21 @@ interface AnalysisCriterion {
   isAvailableForAll?: boolean;
 }
 
-const { $api } = useNuxtApp();
+const {$api} = useNuxtApp();
 
-const { data: favoriteOffers, pending, error } = await useAsyncData(() => $api("offers/favorites/"));
+const {
+  data: favoriteOffers,
+  pending,
+  error,
+} = await useAsyncData(() => $api("offers/favorites/"));
 
 const showComparisonInterface = ref(false);
 const selectedMethod = ref("electre");
 const analysisLoading = ref(false);
 const availableCriteria = ref<AnalysisCriterion[]>([]);
 const selectedCriteria = ref<string[]>([]);
-const criteriaWeights = ref<{ [key: string]: number }>({});
-const criteriaDirections = ref<{ [key: string]: "min" | "max" }>({});
+const criteriaWeights = ref<{[key: string]: number}>({});
+const criteriaDirections = ref<{[key: string]: "min" | "max"}>({});
 
 const propertyType = ref(propertyTypesItems.value[0].value);
 
@@ -639,14 +1090,18 @@ const electreParams = ref<ElectreParams>({
 const electreResults = ref<ElectreResults | null>(null);
 
 const topsisResults = ref<TopsisResults | null>(null);
-const topsisRanking = ref<Array<{ offerId: number; score: number; rank: number }>>([]);
+const topsisRanking = ref<
+  Array<{offerId: number; score: number; rank: number}>
+>([]);
 
 const filteredOffers = computed(() => {
   if (!favoriteOffers.value) return [];
   if (!propertyType.value || propertyType.value == "Все типы") {
     return favoriteOffers.value;
   }
-  return favoriteOffers.value.filter((offer) => offer.property_type.name === propertyType.value);
+  return favoriteOffers.value.filter(
+    offer => offer.property_type.name === propertyType.value,
+  );
 });
 
 const sortedOffers = computed(() => {
@@ -660,14 +1115,18 @@ const sortedOffers = computed(() => {
       return filtered.sort((a, b) => b.price - a.price);
     case "price_per_square_meter:asc":
       return filtered.sort((a, b) => {
-        const pricePerMeterA = a.price_per_square_meter || a.price / (a.total_area || 1);
-        const pricePerMeterB = b.price_per_square_meter || b.price / (b.total_area || 1);
+        const pricePerMeterA =
+          a.price_per_square_meter || a.price / (a.total_area || 1);
+        const pricePerMeterB =
+          b.price_per_square_meter || b.price / (b.total_area || 1);
         return pricePerMeterA - pricePerMeterB;
       });
     case "price_per_square_meter:desc":
       return filtered.sort((a, b) => {
-        const pricePerMeterA = a.price_per_square_meter || a.price / (a.total_area || 1);
-        const pricePerMeterB = b.price_per_square_meter || b.price / (b.total_area || 1);
+        const pricePerMeterA =
+          a.price_per_square_meter || a.price / (a.total_area || 1);
+        const pricePerMeterB =
+          b.price_per_square_meter || b.price / (b.total_area || 1);
         return pricePerMeterB - pricePerMeterA;
       });
     case "total_area:asc":
@@ -687,17 +1146,21 @@ const sortedOffers = computed(() => {
         return new Date(dateB).getTime() - new Date(dateA).getTime();
       });
     case "views_count:asc":
-      return filtered.sort((a, b) => (a.views_count || 0) - (b.views_count || 0));
+      return filtered.sort(
+        (a, b) => (a.views_count || 0) - (b.views_count || 0),
+      );
     case "views_count:desc":
-      return filtered.sort((a, b) => (b.views_count || 0) - (a.views_count || 0));
+      return filtered.sort(
+        (a, b) => (b.views_count || 0) - (a.views_count || 0),
+      );
     default:
       return filtered;
   }
 });
 
 const selectedCriteriaWithWeights = computed(() => {
-  return selectedCriteria.value.map((key) => {
-    const criterion = availableCriteria.value.find((c) => c.key === key);
+  return selectedCriteria.value.map(key => {
+    const criterion = availableCriteria.value.find(c => c.key === key);
     return {
       key: key,
       displayName: criterion?.displayName || key,
@@ -714,10 +1177,12 @@ const removeFromFavorites = async (offerId: number) => {
   const backup = [...favoriteOffers.value];
 
   // 1. Удаляем мгновенно из UI
-  favoriteOffers.value = favoriteOffers.value.filter((offer) => offer.id !== offerId);
+  favoriteOffers.value = favoriteOffers.value.filter(
+    offer => offer.id !== offerId,
+  );
 
   try {
-    await $api(`offers/favorites/${offerId}`, { method: "DELETE" });
+    await $api(`offers/favorites/${offerId}`, {method: "DELETE"});
   } catch (err) {
     // 2. Если сервер упал — возвращаем назад
     favoriteOffers.value = backup;
@@ -767,7 +1232,7 @@ const getPriceCategoryLabel = (category: string) => {
 const getClosestInfrastructure = (offer: Offer) => {
   const typeMap = new Map<number, any>();
 
-  offer.address.infrastructures_links.forEach((item) => {
+  offer.address.infrastructures_links.forEach(item => {
     const typeId = item.infrastructure.infrastructure_type.id;
     if (!typeMap.has(typeId) || typeMap.get(typeId)!.distance > item.distance) {
       typeMap.set(typeId, item);
@@ -778,7 +1243,7 @@ const getClosestInfrastructure = (offer: Offer) => {
 };
 
 const getInfrastructureIcon = (typeId: number): string => {
-  const icons: { [key: number]: string } = {
+  const icons: {[key: number]: string} = {
     1: "ic:baseline-school",
     2: "material-symbols:child-hat",
     3: "ic:sharp-local-hospital",
@@ -807,13 +1272,15 @@ const toggleComparisonInterface = () => {
     initializeAvailableCriteria();
 
     const defaultCriteria = ["price", "total_area"];
-    selectedCriteria.value = defaultCriteria.filter((key) => availableCriteria.value.some((c) => c.key === key && c.isAvailableForAll));
+    selectedCriteria.value = defaultCriteria.filter(key =>
+      availableCriteria.value.some(c => c.key === key && c.isAvailableForAll),
+    );
 
-    selectedCriteria.value.forEach((key) => {
+    selectedCriteria.value.forEach(key => {
       criteriaWeights.value[key] = 1;
 
       if (!criteriaDirections.value[key]) {
-        const criterion = availableCriteria.value.find((c) => c.key === key);
+        const criterion = availableCriteria.value.find(c => c.key === key);
         criteriaDirections.value[key] = criterion?.direction || "max";
       }
     });
@@ -871,6 +1338,13 @@ const initializeAvailableCriteria = () => {
       getValue: (offer: Offer) => offer.rooms_count,
     },
     {
+      key: "bedrooms_count",
+      displayName: "Количество спален",
+      weight: 1,
+      direction: "max",
+      getValue: (offer: Offer) => offer.bedrooms_count,
+    },
+    {
       key: "floor",
       displayName: "Этаж",
       weight: 1,
@@ -918,8 +1392,8 @@ const initializeAvailableCriteria = () => {
   const infrastructureCriteria: AnalysisCriterion[] = [];
 
   const infrastructureTypes = new Map<number, string>();
-  currentOffers.forEach((offer) => {
-    offer.address.infrastructures_links.forEach((link) => {
+  currentOffers.forEach(offer => {
+    offer.address.infrastructures_links.forEach(link => {
       const typeId = link.infrastructure.infrastructure_type.id;
       const typeName = link.infrastructure.infrastructure_type.name;
       if (!infrastructureTypes.has(typeId)) {
@@ -943,19 +1417,19 @@ const initializeAvailableCriteria = () => {
 
   const allCriteria = [...basicCriteria, ...infrastructureCriteria];
 
-  availableCriteria.value = allCriteria.filter((criterion) => {
-    const hasValueForAllOffers = currentOffers.every((offer) => {
+  availableCriteria.value = allCriteria.filter(criterion => {
+    const hasValueForAllOffers = currentOffers.every(offer => {
       const value = criterion.getValue(offer);
       return value !== null && value !== undefined && value !== 0;
     });
 
     if (hasValueForAllOffers) {
       const values = currentOffers
-        .map((offer) => {
+        .map(offer => {
           const value = criterion.getValue(offer);
           return value !== null && value !== undefined ? value : 0;
         })
-        .filter((val) => val !== null && val !== undefined);
+        .filter(val => val !== null && val !== undefined);
 
       if (values.length > 0) {
         criterion.minValue = Math.min(...values);
@@ -969,13 +1443,17 @@ const initializeAvailableCriteria = () => {
 };
 
 const getClosestInfrastructureByType = (offer: Offer, typeId: number) => {
-  const infrastructuresOfType = offer.address.infrastructures_links.filter((link) => link.infrastructure.infrastructure_type.id === typeId);
+  const infrastructuresOfType = offer.address.infrastructures_links.filter(
+    link => link.infrastructure.infrastructure_type.id === typeId,
+  );
 
   if (infrastructuresOfType.length === 0) {
     return null;
   }
 
-  return infrastructuresOfType.reduce((closest, current) => (current.distance < closest.distance ? current : closest));
+  return infrastructuresOfType.reduce((closest, current) =>
+    current.distance < closest.distance ? current : closest,
+  );
 };
 
 const isCriterionSelected = (key: string) => {
@@ -995,7 +1473,7 @@ const toggleCriterion = (key: string) => {
     }
 
     if (!criteriaDirections.value[key]) {
-      const criterion = availableCriteria.value.find((c) => c.key === key);
+      const criterion = availableCriteria.value.find(c => c.key === key);
       criteriaDirections.value[key] = criterion?.direction || "max";
     }
   }
@@ -1014,9 +1492,10 @@ const formatCriterionRange = (criterion: AnalysisCriterion | undefined) => {
 
 const radarIndicators = computed(() => {
   return selectedCriteria.value
-    .map((key) => {
-      const c = availableCriteria.value.find((i) => i.key === key);
-      if (!c || c.minValue === undefined || c.maxValue === undefined) return null;
+    .map(key => {
+      const c = availableCriteria.value.find(i => i.key === key);
+      if (!c || c.minValue === undefined || c.maxValue === undefined)
+        return null;
 
       return {
         name: c.displayName,
@@ -1030,10 +1509,10 @@ const radarIndicators = computed(() => {
 const radarSeries = computed(() => {
   if (!filteredOffers.value.length || !selectedCriteria.value.length) return [];
 
-  return filteredOffers.value.map((offer) => ({
+  return filteredOffers.value.map(offer => ({
     name: offer.title || `Объект ${offer.id}`,
-    value: selectedCriteria.value.map((key) => {
-      const c = availableCriteria.value.find((i) => i.key === key);
+    value: selectedCriteria.value.map(key => {
+      const c = availableCriteria.value.find(i => i.key === key);
       return c?.getValue(offer) ?? 0;
     }),
   }));
@@ -1050,7 +1529,9 @@ const radarOption = computed(() => {
       },
       padding: isMobile.value ? 6 : 10,
       borderWidth: 0,
-      extraCssText: isMobile.value ? "max-width:160px; white-space:normal;" : "",
+      extraCssText: isMobile.value
+        ? "max-width:160px; white-space:normal;"
+        : "",
     },
     legend: {
       type: "scroll",
@@ -1093,11 +1574,13 @@ const resetWeights = () => {
   criteriaDirections.value = {};
 
   const defaultCriteria = ["price", "total_area"];
-  selectedCriteria.value = defaultCriteria.filter((key) => availableCriteria.value.some((c) => c.key === key && c.isAvailableForAll));
+  selectedCriteria.value = defaultCriteria.filter(key =>
+    availableCriteria.value.some(c => c.key === key && c.isAvailableForAll),
+  );
 
-  selectedCriteria.value.forEach((key) => {
+  selectedCriteria.value.forEach(key => {
     criteriaWeights.value[key] = 1;
-    const criterion = availableCriteria.value.find((c) => c.key === key);
+    const criterion = availableCriteria.value.find(c => c.key === key);
     criteriaDirections.value[key] = criterion?.direction || "max";
   });
 };
@@ -1119,16 +1602,20 @@ const runElectreAnalysis = async () => {
       return;
     }
 
-    const evaluations = selectedOffersData.map((offer) =>
-      selectedCriteria.value.map((key) => {
-        const criterion = availableCriteria.value.find((c) => c.key === key);
+    const evaluations = selectedOffersData.map(offer =>
+      selectedCriteria.value.map(key => {
+        const criterion = availableCriteria.value.find(c => c.key === key);
         const value = criterion ? criterion.getValue(offer) : 0;
         return value !== null && value !== undefined ? value : 0;
       }),
     );
 
-    const weights = selectedCriteria.value.map((key) => criteriaWeights.value[key] || 0);
-    const isMin = selectedCriteria.value.map((key) => criteriaDirections.value[key] === "min");
+    const weights = selectedCriteria.value.map(
+      key => criteriaWeights.value[key] || 0,
+    );
+    const isMin = selectedCriteria.value.map(
+      key => criteriaDirections.value[key] === "min",
+    );
 
     const response = await $api("analysis/electre", {
       method: "GET",
@@ -1146,7 +1633,7 @@ const runElectreAnalysis = async () => {
       electreResults.value = {
         ...response,
 
-        allIds: selectedOffersData.map((offer) => offer.id),
+        allIds: selectedOffersData.map(offer => offer.id),
       };
     }
   } catch (err: any) {
@@ -1165,17 +1652,21 @@ const runTopsisAnalysis = async () => {
       return;
     }
 
-    const evaluations = selectedOffersData.map((offer) =>
-      selectedCriteria.value.map((key) => {
-        const criterion = availableCriteria.value.find((c) => c.key === key);
+    const evaluations = selectedOffersData.map(offer =>
+      selectedCriteria.value.map(key => {
+        const criterion = availableCriteria.value.find(c => c.key === key);
         const value = criterion ? criterion.getValue(offer) : 0;
         return value !== null && value !== undefined ? value : 0;
       }),
     );
 
-    const weights = selectedCriteria.value.map((key) => criteriaWeights.value[key] || 0);
+    const weights = selectedCriteria.value.map(
+      key => criteriaWeights.value[key] || 0,
+    );
 
-    const criteriaDirectionsArray = selectedCriteria.value.map((key) => criteriaDirections.value[key] === "max");
+    const criteriaDirectionsArray = selectedCriteria.value.map(
+      key => criteriaDirections.value[key] === "max",
+    );
 
     const response = await $api("analysis/topsis", {
       method: "GET",
@@ -1191,13 +1682,17 @@ const runTopsisAnalysis = async () => {
 
       const rankedIndices = [...response.ranked_indices];
 
-      const rankedOfferIds = [...response.ranked_indices].map((index: number) => selectedOffersData[index].id);
+      const rankedOfferIds = [...response.ranked_indices].map(
+        (index: number) => selectedOffersData[index].id,
+      );
 
-      topsisRanking.value = rankedOfferIds.map((offerId: number, index: number) => ({
-        offerId,
-        score: response.scores[rankedIndices[index]],
-        rank: index + 1,
-      }));
+      topsisRanking.value = rankedOfferIds.map(
+        (offerId: number, index: number) => ({
+          offerId,
+          score: response.scores[rankedIndices[index]],
+          rank: index + 1,
+        }),
+      );
     }
   } catch (err: any) {
     console.error("Ошибка при анализе TOPSIS:", err);
@@ -1215,7 +1710,8 @@ const getDominanceComparisons = (offerId: number) => {
 
   if (offerIndex === -1) return [];
 
-  const dominanceInfo = electreResults.value.dominance_info[offerIndex.toString()];
+  const dominanceInfo =
+    electreResults.value.dominance_info[offerIndex.toString()];
 
   if (!dominanceInfo) return [];
 
@@ -1237,16 +1733,17 @@ const getDominanceComparisons = (offerId: number) => {
 };
 
 const getCriterionShortName = (criterionKey: string) => {
-  const criterion = availableCriteria.value.find((c) => c.key === criterionKey);
+  const criterion = availableCriteria.value.find(c => c.key === criterionKey);
   if (!criterion) return criterionKey;
 
-  const shortNames: { [key: string]: string } = {
+  const shortNames: {[key: string]: string} = {
     price: "Цена",
     price_per_square_meter: "Цена за м²",
     total_area: "Общая площадь",
     living_area: "Жилая площадь",
     kitchen_area: "Площадь кухни",
     rooms_count: "Комнаты",
+    bedrooms_count: "Спальни",
     floor: "Этаж",
     house_floors_count: "Этажей дома",
     ceiling_height: "Высота потолков",
@@ -1259,41 +1756,56 @@ const getCriterionShortName = (criterionKey: string) => {
 };
 
 const getOfferTitleByIndex = (index: number) => {
-  if (!electreResults.value || !electreResults.value.allIds || !favoriteOffers.value) return `Объявление ${index}`;
+  if (
+    !electreResults.value ||
+    !electreResults.value.allIds ||
+    !favoriteOffers.value
+  )
+    return `Объявление ${index}`;
   const offerId = electreResults.value.allIds[index];
-  const offer = favoriteOffers.value.find((o) => o.id === offerId);
+  const offer = favoriteOffers.value.find(o => o.id === offerId);
   return offer ? `${offer.title}` : `Объявление ${index}`;
 };
 
 const getOfferAddressByIndex = (index: number) => {
-  if (!electreResults.value || !electreResults.value.allIds || !favoriteOffers.value) return "Адрес не указан";
+  if (
+    !electreResults.value ||
+    !electreResults.value.allIds ||
+    !favoriteOffers.value
+  )
+    return "Адрес не указан";
   const offerId = electreResults.value.allIds[index];
-  const offer = favoriteOffers.value.find((o) => o.id === offerId);
+  const offer = favoriteOffers.value.find(o => o.id === offerId);
   return offer ? offer.address.full_address : "Адрес не указан";
 };
 
 const getOfferIdByIndex = (index: number) => {
-  if (!electreResults.value || !electreResults.value.allIds || !favoriteOffers.value) return "#";
+  if (
+    !electreResults.value ||
+    !electreResults.value.allIds ||
+    !favoriteOffers.value
+  )
+    return "#";
   const offerId = electreResults.value.allIds[index];
-  const offer = favoriteOffers.value.find((o) => o.id === offerId);
+  const offer = favoriteOffers.value.find(o => o.id === offerId);
   return offer ? offer.id : "#";
 };
 
 const getOfferTitle = (offerId: number) => {
   if (!favoriteOffers.value) return `Объявление ${offerId}`;
-  const offer = favoriteOffers.value.find((o) => o.id === offerId);
+  const offer = favoriteOffers.value.find(o => o.id === offerId);
   return offer ? `${offer.title}` : `Объявление ${offerId}`;
 };
 
 const getOfferAddress = (offerId: number) => {
   if (!favoriteOffers.value) return "Адрес не указан";
-  const offer = favoriteOffers.value.find((o) => o.id === offerId);
+  const offer = favoriteOffers.value.find(o => o.id === offerId);
   return offer ? offer.address.full_address : "Адрес не указан";
 };
 
 const getOfferUrl = (offerId: number) => {
   if (!favoriteOffers.value) return "#";
-  const offer = favoriteOffers.value.find((o) => o.id === offerId);
+  const offer = favoriteOffers.value.find(o => o.id === offerId);
   return offer ? offer.url : "#";
 };
 
@@ -1335,6 +1847,7 @@ const formatPrice = (price: number) => {
 <style scoped>
 @reference "tailwindcss";
 @reference "@nuxt/ui";
+
 .radar-chart {
   @apply h-130 w-full mt-8 bg-white pb-4 rounded-xl border border-default;
 }
@@ -1356,7 +1869,7 @@ const formatPrice = (price: number) => {
 }
 
 .filters-section {
-  @apply flex gap-4 mb-5 w-full!;
+  @apply flex gap-4 mb-5 w-full;
 }
 
 .filter-group {
@@ -1474,7 +1987,7 @@ const formatPrice = (price: number) => {
 }
 
 .phone-number {
-  @apply text-[#2c5aa0] text-sm no-underline font-semibold  hover:underline;
+  @apply text-[#2c5aa0] text-sm no-underline font-semibold hover:underline;
 }
 
 .actions {
@@ -1510,7 +2023,7 @@ const formatPrice = (price: number) => {
 }
 
 .comparison-interface {
-  @apply bg-white rounded-xl p-7  border border-default;
+  @apply bg-white rounded-xl p-7 border border-default;
 }
 
 .method-selection {
@@ -1663,7 +2176,7 @@ const formatPrice = (price: number) => {
 }
 
 .close-method-button {
-  @apply bg-none border-none pt-0! text-2xl cursor-pointer text-[#666] p-1 rounded hover:bg-[#f0f0f0] hover:text-[#333];
+  @apply bg-none border-none pt-0 text-2xl cursor-pointer text-[#666] p-1 rounded hover:bg-[#f0f0f0] hover:text-[#333];
 }
 
 .results-description {
@@ -1743,7 +2256,7 @@ const formatPrice = (price: number) => {
 }
 
 .dominance-item {
-  @apply p-3 bg-[#f8f9fa] rounded-lg  border-[#2c5aa0];
+  @apply p-3 bg-[#f8f9fa] rounded-lg border-[#2c5aa0];
 }
 
 .comparison-with {
@@ -1765,6 +2278,7 @@ const formatPrice = (price: number) => {
 .category-label.inferior {
   @apply text-[#c62828];
 }
+
 .criterion-detail {
   transition: all 0.2s;
 }
@@ -1772,6 +2286,7 @@ const formatPrice = (price: number) => {
 .comparison-header {
   user-select: none;
 }
+
 .category-label.equal {
   @apply text-[#ef6c00];
 }
@@ -1813,7 +2328,7 @@ const formatPrice = (price: number) => {
 }
 
 .rank-item-first {
-  @apply border-[#ffd700] bg-[#fff9e6]  scale-[1.02];
+  @apply border-[#ffd700] bg-[#fff9e6] scale-[1.02];
 }
 
 .rank-item-second {
@@ -1911,6 +2426,7 @@ const formatPrice = (price: number) => {
   .price {
     @apply flex-col text-nowrap ml-2 gap-0;
   }
+
   .filters-section {
     @apply flex-col w-3/4 gap-1.5;
   }

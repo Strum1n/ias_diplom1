@@ -1,9 +1,13 @@
 export default defineNuxtPlugin(async () => {
     //  #для прода всегда это
     const config = useRuntimeConfig()
-    const baseURL = process.server
-    ? config.public.apiBase
-     : 'https://ias-diplom.dynv6.net/apiback/'
+    let baseURL = process.server
+    ? 'http://backend:8000'
+     : '/apiback/'
+    
+    baseURL = config.public.isDev? 'http://localhost:8000': baseURL
+    console.log(baseURL)
+    console.log(config.public.isDev)
   const api = $fetch.create({
     baseURL: baseURL,
     credentials: 'include',

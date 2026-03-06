@@ -51,13 +51,13 @@ export function useAuth() {
   const setAccessToken = (token: string | null) => {
     accessToken.value = token
   }
-
+  const runtimeConfig = useRuntimeConfig()
   // ---------------------------
   // Refresh access token
   // ---------------------------
   const refreshAccessToken = async () => {
     try {
-      const res = await $fetch(`https://ias-diplom.dynv6.net/apiback/auth/refresh`, {
+      const res = await $fetch(`${runtimeConfig.public.apiBase}/auth/refresh`, {
         method: 'POST',
         credentials: 'include'
       })
@@ -67,21 +67,6 @@ export function useAuth() {
       logout()
       throw err
     }
-  }
-
-  const fetchWithAuth = async (url: string, options: any = {}) => {
-    if (accessToken.value && isTokenExpired(accessToken.value)) {
-      await refreshAccessToken()
-    }
-
-    return $fetch(url, {
-      ...options,
-      headers: {
-        ...(options.headers || {}),
-        Authorization: accessToken.value ? `Bearer ${accessToken.value}` : ''
-      },
-      credentials: 'include'
-    })
   }
 
   // ---------------------------
@@ -96,7 +81,7 @@ export function useAuth() {
       body.append('username', username)
       body.append('password', password)
 
-      const res: LoginResponse = await $fetch(`http://localhost:8000/auth/login`, {
+      const res: LoginResponse = await $fetch(`${runtimeConfig.public.apiBase}/auth/login`, {
         method: 'POST',
         body,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -126,7 +111,7 @@ export function useAuth() {
   // ---------------------------
   const logout = async () => {
     try {
-      await $fetch(`http://localhost:8000/auth/logout`, { method: 'POST', credentials: 'include' })
+      await $fetch(`${runtimeConfig.public.apiBase}/auth/logout`, { method: 'POST', credentials: 'include' })
     } catch (err) {
       console.warn('Ошибка при logout', err)
     } finally {
@@ -175,7 +160,6 @@ export function useAuth() {
     accessToken,
     setAccessToken,
     refreshAccessToken,
-    fetchWithAuth,
     startAutoRefresh,
     stopAutoRefresh
   }

@@ -23,7 +23,7 @@ from app.backend.auth_utils.auth import (
     send_welcome_email,
 )
 from app.backend.db.config import get_async_session
-from app.backend.db.models import *
+from app.backend.db.models1 import *
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentification"])
 
@@ -45,11 +45,17 @@ async def login_for_access_token(
 
     token_data = {"sub": user.email, "role": user.role.name}
 
-    access_token = create_access_token(data=token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    refresh_token = create_refresh_token(data=token_data, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+    access_token = create_access_token(
+        data=token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    refresh_token = create_refresh_token(
+        data=token_data, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    )
     if isinstance(access_token, bytes):
         access_token = access_token.decode("utf-8")
-    response = JSONResponse(content={"access_token": access_token, "token_type": "bearer"})
+    response = JSONResponse(
+        content={"access_token": access_token, "token_type": "bearer"}
+    )
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
@@ -139,9 +145,14 @@ async def refresh_access_token(request: Request):
     except PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-    access_token = create_access_token(data={"sub": username}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    access_token = create_access_token(
+        data={"sub": username},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
 
-    new_refresh_token = create_refresh_token(data={"sub": username}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+    new_refresh_token = create_refresh_token(
+        data={"sub": username}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    )
 
     response = JSONResponse(
         content={
@@ -178,7 +189,9 @@ async def validate_reset_token(request: ValidateResetTokenRequest):
 
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register_user(user_data: UserRequest, session: AsyncSession = Depends(get_async_session)):
+async def register_user(
+    user_data: UserRequest, session: AsyncSession = Depends(get_async_session)
+):
     statement = select(User).where(User.email == user_data.email)
     result = await session.exec(statement)
     existing_user = result.first()

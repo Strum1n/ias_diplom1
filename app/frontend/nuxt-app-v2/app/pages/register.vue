@@ -34,17 +34,20 @@
             <USelect class="w-full" v-model="form.role_id" :items="roleOptions" required />
           </UFormField>
 
-          <UButton type="submit" color="primary" class="w-full" :loading="loading" size="lg"> Зарегистрироваться </UButton>
+          <UButton type="submit" color="primary" class="w-full" :loading="loading" size="lg"> Зарегистрироваться
+          </UButton>
         </form>
       </div>
-      <div v-if="error" class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+      <div v-if="error"
+        class="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
         <p class="text-red-700 dark:text-red-400 text-sm">{{ error }}</p>
       </div>
 
       <template #footer>
         <p class="text-center text-gray-600 dark:text-gray-400 text-sm">
           Уже есть аккаунт?
-          <NuxtLink to="/login" class="text-primary-600 dark:text-primary-400 hover:underline font-medium"> Войти </NuxtLink>
+          <NuxtLink to="/login" class="text-primary-600 dark:text-primary-400 hover:underline font-medium"> Войти
+          </NuxtLink>
         </p>
       </template>
     </UCard>
@@ -53,8 +56,6 @@
 
 <script setup lang="ts">
 import type { SelectItem } from "@nuxt/ui";
-import { reactive, ref } from "vue";
-import { useRouter } from "vue-router";
 
 const loading = ref(false);
 const error = ref<string | null>(null);

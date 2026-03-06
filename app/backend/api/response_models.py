@@ -4,7 +4,7 @@ from typing import Optional
 from geoalchemy2 import WKBElement
 
 from app.backend.db.config import BaseModel
-from app.backend.db.models import *
+from app.backend.db.models1 import *
 
 
 class UserRequest(BaseModel):

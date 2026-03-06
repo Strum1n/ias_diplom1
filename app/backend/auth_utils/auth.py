@@ -14,7 +14,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.backend.config import settings
 from app.backend.db.config import get_async_session
-from app.backend.db.models import *
+from app.backend.db.models1 import *
 
 SECRET_KEY = settings.SECRET_KEY
 REFRESH_SECRET_KEY = settings.SECRET_KEY
@@ -136,7 +136,10 @@ async def send_reset_link_email(to_email: str, reset_link: str) -> bool:
         return False
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session: AsyncSession = Depends(get_async_session)):
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    session: AsyncSession = Depends(get_async_session),
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

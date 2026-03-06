@@ -39,7 +39,7 @@ class FuzzyEvaluator:
         # ВАЖНО: numpy array
         parking_availability = ctrl.Antecedent(np.array([0, 1]), "parking")
 
-        transport_access = ctrl.Consequent(np.arange(0, 11, 1), "transport_access")
+        transport_access = ctrl.Consequent(np.arange(0, 11, 0.1), "transport_access")
 
         for var in [metro_distance, bus_distance]:
             var["close"] = fuzz.trimf(var.universe, [0, 0, 400])

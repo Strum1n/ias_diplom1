@@ -11,7 +11,7 @@
         'max-h-0 overflow-hidden md:max-h-none md:overflow-visible': !showFilters,
         'max-h-500 overflow-visible mb-4': showFilters,
       }">
-      <FiltersSidebar :initial-filters="filters" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
+      <FiltersSidebar @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>
 
     <main class="map-content max-h-[84.5vh] min-h-150! flex-1 sm:max-h-max">
@@ -46,7 +46,7 @@
 
       <div class="map-container relative">
         <UIcon v-if="offersPending" name="line-md:loading-loop" class="loading-icon absolute inset-0 m-auto z-10" />
-        <YaMap :parent-offers="offers" :favorite-offers="favoriteOffers" class="h-full w-full"></YaMap>
+        <YandexMap :parent-offers="offers" :favorite-offers="favoriteOffers" class="h-full w-full"></YandexMap>
       </div>
     </main>
   </div>
@@ -63,83 +63,85 @@ interface Filters {
 }
 
 const { $api } = useNuxtApp();
-const route = useRoute();
-const router = useRouter();
 
 // Состояние для показа/скрытия фильтров
 const showFilters = ref(false);
 
+// Функция для переключения видимости фильтров
 const toggleFiltersSidebar = () => {
   showFilters.value = !showFilters.value;
 };
-
-// Фильтры из query (исключая служебные параметры, если они появятся)
-const filters = computed(() => {
-  const query = { ...route.query };
-  // Если в будущем появятся параметры, не относящиеся к фильтрам, удалим их
-  // delete query.some_param;
-  return query;
+const { data: favoritesData } = useAsyncData("favorites", () => $api("offers/favorites/"));
+const favoriteOffers = computed(() => {
+  return new Set(favoritesData.value?.map((item) => item.id) || []);
 });
+const currentFilters = ref<Filters>({});
+const addressForSearch = computed(() => currentFilters.value.address_query);
 
-const addressForSearch = computed(() => (route.query.address_query as string) || "");
-
-// Подготовка query для API
 const prepareRequestQuery = () => {
   const query: Record<string, any> = {
     limit: 1000000,
   };
 
-  Object.entries(filters.value).forEach(([key, value]) => {
-    if (value == null || value === "" || (Array.isArray(value) && value.length === 0)) return;
+  if (currentFilters.value && Object.keys(currentFilters.value).length > 0) {
+    Object.entries(currentFilters.value).forEach(([key, value]) => {
+      if (value == null || value === "" || (Array.isArray(value) && value.length === 0)) return;
 
-    if (Array.isArray(value)) {
-      query[key] = value.filter((item) => item != null && item !== "");
-    } else if (typeof value === "boolean") {
-      if (value === true) {
+      if (Array.isArray(value)) {
+        query[key] = value.filter((item) => item != null && item !== "");
+      } else if (typeof value === "boolean") {
+        if (value === true) {
+          query[key] = String(value);
+        }
+      } else if (typeof value === "object" && !Array.isArray(value)) {
+        query[key] = JSON.stringify(value);
+      } else {
         query[key] = String(value);
       }
-    } else if (typeof value === "object" && !Array.isArray(value)) {
-      query[key] = JSON.stringify(value);
-    } else {
-      query[key] = String(value);
-    }
-  });
+    });
+  }
 
   return query;
 };
 
-// Обновление query в URL
-const updateQuery = (newParams: Record<string, any>) => {
-  router.replace({
-    query: {
-      ...route.query,
-      ...newParams,
-    },
-  });
-};
-
-// Запрос объявлений с автоматическим слежением за изменением маршрута
 const {
   data: offersData,
   pending: offersPending,
   error: offersError,
   refresh: refreshOffers,
-} = useAsyncData("offersForMap", () => $api("/offers/offers_for_map", { params: prepareRequestQuery() }), {
-  watch: [route], // автоматически перезапрашивать при изменении query
-});
+} = useAsyncData("offersForMap", () =>
+  $api("/offers/offers_for_map", {
+    params: prepareRequestQuery(),
+  }),
+);
 
 const offers = computed(() => offersData.value || []);
 
-// Обработчики событий
-const handleFiltersApply = (filtersData: Filters) => {
-  updateQuery(filtersData);
+const handleFiltersApply = async (filtersData: Filters) => {
+  currentFilters.value = {
+    ...filtersData,
+    ...("address_query" in currentFilters.value && {
+      address_query: currentFilters.value.address_query,
+    }),
+  };
+
+  // Закрываем фильтры после применения на мобильных
+  if (window.innerWidth < 768) {
+    showFilters.value = false;
+  }
+
+  refreshOffers();
 };
 
-const handleFiltersReset = () => {
-  const { address_query } = route.query;
-  router.replace({
-    query: address_query ? { address_query } : {},
-  });
+const handleFiltersReset = async () => {
+  const filtersToKeep: Partial<Filters> = {};
+
+  if (currentFilters.value.address_query) {
+    filtersToKeep.address_query = currentFilters.value.address_query;
+  }
+
+  currentFilters.value = { ...filtersToKeep };
+  refreshOffers();
 };
 
 const handleAddressSearch = (query: string) => {
@@ -147,21 +149,20 @@ const handleAddressSearch = (query: string) => {
     clearAddressSearch();
     return;
   }
-  updateQuery({ address_query: query });
+
+  currentFilters.value = {
+    ...currentFilters.value,
+    address_query: query,
+  };
+
+  refreshOffers();
 };
 
 const clearAddressSearch = () => {
-  const { address_query, ...filtersWithoutAddress } = route.query;
-  router.replace({
-    query: filtersWithoutAddress,
-  });
+  const { address_query, ...filtersWithoutAddress } = currentFilters.value;
+  currentFilters.value = filtersWithoutAddress;
+  refreshOffers();
 };
-
-// Избранное (не зависит от фильтров)
-const { data: favoritesData } = useAsyncData("favorites", () => $api("offers/favorites/"));
-const favoriteOffers = computed(() => {
-  return new Set(favoritesData.value?.map((item) => item.id) || []);
-});
 
 const mapState = useMapState();
 
@@ -181,7 +182,7 @@ onBeforeUnmount(() => {
 }
 
 .map-container {
-  @apply flex justify-center items-center flex-auto min-h-0 overflow-hidden border border-[#e2e8f0] bg-white rounded-xl  md:h-auto;
+  @apply flex justify-center max-w-[1444px] items-center flex-auto min-h-0 overflow-hidden border border-[#e2e8f0] bg-white rounded-xl  md:h-auto;
 }
 
 /* Мобильные адаптации */

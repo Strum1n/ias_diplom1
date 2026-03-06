@@ -9,7 +9,7 @@ import asyncpg
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import delete, select, update
 
-from app.backend.db.models import Offer
+from app.backend.db.models1 import Offer
 from app.backend.db.config import async_session_maker
 
 
@@ -18,7 +18,9 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler(f"image_checker_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"),
+        logging.FileHandler(
+            f"image_checker_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        ),
     ],
 )
 logger = logging.getLogger(__name__)
@@ -32,7 +34,9 @@ async def check_image(session: aiohttp.ClientSession, url: str) -> Optional[int]
         return None
 
 
-async def delete_or_deactivate_offers(ids: List[int], delete_enabled: bool) -> tuple[int, int]:
+async def delete_or_deactivate_offers(
+    ids: List[int], delete_enabled: bool
+) -> tuple[int, int]:
     if not ids or not delete_enabled:
         return 0, 0
 
@@ -47,7 +51,9 @@ async def delete_or_deactivate_offers(ids: List[int], delete_enabled: bool) -> t
 
         except IntegrityError:
             await session.rollback()
-            logger.warning(f"FK violation on batch delete, falling back to per-offer handling: {ids}")
+            logger.warning(
+                f"FK violation on batch delete, falling back to per-offer handling: {ids}"
+            )
 
         for offer_id in ids:
             try:
@@ -59,7 +65,11 @@ async def delete_or_deactivate_offers(ids: List[int], delete_enabled: bool) -> t
                 await session.rollback()
 
                 if "asyncpg.exceptions.ForeignKeyViolationError" in str(e):
-                    await session.exec(update(Offer).where(Offer.id == offer_id).values(is_active=False))
+                    await session.exec(
+                        update(Offer)
+                        .where(Offer.id == offer_id)
+                        .values(is_active=False)
+                    )
                     await session.commit()
                     deactivated += 1
                 else:
@@ -68,7 +78,9 @@ async def delete_or_deactivate_offers(ids: List[int], delete_enabled: bool) -> t
     return deleted, deactivated
 
 
-async def main(concurrency: int = 50, batch_size: int = 5000, delete_enabled: bool = True) -> None:
+async def main(
+    concurrency: int = 50, batch_size: int = 5000, delete_enabled: bool = True
+) -> None:
     sem = asyncio.Semaphore(concurrency)
 
     total_checked = 0
@@ -92,7 +104,11 @@ async def main(concurrency: int = 50, batch_size: int = 5000, delete_enabled: bo
 
             # Проверяем первое изображение
             image_url = images[0] if isinstance(images, (list, tuple)) else None
-            if not image_url or not isinstance(image_url, str) or not image_url.startswith("http"):
+            if (
+                not image_url
+                or not isinstance(image_url, str)
+                or not image_url.startswith("http")
+            ):
                 return None
 
             async with sem:
@@ -100,7 +116,9 @@ async def main(concurrency: int = 50, batch_size: int = 5000, delete_enabled: bo
             # if status is not None and status != 404:
             #     logger.info(f"Non-404 status {status} for offer_id={offer_id} | url={image_url}")
             if status != 200:
-                logger.warning(f"404 image found | offer_id={offer_id} | offer_url={offer_url}")
+                logger.warning(
+                    f"404 image found | offer_id={offer_id} | offer_url={offer_url}"
+                )
                 return offer_id
 
             return None
@@ -112,13 +130,21 @@ async def main(concurrency: int = 50, batch_size: int = 5000, delete_enabled: bo
             logger.info(f"Batch #{batch_number}, last_id={last_id}")
 
             async with async_session_maker() as session:
-                result = await session.exec(select(Offer.id, Offer.images_urls, Offer.url).where(Offer.id > last_id).order_by(Offer.id).limit(batch_size))
+                result = await session.exec(
+                    select(Offer.id, Offer.images_urls, Offer.url)
+                    .where(Offer.id > last_id)
+                    .order_by(Offer.id)
+                    .limit(batch_size)
+                )
                 rows = result.all()
 
             if not rows:
                 break
 
-            tasks = [asyncio.create_task(worker(oid, images, url)) for oid, images, url in rows]
+            tasks = [
+                asyncio.create_task(worker(oid, images, url))
+                for oid, images, url in rows
+            ]
             results = await asyncio.gather(*tasks)
 
             for offer_id in results:
@@ -127,7 +153,9 @@ async def main(concurrency: int = 50, batch_size: int = 5000, delete_enabled: bo
                     ids_to_process.append(offer_id)
 
                     if len(ids_to_process) >= DELETE_BATCH_SIZE:
-                        d, da = await delete_or_deactivate_offers(ids_to_process, delete_enabled)
+                        d, da = await delete_or_deactivate_offers(
+                            ids_to_process, delete_enabled
+                        )
                         total_deleted += d
                         total_deactivated += da
                         ids_to_process.clear()
@@ -138,7 +166,9 @@ async def main(concurrency: int = 50, batch_size: int = 5000, delete_enabled: bo
             elapsed = (datetime.now() - start_time).total_seconds()
             speed = total_checked / elapsed if elapsed else 0
 
-            logger.info(f"checked={total_checked}, 404={total_404_found}, deleted={total_deleted}, deactivated={total_deactivated}, speed={speed:.1f}/s")
+            logger.info(
+                f"checked={total_checked}, 404={total_404_found}, deleted={total_deleted}, deactivated={total_deactivated}, speed={speed:.1f}/s"
+            )
 
         if ids_to_process:
             d, da = await delete_or_deactivate_offers(ids_to_process, delete_enabled)

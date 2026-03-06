@@ -1,18 +1,34 @@
 <template>
   <div class="relative">
     <!-- Кнопка открытия -->
-    <UButton icon="i-heroicons-chat-bubble-left-right" color="primary" variant="outline" @click="toggle"> <span class="hidden sm:inline">Помощник</span> </UButton>
+    <UButton
+      icon="i-heroicons-chat-bubble-left-right"
+      color="primary"
+      variant="outline"
+      @click="toggle"
+    >
+      <span class="hidden sm:inline">Помощник</span>
+    </UButton>
 
     <!-- Чат -->
     <Transition name="fade-slide">
       <div v-if="open" class="chat-panel">
         <header class="chat-header">
           <span>Умный помощник</span>
-          <UButton icon="i-heroicons-x-mark" size="xs" variant="ghost" @click="open = false" />
+          <UButton
+            icon="i-heroicons-x-mark"
+            size="xs"
+            variant="ghost"
+            @click="open = false"
+          />
         </header>
 
         <div class="chat-body">
-          <div v-for="(msg, i) in messages" :key="i" :class="['chat-message', msg.role]">
+          <div
+            v-for="(msg, i) in messages"
+            :key="i"
+            :class="['chat-message', msg.role]"
+          >
             <!-- Текст пользователя -->
             <template v-if="msg.role === 'user'">
               {{ msg.content }}
@@ -21,7 +37,9 @@
             <!-- Ответ ассистента -->
             <template v-else>
               <!-- Ошибка -->
-              <div v-if="typeof msg.content === 'object' && msg.content.error">{{ msg.content }}</div>
+              <div v-if="typeof msg.content === 'object' && msg.content.error">
+                {{ msg.content }}
+              </div>
 
               <!-- Обычный текст ассистента -->
               <div v-else-if="typeof msg.content === 'string'">
@@ -29,12 +47,25 @@
               </div>
 
               <!-- Результаты поиска -->
-              <template v-else-if="msg.content.rows && msg.content.rows.length > 0">
-                <div class="assistant-intro">Я нашёл подходящие объявления:</div>
+              <template
+                v-else-if="msg.content.rows && msg.content.rows.length > 0"
+              >
+                <div class="assistant-intro">
+                  Я нашёл подходящие объявления:
+                </div>
 
                 <div class="assistant-results">
-                  <div v-for="offer in msg.content.rows" :key="offer.id" class="assistant-offer" @click="navigateTo(`/offers/${offer.id}`)">
-                    <img :src="offer.first_image" alt="Фото" class="offer-image" />
+                  <div
+                    v-for="offer in msg.content.rows"
+                    :key="offer.id"
+                    class="assistant-offer"
+                    @click="navigateTo(`/offers/${offer.id}`)"
+                  >
+                    <img
+                      :src="offer.first_image"
+                      alt="Фото"
+                      class="offer-image"
+                    />
 
                     <div class="offer-info">
                       <div class="offer-price">
@@ -48,8 +79,12 @@
                   </div>
                 </div>
               </template>
-              <template v-else-if="msg.content.rows && msg.content.rows.length == 0">
-                <div class="assistant-intro">К сожалению я не нашел объявлений по такому запросу.</div>
+              <template
+                v-else-if="msg.content.rows && msg.content.rows.length == 0"
+              >
+                <div class="assistant-intro">
+                  К сожалению я не нашел объявлений по такому запросу.
+                </div>
               </template>
               <!-- Нет результатов -->
               <div v-else>{{ msg.content.explanation }}</div>
@@ -60,7 +95,12 @@
         </div>
 
         <form class="chat-input" @submit.prevent="send">
-          <UInput class="w-full" v-model="input" placeholder="Задайте вопрос…" autocomplete="off" />
+          <UInput
+            class="w-full"
+            v-model="input"
+            placeholder="Задайте вопрос…"
+            autocomplete="off"
+          />
           <UButton icon="i-heroicons-paper-airplane" type="submit" />
         </form>
       </div>
@@ -85,9 +125,12 @@ interface Message {
   role: "user" | "assistant";
   content: string | AssistantResponse;
 }
-const formatPrice = (price: number) => new Intl.NumberFormat("ru-RU").format(price) + " ₽";
 
-const { $api } = useNuxtApp();
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("ru-RU").format(price) + " ₽";
+}
+
+const {$api} = useNuxtApp();
 
 const open = ref(false);
 const input = ref("");
@@ -96,15 +139,16 @@ const loading = ref(false);
 const messages = ref<Message[]>([
   {
     role: "assistant",
-    content: "Здравствуйте! Я умный помощник, который поможет подобрать вам жилье. Опишите свои предпочтения, а я подберу варианты.",
+    content:
+      "Здравствуйте! Я умный помощник, который поможет подобрать вам жилье. Опишите свои предпочтения, а я подберу варианты.",
   },
 ]);
 
-const toggle = () => {
+function toggle() {
   open.value = !open.value;
-};
+}
 
-const send = async () => {
+async function send() {
   if (!input.value.trim()) return;
 
   const userMessage = input.value;
@@ -120,7 +164,7 @@ const send = async () => {
   try {
     const response = await $api("/analysis/chat_assistant", {
       method: "POST",
-      params: { query: userMessage },
+      params: {query: userMessage},
     });
 
     messages.value.push({
@@ -130,12 +174,12 @@ const send = async () => {
   } catch (e) {
     messages.value.push({
       role: "assistant",
-      content: { error: true },
+      content: {error: true},
     });
   } finally {
     loading.value = false;
   }
-};
+}
 </script>
 
 <style scoped>
