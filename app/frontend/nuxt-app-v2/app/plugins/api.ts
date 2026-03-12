@@ -13,7 +13,7 @@ export default defineNuxtPlugin(async () => {
     credentials: 'include',
 
     async onRequest({ options, event }) {
-      const token = useCookie('access_token', event).value
+      const token = useState('access_token', event).value
 
       if (token) {
         options.headers.set('Authorization', `Bearer ${token}`)

@@ -9,15 +9,13 @@ from sqlalchemy import Column, String, func
 from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlmodel import ARRAY, DateTime, Field, Index, Relationship, UniqueConstraint, text
 
-from app.backend.db.config import BaseModel
 
-
-class Favorite(BaseModel, table=True):
+class Favorite(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id", primary_key=True)
     offer_id: int = Field(foreign_key="offer.id", primary_key=True)
 
 
-class Offer(BaseModel, table=True):
+class Offer(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
 
     is_active: bool = Field(
@@ -85,12 +83,8 @@ class Offer(BaseModel, table=True):
 
     contact_phone: str | None = Field(max_length=20)
 
-    creation_date_source: datetime | None = Field(
-        sa_column=Column(DateTime(timezone=True))
-    )
-    update_date_source: datetime | None = Field(
-        sa_column=Column(DateTime(timezone=True))
-    )
+    creation_date_source: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
+    update_date_source: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
     update_date: datetime | None = Field(
         sa_column=Column(
             DateTime(timezone=True),
@@ -98,271 +92,193 @@ class Offer(BaseModel, table=True):
             onupdate=func.now(),
         )
     )
-    address_id: int | None = Field(
-        foreign_key="address.id", ondelete="CASCADE", index=True
-    )
-    address: Optional["Address"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    address_id: int | None = Field(foreign_key="address.id", ondelete="CASCADE", index=True)
+    address: Optional["Address"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     seller_id: int | None = Field(foreign_key="seller.id")
-    seller: Optional["Seller"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    seller: Optional["Seller"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     offer_type_id: int | None = Field(foreign_key="offer_type.id")
-    offer_type: Optional["OfferType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    offer_type: Optional["OfferType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     property_type_id: int | None = Field(foreign_key="property_type.id")
-    property_type: Optional["PropertyType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    property_type: Optional["PropertyType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     land_type_id: int | None = Field(foreign_key="land_type.id")
-    land_type: Optional["LandType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    land_type: Optional["LandType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     bathroom_type_id: int | None = Field(foreign_key="bathroom_type.id")
-    bathroom_type: Optional["BathroomType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    bathroom_type: Optional["BathroomType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     renovation_type_id: int | None = Field(foreign_key="renovation_type.id")
-    renovation_type: Optional["RenovationType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    renovation_type: Optional["RenovationType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     window_view_type_id: int | None = Field(foreign_key="window_view_type.id")
-    window_view_type: Optional["WindowViewType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    window_view_type: Optional["WindowViewType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     parking_type_id: int | None = Field(foreign_key="parking_type.id")
-    parking_type: Optional["ParkingType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    parking_type: Optional["ParkingType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     house_material_type_id: int | None = Field(foreign_key="house_material_type.id")
-    house_material_type: Optional["HouseMaterialType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    house_material_type: Optional["HouseMaterialType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     heating_type_id: int | None = Field(foreign_key="heating_type.id")
-    heating_type: Optional["HeatingType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    heating_type: Optional["HeatingType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     gas_type_id: int | None = Field(foreign_key="gas_type.id")
-    gas_type: Optional["GasType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    gas_type: Optional["GasType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     sewerage_type_id: int | None = Field(foreign_key="sewerage_type.id")
-    sewerage_type: Optional["SewerageType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    sewerage_type: Optional["SewerageType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
     water_supply_type_id: int | None = Field(foreign_key="water_supply_type.id")
-    water_supply_type: Optional["WaterSupplyType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    water_supply_type: Optional["WaterSupplyType"] = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
     users: List["User"] = Relationship(back_populates="offers", link_model=Favorite)
 
 
-class Seller(BaseModel, table=True):
+class Seller(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     rating: float | None
     foundation_date: int | None
 
     seller_type_id: int | None = Field(foreign_key="seller_type.id")
-    seller_type: Optional["SellerType"] = Relationship(
-        back_populates="sellers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    seller_type: Optional["SellerType"] = Relationship(back_populates="sellers", sa_relationship_kwargs={"lazy": "selectin"})
 
     offers: List["Offer"] = Relationship(back_populates="seller")
 
 
-class SellerType(BaseModel, table=True):
+class SellerType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     sellers: List["Seller"] = Relationship(back_populates="seller_type")
 
 
-class OfferType(BaseModel, table=True):
+class OfferType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="offer_type")
 
 
-class PropertyType(BaseModel, table=True):
+class PropertyType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="property_type")
 
 
-class LandType(BaseModel, table=True):
+class LandType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="land_type")
 
 
-class RenovationType(BaseModel, table=True):
+class RenovationType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="renovation_type")
 
 
-class BathroomType(BaseModel, table=True):
+class BathroomType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="bathroom_type")
 
 
-class WindowViewType(BaseModel, table=True):
+class WindowViewType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="window_view_type")
 
 
-class ParkingType(BaseModel, table=True):
+class ParkingType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="parking_type")
 
 
-class HouseMaterialType(BaseModel, table=True):
+class HouseMaterialType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="house_material_type")
 
 
-class HeatingType(BaseModel, table=True):
+class HeatingType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="heating_type")
 
 
-class GasType(BaseModel, table=True):
+class GasType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="gas_type")
 
 
-class WaterSupplyType(BaseModel, table=True):
+class WaterSupplyType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="water_supply_type")
 
 
-class SewerageType(BaseModel, table=True):
+class SewerageType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     offers: List["Offer"] = Relationship(back_populates="sewerage_type")
 
 
-class AddressInfrastructureLink(BaseModel, table=True):
-    infrastructure_id: int = Field(
-        foreign_key="infrastructure.id", primary_key=True, ondelete="CASCADE"
-    )
-    address_id: int = Field(
-        foreign_key="address.id", primary_key=True, ondelete="CASCADE"
-    )
+class AddressInfrastructureLink(SQLModel, table=True):
+    infrastructure_id: int = Field(foreign_key="infrastructure.id", primary_key=True, ondelete="CASCADE")
+    address_id: int = Field(foreign_key="address.id", primary_key=True, ondelete="CASCADE")
     distance: int | None
 
     address: "Address" = Relationship(back_populates="infrastructures_links")
-    infrastructure: "Infrastructure" = Relationship(
-        back_populates="addresses_links", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    infrastructure: "Infrastructure" = Relationship(back_populates="addresses_links", sa_relationship_kwargs={"lazy": "selectin"})
 
 
-class Address(BaseModel, table=True):
-    __table_args__ = (
-        Index("idx_address_search_vector", "search_vector", postgresql_using="gin"),
-    )
+class Address(SQLModel, table=True):
+    __table_args__ = (Index("idx_address_search_vector", "search_vector", postgresql_using="gin"),)
 
     id: int | None = Field(primary_key=True)
     house_number: str | None
     full_address: str | None
-    search_vector: Any | None = Field(
-        sa_column=Column(TSVECTOR), description="Полнотекстовый индекс (tsvector)"
-    )
-    coordinates: Any = Field(
-        sa_column=Column(Geography(geometry_type="POINT", srid=4326), unique=True)
-    )
+    search_vector: Any | None = Field(sa_column=Column(TSVECTOR), description="Полнотекстовый индекс (tsvector)")
+    coordinates: Any = Field(sa_column=Column(Geography(geometry_type="POINT", srid=4326), unique=True))
 
     region_id: int | None = Field(foreign_key="region.id", ondelete="SET NULL")
-    municipality_id: int | None = Field(
-        foreign_key="municipality.id", ondelete="SET NULL"
-    )
-    super_municipality_id: int | None = Field(
-        foreign_key="super_municipality.id", ondelete="SET NULL"
-    )
+    municipality_id: int | None = Field(foreign_key="municipality.id", ondelete="SET NULL")
+    super_municipality_id: int | None = Field(foreign_key="super_municipality.id", ondelete="SET NULL")
     settlement_id: int | None = Field(foreign_key="settlement.id", ondelete="SET NULL")
-    partnership_id: int | None = Field(
-        foreign_key="partnership.id", ondelete="SET NULL"
-    )
-    district_id: int | None = Field(
-        foreign_key="district.id", index=True, ondelete="SET NULL"
-    )
-    microdistrict_id: int | None = Field(
-        foreign_key="microdistrict.id", ondelete="SET NULL"
-    )
+    partnership_id: int | None = Field(foreign_key="partnership.id", ondelete="SET NULL")
+    district_id: int | None = Field(foreign_key="district.id", index=True, ondelete="SET NULL")
+    microdistrict_id: int | None = Field(foreign_key="microdistrict.id", ondelete="SET NULL")
     street_id: int | None = Field(foreign_key="street.id", ondelete="SET NULL")
-    residential_complex_id: int | None = Field(
-        foreign_key="residential_complex.id", ondelete="SET NULL"
-    )
+    residential_complex_id: int | None = Field(foreign_key="residential_complex.id", ondelete="SET NULL")
 
-    region: Optional["Region"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    municipality: Optional["Municipality"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    super_municipality: Optional["SuperMunicipality"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    settlement: Optional["Settlement"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    partnership: Optional["Partnership"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    district: Optional["District"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    microdistrict: Optional["Microdistrict"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    street: Optional["Street"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    residential_complex: Optional["ResidentialComplex"] = Relationship(
-        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    region: Optional["Region"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    municipality: Optional["Municipality"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    super_municipality: Optional["SuperMunicipality"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    settlement: Optional["Settlement"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    partnership: Optional["Partnership"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    district: Optional["District"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    microdistrict: Optional["Microdistrict"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    street: Optional["Street"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    residential_complex: Optional["ResidentialComplex"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
 
-    offers: List["Offer"] = Relationship(
-        back_populates="address", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    infrastructures_links: list["AddressInfrastructureLink"] = Relationship(
-        back_populates="address", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    offers: List["Offer"] = Relationship(back_populates="address", sa_relationship_kwargs={"lazy": "selectin"})
+    infrastructures_links: list["AddressInfrastructureLink"] = Relationship(back_populates="address", sa_relationship_kwargs={"lazy": "selectin"})
 
     @field_serializer("coordinates")
     def serialize_coordinates(self, geom):
@@ -380,7 +296,7 @@ class Address(BaseModel, table=True):
         return list(mapping(shape)["coordinates"])
 
 
-class Region(BaseModel, table=True):
+class Region(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
@@ -389,7 +305,7 @@ class Region(BaseModel, table=True):
     addresses: List["Address"] = Relationship(back_populates="region")
 
 
-class Municipality(BaseModel, table=True):
+class Municipality(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
@@ -397,47 +313,37 @@ class Municipality(BaseModel, table=True):
 
     municipality_type_id: int | None = Field(foreign_key="municipality_type.id")
 
-    municipality_type: Optional["MunicipalityType"] = Relationship(
-        back_populates="municipalities"
-    )
+    municipality_type: Optional["MunicipalityType"] = Relationship(back_populates="municipalities")
     addresses: List["Address"] = Relationship(back_populates="municipality")
 
 
-class MunicipalityType(BaseModel, table=True):
+class MunicipalityType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(index=True)
 
-    municipalities: List["Municipality"] = Relationship(
-        back_populates="municipality_type"
-    )
+    municipalities: List["Municipality"] = Relationship(back_populates="municipality_type")
 
 
-class SuperMunicipality(BaseModel, table=True):
+class SuperMunicipality(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
     short_name: str | None
 
-    super_municipality_type_id: int | None = Field(
-        foreign_key="super_municipality_type.id"
-    )
+    super_municipality_type_id: int | None = Field(foreign_key="super_municipality_type.id")
 
-    super_municipality_type: Optional["SuperMunicipalityType"] = Relationship(
-        back_populates="super_municipalities"
-    )
+    super_municipality_type: Optional["SuperMunicipalityType"] = Relationship(back_populates="super_municipalities")
     addresses: List["Address"] = Relationship(back_populates="super_municipality")
 
 
-class SuperMunicipalityType(BaseModel, table=True):
+class SuperMunicipalityType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
-    super_municipalities: List["SuperMunicipality"] = Relationship(
-        back_populates="super_municipality_type"
-    )
+    super_municipalities: List["SuperMunicipality"] = Relationship(back_populates="super_municipality_type")
 
 
-class Partnership(BaseModel, table=True):
+class Partnership(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
@@ -445,20 +351,18 @@ class Partnership(BaseModel, table=True):
 
     partnership_type_id: int | None = Field(foreign_key="partnership_type.id")
 
-    partnership_type: Optional["PartnershipType"] = Relationship(
-        back_populates="partnerships"
-    )
+    partnership_type: Optional["PartnershipType"] = Relationship(back_populates="partnerships")
     addresses: List["Address"] = Relationship(back_populates="partnership")
 
 
-class PartnershipType(BaseModel, table=True):
+class PartnershipType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     partnerships: List["Partnership"] = Relationship(back_populates="partnership_type")
 
 
-class Settlement(BaseModel, table=True):
+class Settlement(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
     full_name: str | None = Field(unique=True)
@@ -466,20 +370,18 @@ class Settlement(BaseModel, table=True):
 
     settlement_type_id: int | None = Field(foreign_key="settlement_type.id")
 
-    settlement_type: Optional["SettlementType"] = Relationship(
-        back_populates="settlements"
-    )
+    settlement_type: Optional["SettlementType"] = Relationship(back_populates="settlements")
     addresses: List["Address"] = Relationship(back_populates="settlement")
 
 
-class SettlementType(BaseModel, table=True):
+class SettlementType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     settlements: List["Settlement"] = Relationship(back_populates="settlement_type")
 
 
-class District(BaseModel, table=True):
+class District(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
@@ -488,7 +390,7 @@ class District(BaseModel, table=True):
     addresses: List["Address"] = Relationship(back_populates="district")
 
 
-class Microdistrict(BaseModel, table=True):
+class Microdistrict(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
@@ -497,7 +399,7 @@ class Microdistrict(BaseModel, table=True):
     addresses: List["Address"] = Relationship(back_populates="microdistrict")
 
 
-class Street(BaseModel, table=True):
+class Street(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
@@ -509,14 +411,14 @@ class Street(BaseModel, table=True):
     addresses: List["Address"] = Relationship(back_populates="street")
 
 
-class StreetType(BaseModel, table=True):
+class StreetType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
     streets: List["Street"] = Relationship(back_populates="street_type")
 
 
-class ResidentialComplex(BaseModel, table=True):
+class ResidentialComplex(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
     full_name: str | None
@@ -526,27 +428,17 @@ class ResidentialComplex(BaseModel, table=True):
     addresses: List["Address"] = Relationship(back_populates="residential_complex")
 
 
-class Infrastructure(BaseModel, table=True):
+class Infrastructure(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
-    __table_args__ = (
-        UniqueConstraint(
-            "name", "coordinates", name="uq_infrastructure_name_coordinates"
-        ),
-    )
+    __table_args__ = (UniqueConstraint("name", "coordinates", name="uq_infrastructure_name_coordinates"),)
     name: str | None
-    coordinates: Any = Field(
-        sa_column=Column(Geography(geometry_type="POINT", srid=4326))
-    )
+    coordinates: Any = Field(sa_column=Column(Geography(geometry_type="POINT", srid=4326)))
 
     infrastructure_type_id: int | None = Field(foreign_key="infrastructure_type.id")
 
-    infrastructure_type: Optional["InfrastructureType"] = Relationship(
-        back_populates="infrastructure", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    infrastructure_type: Optional["InfrastructureType"] = Relationship(back_populates="infrastructure", sa_relationship_kwargs={"lazy": "selectin"})
 
-    addresses_links: list["AddressInfrastructureLink"] = Relationship(
-        back_populates="infrastructure"
-    )
+    addresses_links: list["AddressInfrastructureLink"] = Relationship(back_populates="infrastructure")
 
     @field_serializer("coordinates")
     def serialize_coordinates(self, geom):
@@ -564,30 +456,22 @@ class Infrastructure(BaseModel, table=True):
         return list(mapping(shape)["coordinates"])
 
 
-class InfrastructureType(BaseModel, table=True):
+class InfrastructureType(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None
 
-    infrastructure: List["Infrastructure"] = Relationship(
-        back_populates="infrastructure_type"
-    )
+    infrastructure: List["Infrastructure"] = Relationship(back_populates="infrastructure_type")
 
 
-class User(BaseModel, table=True):
+class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_name: str | None
     email: str | None = Field(unique=True)
     full_name: str | None
-    registration_date: datetime | None = Field(
-        sa_column=Column(
-            DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-        )
-    )
+    registration_date: datetime | None = Field(sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()))
 
     role_id: int | None = Field(foreign_key="role.id")
-    role: Optional["Role"] = Relationship(
-        back_populates="users", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    role: Optional["Role"] = Relationship(back_populates="users", sa_relationship_kwargs={"lazy": "selectin"})
 
     password_id: int | None = Field(foreign_key="password.id")
     password: Optional["Password"] = Relationship(
@@ -602,14 +486,14 @@ class User(BaseModel, table=True):
     )
 
 
-class Password(BaseModel, table=True):
+class Password(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     hash: str
 
     user: "User" = Relationship(back_populates="password")
 
 
-class Role(BaseModel, table=True):
+class Role(SQLModel, table=True):
     id: int | None = Field(primary_key=True)
     name: str | None = Field(unique=True)
 

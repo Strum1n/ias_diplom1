@@ -1,19 +1,21 @@
-"""init
+"""empty message
 
-Revision ID: ae0b1553dce4
-Revises: 
-Create Date: 2026-03-05 16:39:57.742296
+Revision ID: c24bba648df1
+Revises: 9559f656867f
+Create Date: 2026-03-07 12:30:28.098724
 
 """
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+import sqlmodel
+import geoalchemy2
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'ae0b1553dce4'
-down_revision: Union[str, Sequence[str], None] = None
+revision: str = 'c24bba648df1'
+down_revision: Union[str, Sequence[str], None] = '9559f656867f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

@@ -6,9 +6,21 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.backend.db.models.offer import Offer
+
 
 from app.backend.db.config import BaseModel
+
+
+from app.backend.db.models.offer import Offer
+from app.backend.db.models.seller import Seller
+from app.backend.db.models.address import Address
+from app.backend.db.models.user import User
+from app.backend.db.models.favorites import Favorites
+from app.backend.db.models.password import Password
+from app.backend.db.models.infrastructure import Infrastructure
+from app.backend.db.models.address_infrastructure_link import AddressInfrastructureLink
+from app.backend.db.models.types import *
+import configparser
 
 print("Alembic видит таблицы:", BaseModel.metadata.tables.keys())
 # this is the Alembic Config object, which provides
@@ -30,6 +42,16 @@ target_metadata = BaseModel.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+
+exclude_tables = context.config.get_main_option("exclude_tables", "").split(",")
+print(exclude_tables)
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table" and name in exclude_tables:
+        return False
+    return True
 
 
 def run_migrations_offline() -> None:
@@ -57,7 +79,11 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        include_object=include_object,
+    )
 
     with context.begin_transaction():
         context.run_migrations()

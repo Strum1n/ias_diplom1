@@ -9,12 +9,13 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
-from sqlmodel import select
+from sqlmodel import or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.backend.config import settings
 from app.backend.db.config import get_async_session
-from app.backend.db.models1 import *
+from app.backend.db.models.user import User
+
 
 SECRET_KEY = settings.SECRET_KEY
 REFRESH_SECRET_KEY = settings.SECRET_KEY
@@ -36,8 +37,8 @@ def get_password_hash(password):
     return password_hash.hash(password)
 
 
-async def authenticate_user(session: AsyncSession, email: str, password: str):
-    statement = select(User).where(User.email == email)
+async def authenticate_user(session: AsyncSession, username: str, password: str):
+    statement = select(User).where(or_(User.email == username, User.login == username))
     result = await session.exec(statement)
     user = result.first()
     if not user:

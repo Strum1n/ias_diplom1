@@ -1,14 +1,13 @@
 from datetime import datetime
-from typing import Optional
 
+from geoalchemy2 import Geography
 from sqlalchemy import String
 from sqlmodel import ARRAY, Column, DateTime, Field, Relationship, func, text
 
 from app.backend.db.config import BaseModel
 from sqlalchemy.dialects.postgresql import JSONB
 
-from app.backend.db.models.address import Address
-from app.backend.db.models.seller import Seller
+from app.backend.db.models.address import AddressRead, AddressReadShort
 from app.backend.db.models.types import (
     BathroomType,
     GasType,
@@ -20,9 +19,10 @@ from app.backend.db.models.types import (
     PropertyType,
     RenovationType,
     SewerageType,
+    WaterSupplyType,
     WindowViewType,
 )
-from app.backend.db.models1 import WaterSupplyType
+from app.backend.db.models.seller import Seller
 
 
 class OfferBase(BaseModel):
@@ -91,12 +91,8 @@ class OfferBase(BaseModel):
 
     contact_phone: str | None = Field(max_length=20)
 
-    creation_date_source: datetime | None = Field(
-        sa_column=Column(DateTime(timezone=True))
-    )
-    update_date_source: datetime | None = Field(
-        sa_column=Column(DateTime(timezone=True))
-    )
+    creation_date_source: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
+    update_date_source: datetime | None = Field(sa_column=Column(DateTime(timezone=True)))
     update_date: datetime | None = Field(
         sa_column=Column(
             DateTime(timezone=True),
@@ -107,75 +103,98 @@ class OfferBase(BaseModel):
 
 
 class Offer(OfferBase, table=True):
-    __table_args__ = {"extend_existing": True}
     id: int | None = Field(primary_key=True)
-    address_id: int | None = Field(
-        foreign_key="address.id", ondelete="CASCADE", index=True
-    )
-    address: Optional["Address"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
-    seller_id: int | None = Field(foreign_key="seller.id")
-    seller: Optional["Seller"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
 
-    offer_type_id: int | None = Field(foreign_key="offer_type.id")
-    offer_type: Optional["OfferType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    address_id: int | None = Field(foreign_key="address.id", ondelete="CASCADE", index=True)
+    address: "Address" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    property_type_id: int | None = Field(foreign_key="property_type.id")
-    property_type: Optional["PropertyType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    seller_id: int | None = Field(foreign_key="seller.id", ondelete="SET NULL")
+    seller: "Seller" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    land_type_id: int | None = Field(foreign_key="land_type.id")
-    land_type: Optional["LandType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    offer_type_id: int | None = Field(foreign_key="offer_type.id", ondelete="SET NULL")
+    offer_type: "OfferType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    bathroom_type_id: int | None = Field(foreign_key="bathroom_type.id")
-    bathroom_type: Optional["BathroomType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    property_type_id: int | None = Field(foreign_key="property_type.id", ondelete="SET NULL")
+    property_type: "PropertyType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    renovation_type_id: int | None = Field(foreign_key="renovation_type.id")
-    renovation_type: Optional["RenovationType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    land_type_id: int | None = Field(foreign_key="land_type.id", ondelete="SET NULL")
+    land_type: "LandType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    window_view_type_id: int | None = Field(foreign_key="window_view_type.id")
-    window_view_type: Optional["WindowViewType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    bathroom_type_id: int | None = Field(foreign_key="bathroom_type.id", ondelete="SET NULL")
+    bathroom_type: "BathroomType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    parking_type_id: int | None = Field(foreign_key="parking_type.id")
-    parking_type: Optional["ParkingType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    renovation_type_id: int | None = Field(foreign_key="renovation_type.id", ondelete="SET NULL")
+    renovation_type: "RenovationType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    house_material_type_id: int | None = Field(foreign_key="house_material_type.id")
-    house_material_type: Optional["HouseMaterialType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    window_view_type_id: int | None = Field(foreign_key="window_view_type.id", ondelete="SET NULL")
+    window_view_type: "WindowViewType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    heating_type_id: int | None = Field(foreign_key="heating_type.id")
-    heating_type: Optional["HeatingType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    parking_type_id: int | None = Field(foreign_key="parking_type.id", ondelete="SET NULL")
+    parking_type: "ParkingType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    gas_type_id: int | None = Field(foreign_key="gas_type.id")
-    gas_type: Optional["GasType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    house_material_type_id: int | None = Field(foreign_key="house_material_type.id", ondelete="SET NULL")
+    house_material_type: "HouseMaterialType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    sewerage_type_id: int | None = Field(foreign_key="sewerage_type.id")
-    sewerage_type: Optional["SewerageType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    heating_type_id: int | None = Field(foreign_key="heating_type.id", ondelete="SET NULL")
+    heating_type: "HeatingType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
 
-    water_supply_type_id: int | None = Field(foreign_key="water_supply_type.id")
-    water_supply_type: Optional["WaterSupplyType"] = Relationship(
-        back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    gas_type_id: int | None = Field(foreign_key="gas_type.id", ondelete="SET NULL")
+    gas_type: "GasType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
+
+    sewerage_type_id: int | None = Field(foreign_key="sewerage_type.id", ondelete="SET NULL")
+    sewerage_type: "SewerageType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
+
+    water_supply_type_id: int | None = Field(foreign_key="water_supply_type.id", ondelete="SET NULL")
+    water_supply_type: "WaterSupplyType" = Relationship(back_populates="offers", sa_relationship_kwargs={"lazy": "selectin"})
+
+    user_links: list["Favorites"] = Relationship(back_populates="offer")
+
+
+class OfferRead(OfferBase):
+    id: int
+    offer_type: OfferType
+    property_type: PropertyType | None
+    land_type: LandType | None
+    bathroom_type: BathroomType | None
+
+    renovation_type: RenovationType | None
+
+    window_view_type: WindowViewType | None
+
+    parking_type: ParkingType | None
+
+    house_material_type: HouseMaterialType | None
+
+    heating_type: HeatingType | None
+
+    gas_type: GasType | None
+
+    sewerage_type: SewerageType | None
+
+    water_supply_type: WaterSupplyType | None
+    seller: Seller | None
+    address: AddressRead
+
+
+class OfferReadShort(BaseModel):
+    id: int
+    title: str
+    total_area: float
+    price: int
+    is_new_house: bool | None
+    price_category: str | None
+    image_url: str | None
+    address: AddressReadShort
+
+
+class OffersReadWithPagination(BaseModel):
+    offers: list[OfferRead]
+    total: int
+    total_filtered: int
+    limit: int
+    offset: int
+    has_more: bool
+
+
+class OfferFavoriteRead(OfferRead):
+    added_favorites_date: datetime

@@ -7,26 +7,49 @@
 
       <!-- Сообщение об успешной регистрации -->
       <div v-if="registrationSuccess" class="success-message">
-        <p class="success-text">Регистрация прошла успешно! Теперь вы можете войти</p>
+        <p class="success-text">
+          Регистрация прошла успешно! Теперь вы можете войти
+        </p>
       </div>
 
-      <UForm @submit="handleSubmit" :state="form" :validate="validate" class="login-form">
+      <UForm
+        @submit="handleSubmit"
+        :state="form"
+        :validate="validate"
+        class="login-form"
+      >
         <div class="form-field">
-          <UFormField label="Email" name="email">
-            <UInput v-model="form.email" type="email" placeholder="your@email.com" />
+          <UFormField label="Логин или Email" name="email">
+            <UInput v-model="form.email" placeholder="your@email.com" />
           </UFormField>
         </div>
 
         <div class="form-field">
           <UFormField label="Пароль" name="password">
-            <UInput v-model="form.password" type="password" placeholder="••••••••" />
+            <UInput
+              v-model="form.password"
+              type="password"
+              placeholder="••••••••"
+            />
           </UFormField>
         </div>
 
         <div class="button-container">
-          <UButton type="submit" class="button-submit" color="primary" :loading="loading"> Войти </UButton>
+          <UButton
+            type="submit"
+            class="button-submit"
+            color="primary"
+            :loading="loading"
+          >
+            Войти
+          </UButton>
         </div>
-        <NuxtLink to="/forgot-password" class="footer-link text-sm! w-fit! mx-auto!"> Забыли пароль? </NuxtLink>
+        <NuxtLink
+          to="/forgot-password"
+          class="footer-link text-sm! w-fit! mx-auto!"
+        >
+          Забыли пароль?
+        </NuxtLink>
       </UForm>
 
       <div v-if="error" class="error-message">
@@ -36,7 +59,9 @@
       <template #footer>
         <p class="footer-text">
           Нет аккаунта?
-          <NuxtLink to="/register" class="footer-link"> Зарегистрироваться </NuxtLink>
+          <NuxtLink to="/register" class="footer-link">
+            Зарегистрироваться
+          </NuxtLink>
         </p>
       </template>
     </UCard>
@@ -44,10 +69,9 @@
 </template>
 
 <script setup lang="ts">
-import type { FormError } from "@nuxt/ui";
+import type {FormError} from "@nuxt/ui";
 
-
-const { handleLogin, loading, error } = useAuth();
+const {handleLogin, loading, error} = useAuth();
 const route = useRoute();
 
 // Показываем сообщение об успешной регистрации
@@ -60,8 +84,8 @@ const form = reactive({
 
 const validate = (state: any): FormError[] => {
   const errors = [];
-  if (!state.email) errors.push({ name: "email", message: "Required" });
-  if (!state.password) errors.push({ name: "password", message: "Required" });
+  if (!state.email) errors.push({name: "email", message: "Required"});
+  if (!state.password) errors.push({name: "password", message: "Required"});
   return errors;
 };
 
@@ -93,7 +117,6 @@ const handleSubmit = async () => {
   color: #111827;
 }
 
-/* ✅ Добавляем стили для успешного сообщения */
 .success-message {
   margin-bottom: 1rem;
   padding: 0.75rem;

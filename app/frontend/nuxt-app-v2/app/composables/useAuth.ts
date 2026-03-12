@@ -14,10 +14,7 @@ export function useAuth() {
   const router = useRouter()
   const config = useRuntimeConfig()
 
-  const accessToken = useCookie<string | null>('access_token', {
-    path: '/',
-    sameSite: 'lax'
-  })
+  const accessToken = useState<string | null>('access_token', () => null)
 
   const loading = ref(false)
   const error = ref<string | null>(null)

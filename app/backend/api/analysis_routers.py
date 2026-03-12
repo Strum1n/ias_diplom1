@@ -7,14 +7,14 @@ import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import case
 from sqlalchemy.orm import joinedload
-from sqlmodel import Numeric, and_, case, cast, func, select, text
+from sqlmodel import Numeric, and_, cast, func, select, text
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.backend.db.config import get_async_session
-from app.backend.db.models1 import *
 from app.backend.fuzzy_logic.fuzzy_evaluator import FuzzyEvaluator
 from app.backend.MCDA.electre import electre
 from app.backend.MCDA.topsis import topsis
 from openai import OpenAI
+from app.backend.db.config import BaseModel
 from app.backend.config import settings
 
 analysis_router = APIRouter(prefix="/analysis", tags=["analysis"])
@@ -155,11 +155,7 @@ async def update_price_categories_in_db(
     await session.exec(update_query)
     await session.commit()
 
-    stats_stmt = (
-        select(Offer.price_category, func.count().label("count"))
-        .where(Offer.price_category.is_not(None))
-        .group_by(Offer.price_category)
-    )
+    stats_stmt = select(Offer.price_category, func.count().label("count")).where(Offer.price_category.is_not(None)).group_by(Offer.price_category)
     stats_result = await session.exec(stats_stmt)
     stats = stats_result.all()
 
@@ -173,9 +169,7 @@ async def update_price_categories_in_db(
 @analysis_router.post("/recalculate_fuzzy_scores")
 async def recalculate_fuzzy_scores(
     session=Depends(get_async_session),
-    only_missing: bool = Query(
-        False, description="Обрабатывать только офферы без вычисленных score"
-    ),
+    only_missing: bool = Query(False, description="Обрабатывать только офферы без вычисленных score"),
 ):
     fuzzy = FuzzyEvaluator()
 
@@ -221,22 +215,14 @@ async def recalculate_fuzzy_scores(
             Offer.family_score.is_(None),
         )
 
-    total_offers = await session.scalar(
-        select(func.count()).select_from(base_stmt.subquery())
-    )
-    logger.info(
-        f"Total offers to process: {total_offers} (only_missing={only_missing})"
-    )
+    total_offers = await session.scalar(select(func.count()).select_from(base_stmt.subquery()))
+    logger.info(f"Total offers to process: {total_offers} (only_missing={only_missing})")
 
     processed = 0
     null_results = 0
 
     for offset in range(0, total_offers, BATCH_SIZE):
-        stmt = (
-            base_stmt.offset(offset)
-            .limit(BATCH_SIZE)
-            .options(joinedload(Offer.address))
-        )
+        stmt = base_stmt.offset(offset).limit(BATCH_SIZE).options(joinedload(Offer.address))
         offers = (await session.exec(stmt)).all()
         if not offers:
             break
@@ -248,9 +234,7 @@ async def recalculate_fuzzy_scores(
 
             infra = address_infra.get(offer.address_id)
             if not infra:
-                logger.warning(
-                    f"Offer ID={offer.id}: no infrastructure for address {offer.address_id}"
-                )
+                logger.warning(f"Offer ID={offer.id}: no infrastructure for address {offer.address_id}")
                 infra = {}
 
             data = {
@@ -280,9 +264,7 @@ async def recalculate_fuzzy_scores(
                     },
                 )
                 if not result:
-                    logger.error(
-                        f"Fuzzy returned None for Offer ID={offer.id} (data={data})"
-                    )
+                    logger.error(f"Fuzzy returned None for Offer ID={offer.id} (data={data})")
                     null_results += 1
                     continue
 
@@ -293,20 +275,12 @@ async def recalculate_fuzzy_scores(
                 offer.family_score = result["family_friendly"]["score"]
                 offer.family_category = result["family_friendly"]["category"]
 
-                if (
-                    offer.transport_access_score is None
-                    or offer.elderly_score is None
-                    or offer.family_score is None
-                ):
-                    logger.warning(
-                        f"Null fuzzy score for Offer ID={offer.id} → result={data}"
-                    )
+                if offer.transport_access_score is None or offer.elderly_score is None or offer.family_score is None:
+                    logger.warning(f"Null fuzzy score for Offer ID={offer.id} → result={data}")
                     null_results += 1
 
             except Exception as e:
-                logger.exception(
-                    f"Error processing Offer ID={offer.id}: {e} data={data}"
-                )
+                logger.exception(f"Error processing Offer ID={offer.id}: {e} data={data}")
                 null_results += 1
 
         await session.commit()
@@ -362,9 +336,7 @@ def electre_endpoint(
 
 @analysis_router.post("/chat_assistant")
 async def assistant(query: str, session: AsyncSession = Depends(get_async_session)):
-    client = OpenAI(
-        api_key=settings.OPEN_ROUTER_API_KEY, base_url="https://openrouter.ai/api/v1"
-    )
+    client = OpenAI(api_key=settings.OPEN_ROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
     response = client.chat.completions.create(
         model="arcee-ai/trinity-large-preview:free",
         messages=[
@@ -946,25 +918,19 @@ create index if not exists ix_offer_address_id
     try:
         data = json.loads(response.choices[0].message.content)
     except Exception as e:
-        return {
-            "explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."
-        }
+        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
     print(data)
     sql = data["sql"].strip()
 
     if data.get("sql") is None:
-        return {
-            "explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."
-        }
+        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
 
     sql_upper = re.sub(r"--.*?$|/\*.*?\*/", "", sql.upper(), flags=re.S)
 
     if not sql_upper.lstrip().startswith("SELECT"):
         return {"explanation": "Простите, это вне моей компетенции."}
 
-    if re.search(
-        r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|REPLACE)\b", sql_upper
-    ):
+    if re.search(r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|REPLACE)\b", sql_upper):
         return {"explanation": "Простите, это вне моей компетенции."}
 
     if "user" in sql.lower():
@@ -1013,15 +979,11 @@ def topsis_endpoint(
 async def get_offers_by_location(
     region_name: Optional[str] = Query(None, description="Название области"),
     settlement_name: Optional[str] = Query(None, description="Название поселения"),
-    municipality_name: Optional[str] = Query(
-        None, description="Название муниципального образования"
-    ),
+    municipality_name: Optional[str] = Query(None, description="Название муниципального образования"),
     district_name: Optional[str] = Query(None, description="Название района"),
     microdistrict_name: Optional[str] = Query(None, description="Название микрорайона"),
     street_name: Optional[str] = Query(None, description="Название улицы"),
-    settlement_type_names: Optional[List[str]] = Query(
-        None, description="Типы поселений"
-    ),
+    settlement_type_names: Optional[List[str]] = Query(None, description="Типы поселений"),
     session: AsyncSession = Depends(get_async_session),
     is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
@@ -1077,10 +1039,7 @@ async def get_offers_by_location(
         func.sum(
             case(
                 (
-                    func.date(
-                        func.timezone("Europe/Moscow", subq.c.creation_date_source)
-                    )
-                    == date.today(),
+                    func.date(func.timezone("Europe/Moscow", subq.c.creation_date_source)) == date.today(),
                     1,
                 ),
                 else_=0,
@@ -1090,9 +1049,7 @@ async def get_offers_by_location(
         func.round(func.avg(subq.c.price_per_square_meter)).label("avg_price_per_sqm"),
         func.round(func.avg(subq.c.total_area)).label("avg_area"),
         func.round(func.avg(subq.c.daily_views_count)).label("avg_views_count"),
-        func.round(cast(func.min(subq.c.total_area), Numeric(10, 1)), 1).label(
-            "min_area"
-        ),
+        func.round(cast(func.min(subq.c.total_area), Numeric(10, 1)), 1).label("min_area"),
         func.round(
             cast(
                 func.percentile_cont(0.25).within_group(subq.c.total_area),
@@ -1114,9 +1071,7 @@ async def get_offers_by_location(
             ),
             1,
         ).label("q3_area"),
-        func.round(cast(func.max(subq.c.total_area), Numeric(10, 1)), 1).label(
-            "max_area"
-        ),
+        func.round(cast(func.max(subq.c.total_area), Numeric(10, 1)), 1).label("max_area"),
         func.round(cast(func.min(subq.c.price), Numeric(12, 1)), 1).label("min_price"),
         func.round(
             cast(func.percentile_cont(0.25).within_group(subq.c.price), Numeric(12, 1)),
@@ -1136,28 +1091,20 @@ async def get_offers_by_location(
     main_stats = await session.execute(stmt)
     main_stats_row = main_stats.first()
 
-    price_cat_stmt = select(subq.c.price_category, func.count()).group_by(
-        subq.c.price_category
-    )
+    price_cat_stmt = select(subq.c.price_category, func.count()).group_by(subq.c.price_category)
     price_cats = await session.execute(price_cat_stmt)
     price_categories = {"cheap": 0, "normal": 0, "expensive": 0}
     for price_cat, count in price_cats:
         if price_cat in price_categories:
             price_categories[price_cat] = count
 
-    prop_type_stmt = (
-        select(PropertyType.name, func.count(subq.c.id))
-        .join(subq, PropertyType.id == subq.c.property_type_id)
-        .group_by(PropertyType.name)
-    )
+    prop_type_stmt = select(PropertyType.name, func.count(subq.c.id)).join(subq, PropertyType.id == subq.c.property_type_id).group_by(PropertyType.name)
     prop_types = await session.execute(prop_type_stmt)
     property_types = {}
     for prop_name, count in prop_types:
         property_types[prop_name] = count
 
-    apartments_subq = base_query.where(
-        PropertyType.name.in_(["Квартира", "Аппартаменты"])
-    ).subquery()
+    apartments_subq = base_query.where(PropertyType.name.in_(["Квартира", "Аппартаменты"])).subquery()
 
     rooms_stmt = select(
         apartments_subq.c.rooms_count,
@@ -1171,13 +1118,7 @@ async def get_offers_by_location(
 
     for rooms, is_new, count in rooms_data:
         if rooms is not None:
-            room_label = (
-                f"{rooms}_rooms"
-                if 0 < rooms < 10
-                else "studio"
-                if rooms == 0
-                else "open_plan"
-            )
+            room_label = f"{rooms}_rooms" if 0 < rooms < 10 else "studio" if rooms == 0 else "open_plan"
             rooms_by_count[room_label] = rooms_by_count.get(room_label, 0) + count
 
         if is_new is True:
@@ -1230,17 +1171,13 @@ async def get_offers_by_location(
         .join(District, Address.district_id == District.id, isouter=True)
         .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
         .join(Street, Address.street_id == Street.id, isouter=True)
-        .join(
-            RenovationType, Offer.renovation_type_id == RenovationType.id, isouter=True
-        )
+        .join(RenovationType, Offer.renovation_type_id == RenovationType.id, isouter=True)
     )
 
     if filters:
         top_offers_stmt = top_offers_stmt.where(and_(*filters))
 
-    top_offers_stmt = top_offers_stmt.order_by(
-        Offer.views_count.desc(), Offer.creation_date_source.desc()
-    ).limit(5)
+    top_offers_stmt = top_offers_stmt.order_by(Offer.views_count.desc(), Offer.creation_date_source.desc()).limit(5)
 
     top_offers_result = await session.execute(top_offers_stmt)
 
@@ -1249,54 +1186,24 @@ async def get_offers_by_location(
         "offers_today": main_stats_row.offers_today if main_stats_row else 0,
         "statistics": {
             "averages": {
-                "average_price": int(main_stats_row.avg_price)
-                if main_stats_row and main_stats_row.avg_price
-                else None,
-                "average_price_per_square_meter": float(
-                    main_stats_row.avg_price_per_sqm
-                )
-                if main_stats_row and main_stats_row.avg_price_per_sqm
-                else None,
-                "average_area": float(main_stats_row.avg_area)
-                if main_stats_row and main_stats_row.avg_area
-                else None,
-                "average_views_count": float(main_stats_row.avg_views_count)
-                if main_stats_row and main_stats_row.avg_views_count
-                else None,
+                "average_price": int(main_stats_row.avg_price) if main_stats_row and main_stats_row.avg_price else None,
+                "average_price_per_square_meter": float(main_stats_row.avg_price_per_sqm) if main_stats_row and main_stats_row.avg_price_per_sqm else None,
+                "average_area": float(main_stats_row.avg_area) if main_stats_row and main_stats_row.avg_area else None,
+                "average_views_count": float(main_stats_row.avg_views_count) if main_stats_row and main_stats_row.avg_views_count else None,
             },
             "area_boxplot": {
-                "min": float(main_stats_row.min_area)
-                if main_stats_row and main_stats_row.min_area is not None
-                else None,
-                "q1": float(main_stats_row.q1_area)
-                if main_stats_row and main_stats_row.q1_area is not None
-                else None,
-                "median": float(main_stats_row.median_area)
-                if main_stats_row and main_stats_row.median_area is not None
-                else None,
-                "q3": float(main_stats_row.q3_area)
-                if main_stats_row and main_stats_row.q3_area is not None
-                else None,
-                "max": float(main_stats_row.max_area)
-                if main_stats_row and main_stats_row.max_area is not None
-                else None,
+                "min": float(main_stats_row.min_area) if main_stats_row and main_stats_row.min_area is not None else None,
+                "q1": float(main_stats_row.q1_area) if main_stats_row and main_stats_row.q1_area is not None else None,
+                "median": float(main_stats_row.median_area) if main_stats_row and main_stats_row.median_area is not None else None,
+                "q3": float(main_stats_row.q3_area) if main_stats_row and main_stats_row.q3_area is not None else None,
+                "max": float(main_stats_row.max_area) if main_stats_row and main_stats_row.max_area is not None else None,
             },
             "price_boxplot": {
-                "min": float(main_stats_row.min_price)
-                if main_stats_row and main_stats_row.min_price is not None
-                else None,
-                "q1": float(main_stats_row.q1_price)
-                if main_stats_row and main_stats_row.q1_price is not None
-                else None,
-                "median": float(main_stats_row.median_price)
-                if main_stats_row and main_stats_row.median_price is not None
-                else None,
-                "q3": float(main_stats_row.q3_price)
-                if main_stats_row and main_stats_row.q3_price is not None
-                else None,
-                "max": float(main_stats_row.max_price)
-                if main_stats_row and main_stats_row.max_price is not None
-                else None,
+                "min": float(main_stats_row.min_price) if main_stats_row and main_stats_row.min_price is not None else None,
+                "q1": float(main_stats_row.q1_price) if main_stats_row and main_stats_row.q1_price is not None else None,
+                "median": float(main_stats_row.median_price) if main_stats_row and main_stats_row.median_price is not None else None,
+                "q3": float(main_stats_row.q3_price) if main_stats_row and main_stats_row.q3_price is not None else None,
+                "max": float(main_stats_row.max_price) if main_stats_row and main_stats_row.max_price is not None else None,
             },
             "price_categories": price_categories,
             "property_types": property_types,
@@ -1335,9 +1242,7 @@ async def get_offers_by_location(
                 "transport_access_score": offer.transport_access_score,
                 "price_category": offer.price_category,
                 "address": {"full_address": offer.full_address},
-                "renovation_type": {"name": offer.renovation_type_name}
-                if offer.renovation_type_name
-                else None,
+                "renovation_type": {"name": offer.renovation_type_name} if offer.renovation_type_name else None,
             }
             for offer in top_offers_result
         ],
@@ -1346,14 +1251,10 @@ async def get_offers_by_location(
 
 @analysis_router.get("/group-stats")
 async def get_grouped_stats(
-    group_by: Literal[
-        "region", "municipality", "settlement", "district", "microdistrict", "street"
-    ] = Query(...),
+    group_by: Literal["region", "municipality", "settlement", "district", "microdistrict", "street"] = Query(...),
     region_name: Optional[str] = Query(None),
     settlement_name: Optional[str] = Query(None),
-    municipality_name: Optional[str] = Query(
-        None, description="Название муниципального образования"
-    ),
+    municipality_name: Optional[str] = Query(None, description="Название муниципального образования"),
     district_name: Optional[str] = Query(None),
     microdistrict_name: Optional[str] = Query(None),
     street_name: Optional[str] = Query(None),
@@ -1400,38 +1301,24 @@ async def get_grouped_stats(
             group_col.label(group_by),
             offers_count_col,
             func.round(func.avg(Offer.price)).label("average_price"),
-            func.round(func.avg(Offer.price_per_square_meter)).label(
-                "average_price_per_square_meter"
-            ),
+            func.round(func.avg(Offer.price_per_square_meter)).label("average_price_per_square_meter"),
             func.round(func.avg(Offer.total_area)).label("average_area"),
             func.round(func.avg(Offer.daily_views_count)).label("average_views_count"),
             func.count().filter(Offer.price_category == "cheap").label("cheap"),
             func.count().filter(Offer.price_category == "normal").label("normal"),
             func.count().filter(Offer.price_category == "expensive").label("expensive"),
             func.count().filter(Offer.family_category == "low").label("family_low"),
-            func.count()
-            .filter(Offer.family_category == "medium")
-            .label("family_medium"),
+            func.count().filter(Offer.family_category == "medium").label("family_medium"),
             func.count().filter(Offer.family_category == "high").label("family_high"),
             func.count().filter(Offer.elderly_category == "low").label("elderly_low"),
-            func.count()
-            .filter(Offer.elderly_category == "medium")
-            .label("elderly_medium"),
+            func.count().filter(Offer.elderly_category == "medium").label("elderly_medium"),
             func.count().filter(Offer.elderly_category == "high").label("elderly_high"),
-            func.count()
-            .filter(Offer.transport_access_category == "low")
-            .label("transport_low"),
-            func.count()
-            .filter(Offer.transport_access_category == "medium")
-            .label("transport_medium"),
-            func.count()
-            .filter(Offer.transport_access_category == "high")
-            .label("transport_high"),
+            func.count().filter(Offer.transport_access_category == "low").label("transport_low"),
+            func.count().filter(Offer.transport_access_category == "medium").label("transport_medium"),
+            func.count().filter(Offer.transport_access_category == "high").label("transport_high"),
             func.min(Offer.total_area).label("area_min"),
             func.percentile_cont(0.25).within_group(Offer.total_area).label("area_q1"),
-            func.percentile_cont(0.5)
-            .within_group(Offer.total_area)
-            .label("area_median"),
+            func.percentile_cont(0.5).within_group(Offer.total_area).label("area_median"),
             func.percentile_cont(0.75).within_group(Offer.total_area).label("area_q3"),
             func.max(Offer.total_area).label("area_max"),
             func.min(Offer.price).label("price_min"),
@@ -1532,9 +1419,7 @@ async def get_views_last_10_days(
     district_name: Optional[str] = Query(None),
     microdistrict_name: Optional[str] = Query(None),
     street_name: Optional[str] = Query(None),
-    settlement_type_names: Optional[List[str]] = Query(
-        None, description="Типы населённых пунктов"
-    ),
+    settlement_type_names: Optional[List[str]] = Query(None, description="Типы населённых пунктов"),
     is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
     conditions = [
@@ -1612,9 +1497,7 @@ async def get_average_prices_history(
     district_name: Optional[str] = Query(None),
     microdistrict_name: Optional[str] = Query(None),
     street_name: Optional[str] = Query(None),
-    settlement_type_names: Optional[List[str]] = Query(
-        None, description="Типы населённых пунктов"
-    ),
+    settlement_type_names: Optional[List[str]] = Query(None, description="Типы населённых пунктов"),
     session: AsyncSession = Depends(get_async_session),
     is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
@@ -1770,11 +1653,7 @@ async def get_average_prices_history(
         """)
         result = await session.execute(query)
         rows = result.fetchall()
-    elif (
-        region_name == "Московская область"
-        and not any(other_filters)
-        and not is_new_house
-    ):
+    elif region_name == "Московская область" and not any(other_filters) and not is_new_house:
         # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
         print("Какого хуя ты сюда не попадаешь")
         query = text("""
@@ -1786,11 +1665,7 @@ async def get_average_prices_history(
         """)
         result = await session.execute(query)
         rows = result.fetchall()
-    elif (
-        region_name == "Московская область"
-        and not any(other_filters)
-        and is_new_house is None
-    ):
+    elif region_name == "Московская область" and not any(other_filters) and is_new_house is None:
         # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
         query = text("""
         SELECT 
@@ -1801,9 +1676,7 @@ async def get_average_prices_history(
         """)
         result = await session.execute(query)
         rows = result.fetchall()
-    elif (
-        region_name == "Московская область" and not any(other_filters) and is_new_house
-    ):
+    elif region_name == "Московская область" and not any(other_filters) and is_new_house:
         # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
         query = text("""
         SELECT 
@@ -1815,12 +1688,7 @@ async def get_average_prices_history(
         result = await session.execute(query)
         rows = result.fetchall()
 
-    elif (
-        settlement_name == "г. Москва"
-        and is_new_house is None
-        and district_name is None
-        and microdistrict_name is None
-    ):
+    elif settlement_name == "г. Москва" and is_new_house is None and district_name is None and microdistrict_name is None:
         # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
         query = text("""
         SELECT
@@ -1831,12 +1699,7 @@ async def get_average_prices_history(
         """)
         result = await session.execute(query)
         rows = result.fetchall()
-    elif (
-        settlement_name == "г. Москва"
-        and is_new_house
-        and district_name is None
-        and microdistrict_name is None
-    ):
+    elif settlement_name == "г. Москва" and is_new_house and district_name is None and microdistrict_name is None:
         # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
         query = text("""
         SELECT 
@@ -1847,12 +1710,7 @@ async def get_average_prices_history(
         """)
         result = await session.execute(query)
         rows = result.fetchall()
-    elif (
-        settlement_name == "г. Москва"
-        and not is_new_house
-        and district_name is None
-        and microdistrict_name is None
-    ):
+    elif settlement_name == "г. Москва" and not is_new_house and district_name is None and microdistrict_name is None:
         # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
         query = text("""
         SELECT 
@@ -1864,9 +1722,7 @@ async def get_average_prices_history(
         result = await session.execute(query)
         rows = result.fetchall()
     elif region_name == "Москва" and not is_new_house and not any(other_filters):
-        query = text(
-            "SELECT date, avg_price FROM avg_prices_history_moscow ORDER BY date;"
-        )
+        query = text("SELECT date, avg_price FROM avg_prices_history_moscow ORDER BY date;")
         result = await session.execute(query)
         rows = result.fetchall()
     elif region_name == "Москва" and not any(other_filters) and is_new_house:
@@ -1919,9 +1775,7 @@ async def get_average_prices_history(
             params["is_new_house"] = is_new_house
 
         if settlement_type_names is not None and len(settlement_type_names) > 0:
-            placeholders = ", ".join(
-                [f":settlement_type_{i}" for i in range(len(settlement_type_names))]
-            )
+            placeholders = ", ".join([f":settlement_type_{i}" for i in range(len(settlement_type_names))])
             filters.append(f"stt.name IN ({placeholders})")
             for i, st_name in enumerate(settlement_type_names):
                 params[f"settlement_type_{i}"] = st_name

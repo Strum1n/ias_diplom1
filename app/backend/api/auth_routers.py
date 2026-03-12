@@ -1,4 +1,4 @@
-from datetime import timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.params import Body
 from fastapi.responses import JSONResponse
@@ -7,7 +7,7 @@ from jwt import PyJWTError, decode
 import jwt
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app.backend.api.response_models import UserRequest
+
 from app.backend.auth_utils.auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     ALGORITHM,
@@ -22,40 +22,30 @@ from app.backend.auth_utils.auth import (
     send_reset_link_email,
     send_welcome_email,
 )
-from app.backend.db.config import get_async_session
-from app.backend.db.models1 import *
+from app.backend.db.config import BaseModel, get_async_session
+from app.backend.db.models.password import Password
+from app.backend.db.models.user import User
+
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentification"])
 
 
-class Token(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str
-
-
-@auth_router.post("/login", response_model=Token)
+@auth_router.post("/login")
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_async_session),
 ):
     user = await authenticate_user(session, form_data.username, form_data.password)
     if not user:
-        raise HTTPException(status_code=401, detail="Incorrect email or password")
+        raise HTTPException(status_code=401, detail="Incorrect login or password")
 
-    token_data = {"sub": user.email, "role": user.role.name}
+    token_data = {"sub": user.email, "username": user.login, "role": user.role.name}
 
-    access_token = create_access_token(
-        data=token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-    refresh_token = create_refresh_token(
-        data=token_data, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    )
+    access_token = create_access_token(data=token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    refresh_token = create_refresh_token(data=token_data, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
     if isinstance(access_token, bytes):
         access_token = access_token.decode("utf-8")
-    response = JSONResponse(
-        content={"access_token": access_token, "token_type": "bearer"}
-    )
+    response = JSONResponse(content={"access_token": access_token, "token_type": "bearer"})
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
@@ -67,13 +57,9 @@ async def login_for_access_token(
     return response
 
 
-class PasswordResetRequest(BaseModel):
-    email: str
-
-
 @auth_router.post("/request-password-reset")
 async def request_password_reset(
-    data: PasswordResetRequest,
+    data,
     session: AsyncSession = Depends(get_async_session),
 ):
     statement = select(User).where(User.email == data.email)
@@ -88,14 +74,9 @@ async def request_password_reset(
     return {"message": "Если пользователь существует, ссылка отправлена"}
 
 
-class ConfirmPasswordResetRequest(BaseModel):
-    token: str
-    new_password: str
-
-
 @auth_router.post("/confirm-password-reset")
 async def confirm_password_reset(
-    data: ConfirmPasswordResetRequest,
+    data,
     session: AsyncSession = Depends(get_async_session),
 ):
     try:
@@ -127,12 +108,8 @@ async def logout(response: Response):
     return {"message": "Logged out successfully"}
 
 
-class RefreshTokenRequest(BaseModel):
-    refresh_token: str
-
-
-@auth_router.post("/refresh", response_model=Token)
-async def refresh_access_token(request: Request):
+@auth_router.post("/refresh")
+async def refresh_access_token(request):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
         raise HTTPException(status_code=401, detail="No refresh token")
@@ -150,9 +127,7 @@ async def refresh_access_token(request: Request):
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
-    new_refresh_token = create_refresh_token(
-        data={"sub": username}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    )
+    new_refresh_token = create_refresh_token(data={"sub": username}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
 
     response = JSONResponse(
         content={
@@ -172,12 +147,8 @@ async def refresh_access_token(request: Request):
     return response
 
 
-class ValidateResetTokenRequest(BaseModel):
-    token: str
-
-
 @auth_router.post("/validate-reset-token")
-async def validate_reset_token(request: ValidateResetTokenRequest):
+async def validate_reset_token(request):
     try:
         payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
         if payload.get("type") != "password_reset":
@@ -189,9 +160,7 @@ async def validate_reset_token(request: ValidateResetTokenRequest):
 
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register_user(
-    user_data: UserRequest, session: AsyncSession = Depends(get_async_session)
-):
+async def register_user(user_data, session: AsyncSession = Depends(get_async_session)):
     statement = select(User).where(User.email == user_data.email)
     result = await session.exec(statement)
     existing_user = result.first()

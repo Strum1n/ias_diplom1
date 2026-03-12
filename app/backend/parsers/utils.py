@@ -26,9 +26,7 @@ logging.basicConfig(
 def deep_parse_json(value):
     if isinstance(value, str):
         s = value.strip()
-        if (s.startswith("{") and s.endswith("}")) or (
-            s.startswith("[") and s.endswith("]")
-        ):
+        if (s.startswith("{") and s.endswith("}")) or (s.startswith("[") and s.endswith("]")):
             try:
                 return deep_parse_json(json.loads(s))
             except json.JSONDecodeError:
@@ -43,9 +41,7 @@ def deep_parse_json(value):
     return value
 
 
-def use_config(
-    path: str, read_or_write: Literal["r", "w"], config: dict[str, Any] = {}
-) -> dict:
+def use_config(path: str, read_or_write: Literal["r", "w"], config: dict[str, Any] = {}) -> dict:
     try:
         with open(path, read_or_write, encoding="utf-8") as f:
             config = toml.load(f) if read_or_write == "r" else toml.dump(config, f)
@@ -66,7 +62,7 @@ def load_config(path: str) -> dict:
 async def check_existens_offers(url: str, session_factory) -> bool:
     async with session_factory() as session:
         session: AsyncSession
-        result = await session.exec(select(Offer).where(Offer.url == url))
+        result = await session.exec(select(Offer.id).where(Offer.url == url))
         return result.first() is not None
 
 
@@ -90,11 +86,7 @@ async def check_identical_offers(
         def _eq_or_isnull(col, value):
             return col.is_(None) if value is None else col == value
 
-        conditions.append(
-            _eq_or_isnull(
-                Offer.total_area, float(total_area) if total_area is not None else None
-            )
-        )
+        conditions.append(_eq_or_isnull(Offer.total_area, float(total_area) if total_area is not None else None))
         conditions.append(
             _eq_or_isnull(
                 Offer.living_area,
@@ -107,9 +99,7 @@ async def check_identical_offers(
                 float(kitchen_area) if kitchen_area is not None else None,
             )
         )
-        conditions.append(
-            _eq_or_isnull(Offer.floor, int(floor) if floor is not None else None)
-        )
+        conditions.append(_eq_or_isnull(Offer.floor, int(floor) if floor is not None else None))
         conditions.append(
             _eq_or_isnull(
                 Offer.house_floors_count,
@@ -122,9 +112,7 @@ async def check_identical_offers(
             lon = coordinates[1]
             pt_wkt = f"SRID=4326;POINT({lon} {lat})"
 
-            conditions.append(
-                func.ST_DWithin(Address.coordinates, func.ST_GeogFromText(pt_wkt), 5)
-            )
+            conditions.append(func.ST_DWithin(Address.coordinates, func.ST_GeogFromText(pt_wkt), 5))
 
         stmt = stmt.where(*conditions).limit(1)
         result = await session.exec(stmt)
@@ -164,23 +152,15 @@ async def captcha_solver_v2(page: zendriver.Tab) -> bool:
             background_el = await page.wait_for(".geetest_bg")
             await background_el.save_screenshot("background_with_puzzle.png")
             slice_el = await page.select(".geetest_slice")
-            await page.evaluate(
-                "document.querySelector('.geetest_slice').style.display = 'none';"
-            )
+            await page.evaluate("document.querySelector('.geetest_slice').style.display = 'none';")
 
             await background_el.save_screenshot("background.png")
-            await page.evaluate(
-                "document.querySelector('.geetest_slice').style.display = '';"
-            )
+            await page.evaluate("document.querySelector('.geetest_slice').style.display = '';")
             try:
-                distance = get_simple_distance(
-                    "background_with_puzzle.png", "background.png"
-                )
+                distance = get_simple_distance("background_with_puzzle.png", "background.png")
             except TypeError:
                 distance = 0
-            await slice_el.mouse_drag(
-                (distance, 0), relative=True, steps=random.randint(30, 40)
-            )
+            await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(30, 40))
             await page.sleep(5)
             await page.reload()
             background_el = None
@@ -213,19 +193,13 @@ async def captcha_solver(page: zendriver.Tab):
         background_el = await page.select(".geetest_bg")
         await background_el.save_screenshot("background_with_puzzle.png")
         slice_el = await page.select(".geetest_slice")
-        await page.evaluate(
-            "document.querySelector('.geetest_slice').style.display = 'none';"
-        )
+        await page.evaluate("document.querySelector('.geetest_slice').style.display = 'none';")
 
         await background_el.save_screenshot("background.png")
-        await page.evaluate(
-            "document.querySelector('.geetest_slice').style.display = '';"
-        )
+        await page.evaluate("document.querySelector('.geetest_slice').style.display = '';")
 
         distance = get_simple_distance("background_with_puzzle.png", "background.png")
-        await slice_el.mouse_drag(
-            (distance, 0), relative=True, steps=random.randint(30, 40)
-        )
+        await slice_el.mouse_drag((distance, 0), relative=True, steps=random.randint(30, 40))
         await page.sleep(7)
         print("Капча возможно пройдена")
         return
@@ -238,9 +212,7 @@ T = TypeVar("T", bound="BaseModel")
 
 
 async def add_offer_to_db(new_offer: Offer, session_factory) -> int | None:
-    async def get_existing(
-        session: AsyncSession, model: type[T], name: str
-    ) -> T | None:
+    async def get_existing(session: AsyncSession, model: type[T], name: str) -> T | None:
         stmt = select(model).where(model.name == name)
         result = await session.exec(stmt)
 
@@ -258,17 +230,13 @@ async def add_offer_to_db(new_offer: Offer, session_factory) -> int | None:
                 await session.rollback()
 
                 if "uq_settlement_full_name" in str(e):
-                    stmt = select(Settlement).where(
-                        Settlement.full_name == new_offer.address.settlement.full_name
-                    )
+                    stmt = select(Settlement).where(Settlement.full_name == new_offer.address.settlement.full_name)
                     result = await session.exec(stmt)
 
                     new_offer.address.settlement = result.first()
 
                 elif "uq_municipality_name" in str(e):
-                    new_offer.address.municipality = await get_existing(
-                        session, Municipality, new_offer.address.municipality.name
-                    )
+                    new_offer.address.municipality = await get_existing(session, Municipality, new_offer.address.municipality.name)
 
                 elif "uq_super_municipality_name" in str(e):
                     new_offer.address.super_municipality = await get_existing(
@@ -278,29 +246,19 @@ async def add_offer_to_db(new_offer: Offer, session_factory) -> int | None:
                     )
 
                 elif "uq_region_name" in str(e):
-                    new_offer.address.region = await get_existing(
-                        session, Region, new_offer.address.region.name
-                    )
+                    new_offer.address.region = await get_existing(session, Region, new_offer.address.region.name)
 
                 elif "uq_street_name" in str(e):
-                    new_offer.address.street = await get_existing(
-                        session, Street, new_offer.address.street.name
-                    )
+                    new_offer.address.street = await get_existing(session, Street, new_offer.address.street.name)
 
                 elif "uq_district_name" in str(e):
-                    new_offer.address.district = await get_existing(
-                        session, District, new_offer.address.district.name
-                    )
+                    new_offer.address.district = await get_existing(session, District, new_offer.address.district.name)
 
                 elif "uq_microdistrict_name" in str(e):
-                    new_offer.address.microdistrict = await get_existing(
-                        session, Microdistrict, new_offer.address.microdistrict.name
-                    )
+                    new_offer.address.microdistrict = await get_existing(session, Microdistrict, new_offer.address.microdistrict.name)
 
                 elif "uq_partnership_name" in str(e):
-                    new_offer.address.partnership = await get_existing(
-                        session, Partnership, new_offer.address.partnership.name
-                    )
+                    new_offer.address.partnership = await get_existing(session, Partnership, new_offer.address.partnership.name)
 
                 elif "uq_residential_complex_name" in str(e):
                     new_offer.address.residential_complex = await get_existing(
@@ -310,15 +268,11 @@ async def add_offer_to_db(new_offer: Offer, session_factory) -> int | None:
                     )
 
                 elif "uq_seller_name" in str(e):
-                    new_offer.seller = await get_existing(
-                        session, Seller, new_offer.seller.name
-                    )
+                    new_offer.seller = await get_existing(session, Seller, new_offer.seller.name)
 
                 elif "coordinates" in str(e):
                     coordinates = new_offer.address.coordinates
-                    stmt = sqlmodel.select(Address).where(
-                        Address.coordinates == coordinates
-                    )
+                    stmt = sqlmodel.select(Address).where(Address.coordinates == coordinates)
                     result = await session.exec(stmt)
                     existing_address = result.first()
                     new_offer.address = existing_address
@@ -329,9 +283,7 @@ async def add_offer_to_db(new_offer: Offer, session_factory) -> int | None:
                 return
 
 
-async def find_types(
-    session_factory, address: dict, new_offer_types: dict
-) -> dict[str, int] | None:
+async def find_types(session_factory, address: dict, new_offer_types: dict) -> dict[str, int] | None:
     try:
         async with session_factory() as session:
             partnership_stmt = select(PartnershipType.id).where(
@@ -344,11 +296,7 @@ async def find_types(
                     or [None]
                 )[0]
             )
-            settlement_stmt = select(SettlementType.id).where(
-                SettlementType.name.in_(
-                    (address.get("settlement_full_name") or "").split()
-                )
-            )
+            settlement_stmt = select(SettlementType.id).where(SettlementType.name.in_((address.get("settlement_full_name") or "").split()))
 
             super_municipality_stmt = select(SuperMunicipalityType.id).where(
                 SuperMunicipalityType.name
@@ -381,45 +329,19 @@ async def find_types(
                 )[0]
             )
 
-            renovation_stmt = select(RenovationType.id).where(
-                RenovationType.name == new_offer_types["renovation_type"]
-            )
-            bathroom_stmt = select(BathroomType.id).where(
-                BathroomType.name == new_offer_types["bathroom_type"]
-            )
-            window_view_stmt = select(WindowViewType.id).where(
-                WindowViewType.name == new_offer_types["window_view_type"]
-            )
-            parking_stmt = select(ParkingType.id).where(
-                ParkingType.name == new_offer_types["parking_type"]
-            )
-            house_material_stmt = select(HouseMaterialType.id).where(
-                HouseMaterialType.name == new_offer_types["house_material_type"]
-            )
-            heating_stmt = select(HeatingType.id).where(
-                HeatingType.name == new_offer_types["heating_type"]
-            )
-            gas_stmt = select(GasType.id).where(
-                GasType.name == new_offer_types["gas_type"]
-            )
-            seller_stmt = select(SellerType.id).where(
-                SellerType.name == new_offer_types["seller_type"]
-            )
-            sewerage_stmt = select(SewerageType.id).where(
-                SewerageType.name == new_offer_types["sewerage_type"]
-            )
-            property_stmt = select(PropertyType.id).where(
-                PropertyType.name == new_offer_types["property_type"]
-            )
-            offer_stmt = select(OfferType.id).where(
-                OfferType.name == new_offer_types["offer_type"]
-            )
-            land_stmt = select(LandType.id).where(
-                LandType.name == new_offer_types["land_type"]
-            )
-            water_stmt = select(WaterSupplyType.id).where(
-                WaterSupplyType.name == new_offer_types["water_supply_type"]
-            )
+            renovation_stmt = select(RenovationType.id).where(RenovationType.name == new_offer_types["renovation_type"])
+            bathroom_stmt = select(BathroomType.id).where(BathroomType.name == new_offer_types["bathroom_type"])
+            window_view_stmt = select(WindowViewType.id).where(WindowViewType.name == new_offer_types["window_view_type"])
+            parking_stmt = select(ParkingType.id).where(ParkingType.name == new_offer_types["parking_type"])
+            house_material_stmt = select(HouseMaterialType.id).where(HouseMaterialType.name == new_offer_types["house_material_type"])
+            heating_stmt = select(HeatingType.id).where(HeatingType.name == new_offer_types["heating_type"])
+            gas_stmt = select(GasType.id).where(GasType.name == new_offer_types["gas_type"])
+            seller_stmt = select(SellerType.id).where(SellerType.name == new_offer_types["seller_type"])
+            sewerage_stmt = select(SewerageType.id).where(SewerageType.name == new_offer_types["sewerage_type"])
+            property_stmt = select(PropertyType.id).where(PropertyType.name == new_offer_types["property_type"])
+            offer_stmt = select(OfferType.id).where(OfferType.name == new_offer_types["offer_type"])
+            land_stmt = select(LandType.id).where(LandType.name == new_offer_types["land_type"])
+            water_stmt = select(WaterSupplyType.id).where(WaterSupplyType.name == new_offer_types["water_supply_type"])
 
             results = []
             for stmt in [
@@ -467,9 +389,7 @@ async def find_types(
             }
         return type_ids
     except Exception as e:
-        logging.error(
-            f"Произошла ошибка: {e} в {new_offer_types['url']}", exc_info=True
-        )
+        logging.error(f"Произошла ошибка: {e} в {new_offer_types['url']}", exc_info=True)
 
 
 async def add_address_infrastructure_link(
@@ -480,9 +400,7 @@ async def add_address_infrastructure_link(
     async with session_factory() as session:
         infra_objects = []
         for infra_type, infra_list in infrastructure_info.items():
-            type_stmt = select(InfrastructureType.id).where(
-                InfrastructureType.name == infra_type
-            )
+            type_stmt = select(InfrastructureType.id).where(InfrastructureType.name == infra_type)
             type_result = await session.exec(type_stmt)
             infra_type_id = type_result.first()
 
@@ -499,33 +417,20 @@ async def add_address_infrastructure_link(
                 )
 
         if infra_objects:
-            stmt = (
-                insert(Infrastructure)
-                .values(infra_objects)
-                .on_conflict_do_nothing(index_elements=["name", "coordinates"])
-            )
+            stmt = insert(Infrastructure).values(infra_objects).on_conflict_do_nothing(index_elements=["name", "coordinates"])
             await session.exec(stmt)
 
-            conditions = [
-                (infra["name"], infra["coordinates"]) for infra in infra_objects
-            ]
-            infra_query = select(Infrastructure.id).where(
-                tuple_(Infrastructure.name, Infrastructure.coordinates).in_(conditions)
-            )
+            conditions = [(infra["name"], infra["coordinates"]) for infra in infra_objects]
+            infra_query = select(Infrastructure.id).where(tuple_(Infrastructure.name, Infrastructure.coordinates).in_(conditions))
             infra_result = await session.exec(infra_query)
             infra_ids = [row for row in infra_result.all()]
 
-            link_objects = [
-                {"address_id": address_id, "infrastructure_id": infra_id}
-                for infra_id in infra_ids
-            ]
+            link_objects = [{"address_id": address_id, "infrastructure_id": infra_id} for infra_id in infra_ids]
             if link_objects:
                 stmt = (
                     insert(AddressInfrastructureLink)
                     .values(link_objects)
-                    .on_conflict_do_nothing(
-                        index_elements=["address_id", "infrastructure_id"]
-                    )
+                    .on_conflict_do_nothing(index_elements=["address_id", "infrastructure_id"])
                 )
                 await session.exec(stmt)
                 await session.commit()
@@ -560,14 +465,10 @@ def create_offer_from_data(new_offer_info, address_info, type_ids):
         url=new_offer_info["url"],
         source=new_offer_info.get("source"),
         identical_urls=new_offer_info.get("identical_urls"),
-        update_date_source=datetime.fromisoformat(
-            new_offer_info.get("update_date_source")
-        )
+        update_date_source=datetime.fromisoformat(new_offer_info.get("update_date_source"))
         if new_offer_info.get("update_date_source")
         else None,
-        creation_date_source=datetime.fromisoformat(
-            new_offer_info.get("creation_date_source")
-        ),
+        creation_date_source=datetime.fromisoformat(new_offer_info.get("creation_date_source")),
         views_count=new_offer_info.get("views_count"),
         daily_views_count=int(new_offer_info.get("daily_views_count")),
         last_ten_days_views_count=new_offer_info.get("last_ten_days_views_count"),
@@ -589,9 +490,7 @@ def create_offer_from_data(new_offer_info, address_info, type_ids):
         land_type_id=type_ids.get("land_type_id"),
         is_new_house=new_offer_info.get("is_new_house"),
         is_build_complete=new_offer_info.get("is_build_complete"),
-        house_built_year=int(new_offer_info.get("house_built_year"))
-        if new_offer_info.get("house_built_year")
-        else None,
+        house_built_year=int(new_offer_info.get("house_built_year")) if new_offer_info.get("house_built_year") else None,
         description=new_offer_info.get("description"),
         contact_phone=new_offer_info.get("contact_phone"),
         price=new_offer_info.get("price"),
@@ -599,33 +498,13 @@ def create_offer_from_data(new_offer_info, address_info, type_ids):
         price_per_square_meter=int(new_offer_info.get("price_per_square_meter")),
         rooms_count=new_offer_info.get("rooms_count"),
         bedrooms_count=new_offer_info.get("bedrooms_count"),
-        total_area=(
-            float(new_offer_info.get("total_area"))
-            if new_offer_info.get("total_area")
-            else None
-        ),
-        living_area=(
-            float(new_offer_info.get("living_area"))
-            if new_offer_info.get("living_area")
-            else None
-        ),
-        kitchen_area=(
-            float(new_offer_info.get("kitchen_area"))
-            if new_offer_info.get("kitchen_area")
-            else None
-        ),
-        land_area=(
-            float(new_offer_info.get("land_area"))
-            if new_offer_info.get("land_area")
-            else None
-        ),
+        total_area=(float(new_offer_info.get("total_area")) if new_offer_info.get("total_area") else None),
+        living_area=(float(new_offer_info.get("living_area")) if new_offer_info.get("living_area") else None),
+        kitchen_area=(float(new_offer_info.get("kitchen_area")) if new_offer_info.get("kitchen_area") else None),
+        land_area=(float(new_offer_info.get("land_area")) if new_offer_info.get("land_area") else None),
         floor=new_offer_info.get("floor"),
         house_floors_count=new_offer_info.get("house_floors_count"),
-        ceiling_height=(
-            float(new_offer_info.get("ceiling_height"))
-            if new_offer_info.get("ceiling_height")
-            else None
-        ),
+        ceiling_height=(float(new_offer_info.get("ceiling_height")) if new_offer_info.get("ceiling_height") else None),
         balconies_count=new_offer_info.get("balconies_count"),
         bathrooms_count=new_offer_info.get("bathrooms_count"),
         elevators_count=new_offer_info.get("elevators_count"),
@@ -776,9 +655,7 @@ def _generate_offer_title(new_offer_info):
         return _fmt(
             f"{_g('rooms_count')}-комн. {_g('property_type').lower()}",
             f"{_g('total_area')} м²" if _g("total_area") else None,
-            f"{_g('floor')}/{_g('house_floors_count')} этаж"
-            if _g("floor") and _g("house_floors_count")
-            else None,
+            f"{_g('floor')}/{_g('house_floors_count')} этаж" if _g("floor") and _g("house_floors_count") else None,
         )
     elif property_type in ["Дом", "Таунхаус", "Коттедж"]:
         return _fmt(
@@ -799,7 +676,5 @@ def _generate_offer_title(new_offer_info):
         return _fmt(
             room_text,
             f"{_g('total_area')} м²" if _g("total_area") else None,
-            f"{_g('floor')}/{_g('house_floors_count')} этаж"
-            if _g("floor") and _g("house_floors_count")
-            else None,
+            f"{_g('floor')}/{_g('house_floors_count')} этаж" if _g("floor") and _g("house_floors_count") else None,
         )

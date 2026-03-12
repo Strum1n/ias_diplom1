@@ -1,21 +1,17 @@
-from typing import Optional
-
 from sqlmodel import Field, Relationship
 
 from app.backend.db.config import BaseModel
-from app.backend.db.models1 import Offer
-from app.backend.db.models.types import SellerType
 
 
-class Seller(BaseModel, table=True):
-    id: int | None = Field(primary_key=True)
+class SellerBase(BaseModel):
     name: str | None = Field(unique=True)
     rating: float | None
     foundation_date: int | None
 
+
+class Seller(SellerBase, table=True):
+    id: int | None = Field(primary_key=True)
     seller_type_id: int | None = Field(foreign_key="seller_type.id")
-    seller_type: Optional["SellerType"] = Relationship(
-        back_populates="sellers", sa_relationship_kwargs={"lazy": "selectin"}
-    )
+    seller_type: "SellerType" = Relationship(back_populates="sellers")
 
     offers: list["Offer"] = Relationship(back_populates="seller")
