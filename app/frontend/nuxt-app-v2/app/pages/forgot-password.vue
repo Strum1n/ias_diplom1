@@ -7,24 +7,45 @@
 
       <!-- Успешная отправка -->
       <div v-if="success" class="success-message">
-        <p class="success-text">На указанный email отправлена ссылка для восстановления пароля.</p>
+        <p class="success-text">
+          На указанный email отправлена ссылка для восстановления пароля.
+        </p>
         <div class="button-container" style="margin-top: 1rem">
           <NuxtLink to="/login">
-            <UButton class="w-full!" color="primary">Вернуться ко входу</UButton>
+            <UButton class="w-full!" color="primary"
+              >Вернуться ко входу</UButton
+            >
           </NuxtLink>
         </div>
       </div>
 
       <!-- Форма -->
-      <UForm v-else @submit="handleSubmit" :state="form" :validate="validate" class="login-form">
+      <UForm
+        v-else
+        @submit="handleSubmit"
+        :state="form"
+        :validate="validate"
+        class="login-form"
+      >
         <div class="form-field">
           <UFormField label="Email" name="email">
-            <UInput v-model="form.email" type="email" placeholder="your@email.com" />
+            <UInput
+              v-model="form.email"
+              type="email"
+              placeholder="your@email.com"
+            />
           </UFormField>
         </div>
 
         <div class="button-container">
-          <UButton type="submit" class="button-submit" color="primary" :loading="loading"> Отправить ссылку </UButton>
+          <UButton
+            type="submit"
+            class="button-submit"
+            color="primary"
+            :loading="loading"
+          >
+            Отправить ссылку
+          </UButton>
         </div>
       </UForm>
 
@@ -35,7 +56,9 @@
       <template #footer>
         <p class="footer-text">
           Вспомнили пароль?
-          <NuxtLink to="/login" class="footer-link w-max!"> Вернуться ко входу </NuxtLink>
+          <NuxtLink to="/login" class="footer-link w-max!">
+            Вернуться ко входу
+          </NuxtLink>
         </p>
       </template>
     </UCard>
@@ -43,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FormError } from "@nuxt/ui";
+import type {FormError} from "@nuxt/ui";
 
 const form = reactive({
   email: "",
@@ -56,20 +79,24 @@ const error = ref<string | null>(null);
 const validate = (state: any): FormError[] => {
   const errors = [];
   if (!state.email) {
-    errors.push({ name: "email", message: "Введите email" });
+    errors.push({name: "email", message: "Введите email"});
   }
   return errors;
 };
-
+const runtimeConfig = useRuntimeConfig();
 const handleSubmit = async () => {
   error.value = null;
   loading.value = true;
 
   try {
-    await $fetch("https://ias-diplom.dynv6.net/apiback/auth/request-password-reset", {
-      method: "POST",
-      body: { email: form.email },
-    });
+    await $fetch(
+      `${runtimeConfig.public.apiBase}/auth/request-password-reset`,
+      {
+        method: "POST",
+        body: {email: form.email},
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      },
+    );
 
     success.value = true;
   } catch (e) {

@@ -1,6 +1,8 @@
 <template>
   <header v-if="showHeader" class="header">
-    <UContainer class="flex justify-between items-center gap-3 h-16 sm:min-w-full lg:min-w-360">
+    <UContainer
+      class="flex justify-between items-center gap-3 h-16 sm:min-w-full lg:min-w-360"
+    >
       <NuxtLink to="/" class="logo">
         <UIcon name="ic:round-maps-home-work" class="logo-icon" />
         <span>Real</span>
@@ -14,7 +16,8 @@
           :items="items"
           :ui="{
             content: 'w-48',
-          }">
+          }"
+        >
           <UButton icon="i-lucide-menu" color="neutral" variant="outline" />
         </UDropdownMenu>
       </div>
@@ -30,12 +33,28 @@
               {{ userEmail }}
             </span>
 
-            <UButton class="cursor-pointer" variant="soft" @click="logout" :loading="loading" size="sm"> Выйти </UButton>
+            <UButton
+              class="cursor-pointer"
+              variant="soft"
+              @click="logout"
+              :loading="loading"
+              size="sm"
+            >
+              Выйти
+            </UButton>
           </template>
 
           <template v-else>
-            <UButton variant="soft" @click="navigateTo('/login')" size="sm" class="sm:inline-flex">Войти</UButton>
-            <UButton variant="solid" @click="navigateTo('/register')" size="sm">Регистрация</UButton>
+            <UButton
+              variant="soft"
+              @click="navigateTo('/login')"
+              size="sm"
+              class="sm:inline-flex"
+              >Войти</UButton
+            >
+            <UButton variant="solid" @click="navigateTo('/register')" size="sm"
+              >Регистрация</UButton
+            >
           </template>
         </div>
       </div>
@@ -46,18 +65,23 @@
 </template>
 
 <script setup lang="ts">
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 
 const route = useRoute();
-const { logout, loading, accessToken, isAuthenticated } = useAuth();
+const {logout, loading, accessToken, isAuthenticated} = useAuth();
 
-const showHeader = computed(() => !["/login", "/register", "/forgot-password", "/reset-password"].includes(route.path));
+const showHeader = computed(
+  () =>
+    !["/login", "/register", "/forgot-password", "/reset-password"].includes(
+      route.path,
+    ),
+);
 
 const userEmail = computed(() => {
   if (!accessToken.value) return "";
   try {
-    const { sub } = jwtDecode<{ sub: string }>(accessToken.value);
-    return sub;
+    const {username} = jwtDecode<{username: string}>(accessToken.value);
+    return username;
   } catch {
     return "";
   }

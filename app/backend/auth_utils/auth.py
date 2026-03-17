@@ -188,7 +188,7 @@ async def send_welcome_email(to_email: str) -> bool:
                     <p>Теперь вы можете отслеживать динамику цен, сравнивать районы и находить выгодные предложения быстрее, чем когда-либо раньше 💡</p>
                     <p>Чтобы начать работу, войдите в свой аккаунт:</p>
                     <p style="text-align: center;">
-                        <a href="https://example.com/login"
+                        <a href="https://домен.com/login"
                         style="display: inline-block; padding: 12px 22px; background-color: #00b386; color: white; border-radius: 6px; text-decoration: none; font-weight: bold;">
                         Перейти в приложение
                         </a>

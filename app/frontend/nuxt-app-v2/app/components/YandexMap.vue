@@ -131,7 +131,7 @@
                   color="neutral"
                   icon="lucide:navigation"
                   target="_blank"
-                  :to="`https://yandex.ru/maps/?mode=routes&routes[activeComparisonMode]=auto&rtext=${userLocation?.lat},${userLocation?.lng}~${offer.address?.coordinates_list[1]},${offer.address?.coordinates_list[0]}&z=17`"
+                  :to="`https://yandex.ru/maps/?mode=routes&routes[activeComparisonMode]=auto&rtext=${userLocation?.lat},${userLocation?.lng}~${offer.address?.coordinates[1]},${offer.address?.coordinates[0]}&z=17`"
                 >
                   Маршрут
                 </UButton>
@@ -404,7 +404,7 @@ function openClusterPopup(clusterCoords: [number, number]) {
   ] as [number, number];
 
   const matchingOffers = props.parentOffers?.filter(offer => {
-    const c = offer.address?.coordinates_list;
+    const c = offer.address?.coordinates;
     if (!c) return false;
 
     return (
@@ -445,7 +445,7 @@ const getPointList = computed(() => {
       id: `${props.parentOffers[i]?.id}`,
       geometry: {
         type: "Point",
-        coordinates: props.parentOffers[i]?.address?.coordinates_list,
+        coordinates: props.parentOffers[i]?.address?.coordinates,
       },
       properties: {
         is_new_house: props.parentOffers[i]?.is_new_house,
@@ -598,7 +598,7 @@ function createMarker(feature: ClustererFeature) {
 interface Address {
   house_number: string | null;
   full_address: string;
-  coordinates_list: number[];
+  coordinates: number[];
 }
 
 function formatPrice(price: number | null): string {

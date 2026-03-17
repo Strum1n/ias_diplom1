@@ -1,22 +1,8 @@
 <template>
   <div class="login-container">
-    <UCard class="login-card">
-      <template #header>
-        <h2 class="login-title">Сброс пароля</h2>
-      </template>
-
-      <!-- Проверка токена -->
-      <div v-if="loading" class="info-message">
-        <p class="info-text">Проверка ссылки...</p>
-      </div>
-
-      <!-- Ошибка токена -->
-      <div v-else-if="tokenError" class="error-message">
-        <p class="error-text">{{ tokenError }}</p>
-      </div>
-
-      <!-- Успешная смена -->
-      <div v-else-if="success" class="success-message">
+    <UIcon v-if="loading" size="70" name="codex:loader" class="loading-icon" />
+    <UCard v-else-if="success" class="login-card">
+      <div class="success-message">
         <p class="success-text">Пароль успешно обновлён!</p>
         <div class="button-container" style="margin-top: 1rem">
           <NuxtLink to="/login">
@@ -24,23 +10,48 @@
           </NuxtLink>
         </div>
       </div>
+    </UCard>
+    <UCard v-else class="login-card">
+      <template #header>
+        <h2 class="login-title">Сброс пароля</h2>
+      </template>
 
       <!-- Форма -->
-      <UForm v-else @submit="handleSubmit" :state="form" :validate="validate" class="login-form">
+      <UForm
+        @submit="handleSubmit"
+        :state="form"
+        :validate="validate"
+        class="login-form"
+      >
         <div class="form-field">
           <UFormField label="Новый пароль" name="password">
-            <UInput v-model="form.password" type="password" placeholder="••••••••" />
+            <UInput
+              v-model="form.password"
+              type="password"
+              placeholder="••••••••"
+            />
           </UFormField>
         </div>
 
         <div class="form-field">
           <UFormField label="Подтвердите пароль" name="confirmPassword">
-            <UInput v-model="form.confirmPassword" type="password" placeholder="••••••••" />
+            <UInput
+              v-model="form.confirmPassword"
+              type="password"
+              placeholder="••••••••"
+            />
           </UFormField>
         </div>
 
         <div class="button-container">
-          <UButton type="submit" class="button-submit" color="primary" :loading="submitting"> Сменить пароль </UButton>
+          <UButton
+            type="submit"
+            class="button-submit"
+            color="primary"
+            :loading="submitting"
+          >
+            Сменить пароль
+          </UButton>
         </div>
       </UForm>
 
@@ -52,8 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import type { FormError } from "@nuxt/ui";
-
+import type {FormError} from "@nuxt/ui";
 
 const route = useRoute();
 const router = useRouter();
@@ -81,14 +91,16 @@ onMounted(async () => {
   }
 
   token.value = queryToken;
-
+  const runtimeConfig = useRuntimeConfig();
   try {
-    await $fetch("https://ias-diplom.dynv6.net/apiback/auth/validate-reset-token", {
-      method: "POST",
-      body: { token: token.value },
-    });
+    await $fetch(
+      `${runtimeConfig.public.apiBase}/auth/validate-reset-token?token=${token.value}`,
+      {
+        method: "POST",
+      },
+    );
   } catch {
-    tokenError.value = "Ссылка недействительна или устарела.";
+    router.push("/forgot-password");
   } finally {
     loading.value = false;
   }
@@ -97,10 +109,10 @@ onMounted(async () => {
 const validate = (state: any): FormError[] => {
   const errors = [];
   if (!state.password) {
-    errors.push({ name: "password", message: "Введите пароль" });
+    errors.push({name: "password", message: "Введите пароль"});
   }
   if (!state.confirmPassword) {
-    errors.push({ name: "confirmPassword", message: "Подтвердите пароль" });
+    errors.push({name: "confirmPassword", message: "Подтвердите пароль"});
   }
   return errors;
 };
@@ -121,15 +133,19 @@ const handleSubmit = async () => {
   if (!token.value) return;
 
   submitting.value = true;
-
+  const runtimeConfig = useRuntimeConfig();
   try {
-    await $fetch("https://ias-diplom.dynv6.net/apiback/auth/confirm-password-reset", {
-      method: "POST",
-      body: {
-        token: token.value,
-        new_password: form.password,
+    await $fetch(
+      `${runtimeConfig.public.apiBase}/auth/confirm-password-reset`,
+      {
+        method: "POST",
+        body: {
+          token: token.value,
+          new_password: form.password,
+        },
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
       },
-    });
+    );
 
     success.value = true;
   } catch (e: any) {

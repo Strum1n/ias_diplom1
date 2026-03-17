@@ -8,6 +8,8 @@ from app.backend.db.config import BaseModel
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.backend.db.models.address import AddressRead, AddressReadShort
+from app.backend.db.models.address_infrastructure_link import AddressInfrastructureLink, AddressInfrastructureLinkRead
+from app.backend.db.models.infrastructure import Infrastructure
 from app.backend.db.models.types import (
     BathroomType,
     GasType,
@@ -189,7 +191,7 @@ class OfferReadShort(BaseModel):
 
 class OffersReadWithPagination(BaseModel):
     offers: list[OfferRead]
-    total: int
+    total_count: int
     total_filtered: int
     limit: int
     offset: int
@@ -198,3 +200,4 @@ class OffersReadWithPagination(BaseModel):
 
 class OfferFavoriteRead(OfferRead):
     added_favorites_date: datetime
+    infrastructures: list[AddressInfrastructureLinkRead]

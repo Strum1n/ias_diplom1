@@ -5,7 +5,7 @@ from app.backend.db.config import BaseModel
 
 class TypeBase(BaseModel):
     id: int | None = Field(primary_key=True)
-    name: str | None
+    name: str
 
 
 class SellerType(TypeBase, table=True):

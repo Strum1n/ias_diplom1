@@ -4,6 +4,9 @@ from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import selectinload
+from shapely.geometry import mapping
+from geoalchemy2.shape import to_shape
 from sqlmodel import and_, asc, case, desc, func, select
 import xlsxwriter
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -23,7 +26,7 @@ from app.backend.db.models.address import (
     Settlement,
     Street,
 )
-from app.backend.db.models.address_infrastructure_link import AddressInfrastructureLink
+from app.backend.db.models.address_infrastructure_link import AddressInfrastructureLink, AddressInfrastructureLinkRead
 from app.backend.db.models.favorites import Favorites
 from app.backend.db.models.infrastructure import Infrastructure
 from app.backend.db.models.offer import Offer, OfferFavoriteRead, OfferRead, OfferReadShort, OffersReadWithPagination
@@ -121,7 +124,7 @@ class OfferQueryParams(BaseModel):
     short: bool | None = None
 
 
-class FilterTypesResponse(BaseModel):
+class FilterTypesRead(BaseModel):
     bathroom_types: list[BathroomType]
     renovation_types: list[RenovationType]
     window_view_types: list[WindowViewType]
@@ -201,9 +204,8 @@ async def export_offers_excel(
     ]
 
     for field in list_filters:
-        print(field)
         values = getattr(params, field)
-        print(values)
+
         if values:
             filters.append(getattr(Offer, field).in_(values))
 
@@ -576,9 +578,8 @@ async def get_offers(
     ]
 
     for field in list_filters:
-        print(field)
         values = getattr(params, field)
-        print(values)
+
         if values:
             filters.append(getattr(Offer, field).in_(values))
 
@@ -656,7 +657,7 @@ async def get_offers(
         has_more = offset + len(offers) < filtered_count
         return OffersReadWithPagination(
             offers=offers,
-            total=total_count,
+            total_count=total_count,
             total_filtered=filtered_count,
             limit=limit,
             offset=offset,
@@ -684,7 +685,7 @@ async def autocomplete_addresses(
     return [r for r in results.all()]
 
 
-@offer_router.get("/filter_types", response_model=FilterTypesResponse)
+@offer_router.get("/filter_types", response_model=FilterTypesRead)
 async def get_all_types(
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_async_session),
@@ -701,7 +702,7 @@ async def get_all_types(
     land_types = await session.exec(select(LandType).order_by((LandType.name)))
     offer_types = await session.exec(select(OfferType).order_by((OfferType.name)))
     property_types = await session.exec(select(PropertyType).order_by(desc(PropertyType.id)))
-    return FilterTypesResponse(
+    return FilterTypesRead(
         bathroom_types=bathroom_types.all(),
         renovation_types=renovation_types.all(),
         window_view_types=window_view_types.all(),
@@ -806,11 +807,42 @@ async def add_to_favorites(
 @offer_router.get("/favorites/", response_model=list[OfferFavoriteRead])
 async def get_favorites(
     current_user: Annotated[User, Depends(get_current_user)],
+    session: AsyncSession = Depends(get_async_session),
 ):
+    def get_nearest_infrastructure(links: list[AddressInfrastructureLink]):
+        result: dict[int, AddressInfrastructureLink] = {}
+
+        for link in links:
+            infra = link.infrastructure
+            if not infra:
+                continue
+
+            type_id = infra.infrastructure_type_id
+
+            if type_id not in result or (
+                link.distance is not None and (result[type_id].distance is None or link.distance < result[type_id].distance)
+            ):
+                result[type_id] = link
+
+        return list(result.values())
+
     return [
         OfferFavoriteRead.model_validate(
             favorite.offer,
-            update={"added_favorites_date": favorite.added_date},
+            update={
+                "added_favorites_date": favorite.added_date,
+                "infrastructures": [
+                    AddressInfrastructureLinkRead(
+                        name=infra.infrastructure.name,
+                        type=infra.infrastructure.infrastructure_type,
+                        distance=infra.distance,
+                        coordinates=list(mapping(to_shape(infra.infrastructure.coordinates))["coordinates"])
+                        if infra.infrastructure.coordinates
+                        else None,
+                    )
+                    for infra in get_nearest_infrastructure(favorite.offer.address.infrastructure_links)
+                ],
+            },
         )
         for favorite in current_user.offer_links
     ]

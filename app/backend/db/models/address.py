@@ -3,9 +3,10 @@ from typing import Any, Optional
 from geoalchemy2 import Geography
 from pydantic import field_serializer
 from shapely.geometry import mapping
+from geoalchemy2.shape import to_shape
 from sqlalchemy import Index
 from sqlmodel import Column, Field, Relationship
-from geoalchemy2.shape import to_shape
+
 from app.backend.db.config import BaseModel
 from sqlalchemy.dialects.postgresql import TSVECTOR
 
@@ -52,7 +53,9 @@ class Address(AddressBase, table=True):
     residential_complex: "ResidentialComplex" = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
 
     offers: list["Offer"] = Relationship(back_populates="address")
-    infrastructure_links: list["AddressInfrastructureLink"] = Relationship(back_populates="address")
+    infrastructure_links: list["AddressInfrastructureLink"] = Relationship(
+        back_populates="address", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
 
 class AddressComponent(BaseModel):

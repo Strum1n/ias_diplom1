@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import type {FormError} from "@nuxt/ui";
 
-const {handleLogin, loading, error} = useAuth();
+const {login, loading, error} = useAuth();
 const route = useRoute();
 
 // Показываем сообщение об успешной регистрации
@@ -90,7 +90,7 @@ const validate = (state: any): FormError[] => {
 };
 
 const handleSubmit = async () => {
-  await handleLogin(form.email, form.password);
+  await login(form.email, form.password);
 };
 </script>
 

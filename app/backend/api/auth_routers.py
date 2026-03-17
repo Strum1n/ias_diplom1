@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from fastapi.params import Body
+from typing import Annotated, Literal
+from fastapi import APIRouter, Body, Cookie, Depends, HTTPException, Query, Form, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from jwt import PyJWTError, decode
+from jwt import PyJWTError, ExpiredSignatureError, decode
 import jwt
-from sqlmodel import select
+from pydantic import EmailStr
+from sqlmodel import or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.backend.auth_utils.auth import (
@@ -24,10 +25,20 @@ from app.backend.auth_utils.auth import (
 )
 from app.backend.db.config import BaseModel, get_async_session
 from app.backend.db.models.password import Password
+from app.backend.db.models.types import Role
 from app.backend.db.models.user import User
 
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentification"])
+
+
+class RegisterBody(BaseModel):
+    email: EmailStr
+    name: str
+    surname: str
+    login: str
+    role: Literal["Стандарт", "Премиум"]
+    password: str
 
 
 @auth_router.post("/login")
@@ -57,9 +68,13 @@ async def login_for_access_token(
     return response
 
 
+class PasswordResetRequestBody(BaseModel):
+    email: EmailStr
+
+
 @auth_router.post("/request-password-reset")
 async def request_password_reset(
-    data,
+    data: Annotated[PasswordResetRequestBody, Form()],
     session: AsyncSession = Depends(get_async_session),
 ):
     statement = select(User).where(User.email == data.email)
@@ -74,20 +89,19 @@ async def request_password_reset(
     return {"message": "Если пользователь существует, ссылка отправлена"}
 
 
+class ConfirmPasswordResetBody(BaseModel):
+    token: str
+    new_password: str
+
+
 @auth_router.post("/confirm-password-reset")
 async def confirm_password_reset(
-    data,
+    data: Annotated[ConfirmPasswordResetBody, Form()],
     session: AsyncSession = Depends(get_async_session),
 ):
-    try:
-        payload = jwt.decode(data.token, SECRET_KEY, algorithms=[ALGORITHM])
-        if payload.get("type") != "password_reset":
-            raise HTTPException(status_code=400, detail="Неверный токен")
 
-        email = payload.get("sub")
-    except Exception:
-        raise HTTPException(status_code=400, detail="Неверный или просроченный токен")
-
+    payload = jwt.decode(data.token, SECRET_KEY, algorithms=[ALGORITHM])
+    email = payload.get("sub")
     statement = select(User).where(User.email == email)
     result = await session.exec(statement)
     user = result.first()
@@ -108,26 +122,28 @@ async def logout(response: Response):
     return {"message": "Logged out successfully"}
 
 
-@auth_router.post("/refresh")
-async def refresh_access_token(request):
-    refresh_token = request.cookies.get("refresh_token")
+@auth_router.post("/refresh-token")
+async def refresh_access_token(
+    refresh_token: Annotated[str | None, Cookie()] = None,
+    session: AsyncSession = Depends(get_async_session),
+):
     if not refresh_token:
         raise HTTPException(status_code=401, detail="No refresh token")
 
     try:
         payload = decode(refresh_token, REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
+        print("Юзер ", username)
         if username is None:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
+        statement = select(User).where(or_(User.email == username, User.login == username))
+        result = await session.exec(statement)
+        user = result.first()
+        token_data = {"sub": user.email, "username": user.login, "role": user.role.name}
+        access_token = create_access_token(data=token_data, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        new_refresh_token = create_refresh_token(data=token_data, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
     except PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
-
-    access_token = create_access_token(
-        data={"sub": username},
-        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
-
-    new_refresh_token = create_refresh_token(data={"sub": username}, expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
 
     response = JSONResponse(
         content={
@@ -148,9 +164,9 @@ async def refresh_access_token(request):
 
 
 @auth_router.post("/validate-reset-token")
-async def validate_reset_token(request):
+async def validate_reset_token(token: str):
     try:
-        payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         if payload.get("type") != "password_reset":
             raise HTTPException(status_code=400)
     except Exception:
@@ -160,11 +176,12 @@ async def validate_reset_token(request):
 
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register_user(user_data, session: AsyncSession = Depends(get_async_session)):
+async def register_user(user_data: Annotated[RegisterBody, Body()], session: AsyncSession = Depends(get_async_session)):
+
     statement = select(User).where(User.email == user_data.email)
     result = await session.exec(statement)
     existing_user = result.first()
-    print(existing_user)
+
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -174,16 +191,20 @@ async def register_user(user_data, session: AsyncSession = Depends(get_async_ses
     hashed_password = get_password_hash(user_data.password)
     password_entry = Password(hash=hashed_password)
     session.add(password_entry)
+    stmt = select(Role).where(Role.name == user_data.role)
+    result = await session.exec(stmt)
+    role = result.first()
     await session.commit()
     await session.refresh(password_entry)
 
     new_user = User(
-        user_name=user_data.user_name,
+        user_name=user_data.login,
         email=user_data.email,
-        full_name=user_data.full_name,
-        role_id=user_data.role_id,
+        name=user_data.name,
+        surname=user_data.surname,
+        role=role,
+        login=user_data.login,
         password_id=password_entry.id,
-        registration_date=datetime.now(timezone.utc),
     )
 
     session.add(new_user)
@@ -193,5 +214,5 @@ async def register_user(user_data, session: AsyncSession = Depends(get_async_ses
     return {
         "message": "User registered successfully",
         "user_id": new_user.id,
-        "username": new_user.user_name,
+        "username": new_user.login,
     }

@@ -184,21 +184,15 @@
                 <div class="infrastructure-list">
                   <div
                     v-for="item in getClosestInfrastructure(offer)"
-                    :key="item.infrastructure.id"
+                    :key="item.id"
                     class="infrastructure-item"
                   >
                     <UIcon
                       size="20"
-                      :name="
-                        getInfrastructureIcon(
-                          item.infrastructure.infrastructure_type.id,
-                        )
-                      "
+                      :name="getInfrastructureIcon(item.type.id)"
                     />
                     <div class="infra-info">
-                      <span class="infra-type">{{
-                        item.infrastructure.infrastructure_type.name
-                      }}</span>
+                      <span class="infra-type">{{ item.type.name }}</span>
                     </div>
                     <span class="infra-distance">{{ item.distance }} м</span>
                   </div>
@@ -1232,8 +1226,8 @@ const getPriceCategoryLabel = (category: string) => {
 const getClosestInfrastructure = (offer: Offer) => {
   const typeMap = new Map<number, any>();
 
-  offer.address.infrastructures_links.forEach(item => {
-    const typeId = item.infrastructure.infrastructure_type.id;
+  offer.infrastructures.forEach(item => {
+    const typeId = item.type.id;
     if (!typeMap.has(typeId) || typeMap.get(typeId)!.distance > item.distance) {
       typeMap.set(typeId, item);
     }
@@ -1393,9 +1387,9 @@ const initializeAvailableCriteria = () => {
 
   const infrastructureTypes = new Map<number, string>();
   currentOffers.forEach(offer => {
-    offer.address.infrastructures_links.forEach(link => {
-      const typeId = link.infrastructure.infrastructure_type.id;
-      const typeName = link.infrastructure.infrastructure_type.name;
+    offer.infrastructures.forEach(link => {
+      const typeId = link.type.id;
+      const typeName = link.type.name;
       if (!infrastructureTypes.has(typeId)) {
         infrastructureTypes.set(typeId, typeName);
       }
@@ -1443,8 +1437,8 @@ const initializeAvailableCriteria = () => {
 };
 
 const getClosestInfrastructureByType = (offer: Offer, typeId: number) => {
-  const infrastructuresOfType = offer.address.infrastructures_links.filter(
-    link => link.infrastructure.infrastructure_type.id === typeId,
+  const infrastructuresOfType = offer.infrastructures.filter(
+    link => link.type.id === typeId,
   );
 
   if (infrastructuresOfType.length === 0) {

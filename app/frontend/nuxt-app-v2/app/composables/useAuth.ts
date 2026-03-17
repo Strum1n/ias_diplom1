@@ -1,99 +1,63 @@
-import { jwtDecode } from 'jwt-decode'
-
-interface LoginResponse {
-  access_token: string
-  token_type?: string
-}
-
-interface JwtPayload {
-  exp: number
-  sub: string
-}
-
 export function useAuth() {
   const router = useRouter()
   const config = useRuntimeConfig()
 
   const accessToken = useState<string | null>('access_token', () => null)
-
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const isAuthenticated = computed(() => !!accessToken.value)
 
-  let refreshInterval: ReturnType<typeof setInterval> | null = null
+  let initPromise: Promise<void> | null = null
 
-  const isTokenExpired = (token: string | null) => {
-    if (!token) return true
+  async function refresh() {
+    console.log('Обновляем токен')
     try {
-      const { exp } = jwtDecode<JwtPayload>(token)
-      return Date.now() >= exp * 1000
-    } catch {
-      return true
-    }
-  }
+      const refreshToken = useCookie('refresh_token')
+      const headers: Record<string, string> = {}
 
-  const getTokenExpiry = (token: string | null) => {
-    if (!token) return 0
-    try {
-      const { exp } = jwtDecode<JwtPayload>(token)
-      return exp * 1000
-    } catch {
-      return 0
-    }
-  }
-
-  const isAuthenticated = computed(() => {
-    return !!accessToken.value && !isTokenExpired(accessToken.value)
-  })
-
-  const setAccessToken = (token: string | null) => {
-    accessToken.value = token
-  }
-  const runtimeConfig = useRuntimeConfig()
-  // ---------------------------
-  // Refresh access token
-  // ---------------------------
-  const refreshAccessToken = async () => {
-    try {
-      const res = await $fetch(`${runtimeConfig.public.apiBase}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include'
-      })
-      setAccessToken(res.access_token)
+      if (refreshToken.value) {
+        headers.Cookie = `refresh_token=${refreshToken.value}`
+      }
+      
+      const res = await $fetch<{ access_token: string }>(
+        `${config.public.apiBase}/auth/refresh-token`,
+        {
+          method: 'POST',
+          headers,
+          credentials: 'include' 
+        }
+      )
+      console.log('Успешно обновили токен')
+      accessToken.value = res.access_token
+      console.log('acces_token:', accessToken.value)
       return res.access_token
-    } catch (err) {
-      logout()
-      throw err
+    } catch (error) {
+      console.error('Ошибка обновления токена:', error)
+      accessToken.value = null
+      return null
     }
   }
 
-  // ---------------------------
-  // Login
-  // ---------------------------
-  const handleLogin = async (username: string, password: string) => {
-    error.value = null
+  async function login(username: string, password: string) {
     loading.value = true
+    error.value = null
 
     try {
-      const body = new URLSearchParams()
-      body.append('username', username)
-      body.append('password', password)
+      const body = new URLSearchParams({ username, password })
 
-      const res: LoginResponse = await $fetch(`${runtimeConfig.public.apiBase}/auth/login`, {
+      const res = await $fetch(`${config.public.apiBase}/auth/login`, {
         method: 'POST',
         body,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        credentials: 'include'
       })
 
-      setAccessToken(res.access_token)
-      startAutoRefresh()
-      console.log('✅ Login успешен')
+      accessToken.value = res.access_token
       await router.push('/offers')
     } catch (err: any) {
-      console.error(err)
-      if (!err.response) {
-        error.value = 'Нет соединения с сервером'
-      } else if (err.response.status === 401) {
+      if (err?.response?.status === 401) {
         error.value = 'Неверный логин или пароль'
       } else {
         error.value = 'Ошибка сервера'
@@ -103,61 +67,39 @@ export function useAuth() {
     }
   }
 
-  // ---------------------------
-  // Logout
-  // ---------------------------
-  const logout = async () => {
+  async function logout() {
     try {
-      await $fetch(`${runtimeConfig.public.apiBase}/auth/logout`, { method: 'POST', credentials: 'include' })
-    } catch (err) {
-      console.warn('Ошибка при logout', err)
+      await $fetch(`${config.public.apiBase}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      })
     } finally {
       accessToken.value = null
-      stopAutoRefresh()
-      router.push('/')
+      router.push('/login')
     }
   }
 
-  // ---------------------------
-  // Автообновление токена
-  // ---------------------------
-  const startAutoRefresh = () => {
-    stopAutoRefresh() // на всякий случай
-    refreshInterval = setInterval(async () => {
-      if (!accessToken.value) return
+  async function initAuth() {
+    if (accessToken.value) return
 
-      const expiry = getTokenExpiry(accessToken.value)
-      const now = Date.now()
-      const timeLeft = expiry - now
-
-      // если осталось меньше 1 минуты — обновляем
-      if (timeLeft < 60 * 1000) {
-        try {
-          await refreshAccessToken()
-        } catch {
-          // если не удалось — logout произойдёт внутри refreshAccessToken
-        }
-      }
-    }, 30 * 1000) // проверяем каждые 30 секунд
-  }
-
-  const stopAutoRefresh = () => {
-    if (refreshInterval) {
-      clearInterval(refreshInterval)
-      refreshInterval = null
+    if (!initPromise) {
+      initPromise = (async () => {
+        const token = await refresh()
+        accessToken.value = token || null
+      })()
     }
+
+    await initPromise
   }
 
   return {
-    handleLogin,
-    logout,
+    accessToken,
     isAuthenticated,
     loading,
     error,
-    accessToken,
-    setAccessToken,
-    refreshAccessToken,
-    startAutoRefresh,
-    stopAutoRefresh
+    login,
+    logout,
+    refresh,
+    initAuth
   }
 }

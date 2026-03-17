@@ -1,7 +1,9 @@
-export default defineNuxtRouteMiddleware((to) => {
-  const { isAuthenticated } = useAuth()
+export default defineNuxtRouteMiddleware(async (to) => {
+  const { initAuth, isAuthenticated } = useAuth()
+  if (to.path === '/login') return
+  // Инициализируем авторизацию (пытаемся обновить токен)
+  await initAuth()
 
-  // Страницы, доступные без авторизации
   const publicPages = ['/', '/login', '/register','/forgot-password','/reset-password']
 
   // Если авторизован → нельзя на /login и /register

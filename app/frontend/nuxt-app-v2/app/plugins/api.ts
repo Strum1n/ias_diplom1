@@ -6,8 +6,8 @@ export default defineNuxtPlugin(async () => {
      : '/apiback/'
     
     baseURL = config.public.isDev? 'http://localhost:8000': baseURL
-    console.log(baseURL)
-    console.log(config.public.isDev)
+    // console.log(baseURL)
+    // console.log(config.public.isDev)
   const api = $fetch.create({
     baseURL: baseURL,
     credentials: 'include',
