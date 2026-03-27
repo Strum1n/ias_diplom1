@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from geoalchemy2 import Geography
 from sqlalchemy import String
 from sqlmodel import ARRAY, Column, DateTime, Field, Relationship, func, text
 
@@ -8,8 +7,7 @@ from app.backend.db.config import BaseModel
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app.backend.db.models.address import AddressRead, AddressReadShort
-from app.backend.db.models.address_infrastructure_link import AddressInfrastructureLink, AddressInfrastructureLinkRead
-from app.backend.db.models.infrastructure import Infrastructure
+from app.backend.db.models.address_infrastructure_link import AddressInfrastructureLinkRead
 from app.backend.db.models.types import (
     BathroomType,
     GasType,
@@ -199,5 +197,9 @@ class OffersReadWithPagination(BaseModel):
 
 
 class OfferFavoriteRead(OfferRead):
-    added_favorites_date: datetime
+    added_date: datetime
+    infrastructures: list[AddressInfrastructureLinkRead]
+
+
+class OfferReadWithInfrastucture(OfferRead):
     infrastructures: list[AddressInfrastructureLinkRead]

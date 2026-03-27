@@ -21,18 +21,8 @@ export default defineNuxtConfig({
     ],
     renderer: "canvas",
   },
-  experimental: {
-    asyncContext: true
-  },
-   vite: {
-    build: {
-      sourcemap: false // отключить sourcemaps полностью
-    }
-  },
-  devServer: {
-    host: 'localhost',
-    port: 3000
-  },
+
+
   yandexMaps: {
     apikey: 'c5e28dc9-864f-4c09-9ae2-bd82441ff849'
   },
@@ -43,6 +33,7 @@ export default defineNuxtConfig({
   },
   
   runtimeConfig: {
+    apiBase: process.env.NUXT_API_BASE,
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/apiback',
       isDev: process.env.NODE_ENV === 'development'

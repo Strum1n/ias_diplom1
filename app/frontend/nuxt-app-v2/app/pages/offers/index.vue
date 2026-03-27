@@ -1,47 +1,25 @@
 <template>
   <div class="flex flex-col md:flex-row gap-2.5 mx-auto p-3 md:p-5 md:gap-5">
     <div class="md:hidden">
-      <UButton
-        icon="i-heroicons-funnel"
-        @click="toggleFiltersSidebar"
-        variant="outline"
-        color="primary"
-        class="w-full justify-center"
-      >
+      <UButton icon="i-heroicons-funnel" @click="toggleFiltersSidebar" variant="outline" color="primary" class="w-full justify-center">
         {{ showFilters ? "Скрыть фильтры" : "Показать фильтры" }}
       </UButton>
     </div>
     <div
       class="w-full md:w-[22%] md:max-h-full transition-all duration-300 ease-in-out"
       :class="{
-        'max-h-0 overflow-hidden md:max-h-none md:overflow-visible':
-          !showFilters,
+        'max-h-0 overflow-hidden md:max-h-none md:overflow-visible': !showFilters,
         'max-h-500 overflow-visible mb-4': showFilters,
       }"
     >
-      <FiltersSidebar
-        ref="filtersRef"
-        @filters-apply="handleFiltersApply"
-        @filters-reset="handleFiltersReset"
-      />
+      <FiltersSidebar ref="filtersRef" @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>
     <main class="flex-1 w-full">
       <div class="mb-4">
-        <AddressAutocomplete
-          @address-selected="handleAddressSearch"
-          @search-triggered="handleAddressSearch"
-        />
+        <AddressAutocomplete @address-selected="handleAddressSearch" @search-triggered="handleAddressSearch" />
       </div>
-      <UBadge
-        v-if="addressForSearch"
-        size="xs"
-        variant="subtle"
-        class="mb-2 px-2 md:px-3 text-xs md:text-sm"
-        color="info"
-      >
-        <span class="truncate max-w-50 md:max-w-none">{{
-          addressForSearch
-        }}</span>
+      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-2 md:px-3 text-xs md:text-sm" color="info">
+        <span class="truncate max-w-50 md:max-w-none">{{ addressForSearch }}</span>
         <UButton
           trailing-icon="heroicons:x-mark-16-solid"
           variant="outline"
@@ -54,16 +32,10 @@
       <div v-if="offersError" class="error-message">
         {{ offersError }}
       </div>
-      <div
-        class="flex flex-col sm:flex-row gap-3 sm:gap-8 text-sm items-start sm:items-center relative mb-5"
-      >
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-8 text-sm items-start sm:items-center relative mb-5">
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-8">
-          <span class="font-[550] whitespace-nowrap"
-            >Всего объявлений: {{ totalCount.toLocaleString("ru-RU") }}</span
-          >
-          <span class="font-[550] text-primary whitespace-nowrap"
-            >Подходящих: {{ filteredCount.toLocaleString("ru-RU") }}</span
-          >
+          <span class="font-[550] whitespace-nowrap">Всего объявлений: {{ totalCount.toLocaleString("ru-RU") }}</span>
+          <span class="font-[550] text-primary whitespace-nowrap">Подходящих: {{ filteredCount.toLocaleString("ru-RU") }}</span>
         </div>
         <div class="flex items-center gap-4 w-full sm:w-auto">
           <USelect
@@ -71,15 +43,14 @@
             :items="sortFields"
             class="w-full sm:w-48"
             value-key="value"
-            :icon="icon"
+            :icon="sortIcon"
             :ui="{
-              trailingIcon:
-                'group-data-[state=open]:rotate-180 transition-transform duration-200',
+              trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
             }"
           >
           </USelect>
 
-          <SmartAssistantChat v-if="userRole == 'Админ'" />
+          <SmartAssistantChat v-if="userRole == 'Премиум'" />
 
           <UButton
             icon="i-bx:export"
@@ -87,16 +58,13 @@
             class="sm:absolute sm:right-0"
             variant="outline"
             color="info"
-            v-if="userRole == 'Админ'"
+            v-if="userRole == 'Премиум'"
           >
             <span class="hidden sm:inline">Экспорт в CSV</span>
           </UButton>
         </div>
       </div>
-      <div
-        v-if="offersPending"
-        class="flex items-center justify-center sm:h-full"
-      >
+      <div v-if="offersPending" class="flex items-center justify-center sm:h-full">
         <UIcon size="70" name="codex:loader" class="loading-icon" />
       </div>
       <div v-else-if="offers.length === 0 && !offersPending" class="no-results">
@@ -105,13 +73,7 @@
         <p>Попробуйте изменить параметры фильтрации</p>
       </div>
       <div v-else class="flex flex-col gap-4">
-        <div
-          variant="outline"
-          v-for="offer in offers"
-          :key="offer.id"
-          class="offer-card md:p-6!"
-          @click="openOffer(offer)"
-        >
+        <div variant="outline" v-for="offer in offers" :key="offer.id" class="offer-card md:p-6!" @click="openOffer(offer)">
           <div class="flex flex-col sm:flex-row h-auto sm:h-42 relative">
             <button
               class="favorite-heart top-1! right-1! z-10 sm:-top-5! sm:-right-5!"
@@ -119,32 +81,16 @@
               @click.stop="toggleFavorite(offer)"
             >
               <UIcon
-                :name="
-                  isFavorite(offer.id)
-                    ? 'material-symbols-light:favorite'
-                    : 'material-symbols-light:favorite-outline'
-                "
+                :name="isFavorite(offer.id) ? 'material-symbols-light:favorite' : 'material-symbols-light:favorite-outline'"
                 class="heart-icon"
               />
             </button>
             <div class="w-full sm:w-65 relative mb-4 sm:mb-0 h-48 sm:h-auto">
-              <img
-                v-if="offer.images_urls?.length"
-                :src="offer.images_urls[0]"
-                class="object-cover w-full h-full rounded-lg"
-              />
+              <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover w-full h-full rounded-lg" />
               <div v-else class="no-image w-full h-full">
-                <UIcon
-                  name="i-heroicons-photo"
-                  class="text-gray-400 text-2xl"
-                />
+                <UIcon name="i-heroicons-photo" class="text-gray-400 text-2xl" />
               </div>
-              <UBadge
-                v-if="offer.is_new_house == true"
-                color="neutral"
-                variant="solid"
-                class="absolute top-2 left-2 text-xs"
-              >
+              <UBadge v-if="offer.is_new_house == true" color="neutral" variant="solid" class="absolute top-2 left-2 text-xs">
                 Новостройка
               </UBadge>
             </div>
@@ -159,13 +105,7 @@
                       class="category-badge text-xs"
                     >
                       Семья: {{ getCategoryLabel(offer.family_category) }}
-                      <span
-                        v-if="
-                          offer.family_score !== null &&
-                          offer.family_score !== undefined
-                        "
-                        class="sm:inline"
-                      >
+                      <span v-if="offer.family_score !== null && offer.family_score !== undefined" class="sm:inline">
                         ({{ offer.family_score.toFixed(2) }})
                       </span>
                     </UBadge>
@@ -176,13 +116,7 @@
                       class="category-badge text-xs"
                     >
                       Пожилые: {{ getCategoryLabel(offer.elderly_category) }}
-                      <span
-                        v-if="
-                          offer.elderly_score !== null &&
-                          offer.elderly_score !== undefined
-                        "
-                        class="sm:inline"
-                      >
+                      <span v-if="offer.elderly_score !== null && offer.elderly_score !== undefined" class="sm:inline">
                         ({{ offer.elderly_score.toFixed(2) }})
                       </span>
                     </UBadge>
@@ -194,13 +128,7 @@
                     >
                       Транспорт:
                       {{ getCategoryLabel(offer.transport_access_category) }}
-                      <span
-                        v-if="
-                          offer.transport_access_score !== null &&
-                          offer.transport_access_score !== undefined
-                        "
-                        class="sm:inline"
-                      >
+                      <span v-if="offer.transport_access_score !== null && offer.transport_access_score !== undefined" class="sm:inline">
                         ({{ offer.transport_access_score.toFixed(2) }})
                       </span>
                     </UBadge>
@@ -209,74 +137,38 @@
                     {{ offer.title || "Без названия" }}
                   </h3>
                   <div class="offer-address mt-1">
-                    <UIcon
-                      name="tabler:map-pin"
-                      class="size-5 min-w-5 sm:size-5"
-                    />
-                    <span class="text-xs sm:text-sm">{{
-                      offer.address?.full_address
-                    }}</span>
+                    <UIcon name="tabler:map-pin" class="size-5 min-w-5 sm:size-5" />
+                    <span class="text-xs sm:text-sm">{{ offer.address?.full_address }}</span>
                   </div>
                   <div class="offer-specs mt-3">
                     <div class="spec-item">
                       <UIcon name="bx:area" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm"
-                        >{{ offer.total_area || "–" }} м²</span
-                      >
+                      <span class="text-xs sm:text-sm">{{ offer.total_area || "–" }} м²</span>
                     </div>
                     <div v-if="offer.land_area" class="spec-item">
                       <UIcon name="lucide:land-plot" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm"
-                        >{{ offer.land_area || "–" }} сот.</span
-                      >
+                      <span class="text-xs sm:text-sm">{{ offer.land_area || "–" }} сот.</span>
                     </div>
                     <div v-if="offer.rooms_count" class="spec-item">
                       <UIcon name="temaki:room" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm"
-                        >{{ offer.rooms_count }} комн.</span
-                      >
+                      <span class="text-xs sm:text-sm">{{ offer.rooms_count }} комн.</span>
                     </div>
                     <div v-if="offer.bedrooms_count" class="spec-item">
                       <UIcon name="mdi:bed" class="size-5 sm:size-6" />
-                      <span class="text-xs sm:text-sm"
-                        >{{ offer.bedrooms_count }} спален</span
-                      >
+                      <span class="text-xs sm:text-sm">{{ offer.bedrooms_count }} спален</span>
                     </div>
                     <div v-if="offer.floor" class="spec-item">
-                      <UIcon
-                        name="material-symbols:floor"
-                        class="size-5 sm:size-6"
-                      />
+                      <UIcon name="material-symbols:floor" class="size-5 sm:size-6" />
                       <span class="text-xs sm:text-sm"
-                        >{{ offer.floor
-                        }}{{
-                          offer.house_floors_count
-                            ? "/" + offer.house_floors_count
-                            : ""
-                        }}
-                        эт.</span
+                        >{{ offer.floor }}{{ offer.house_floors_count ? "/" + offer.house_floors_count : "" }} эт.</span
                       >
                     </div>
-                    <div
-                      v-if="
-                        offer.floor === null &&
-                        offer.house_floors_count !== null
-                      "
-                      class="spec-item"
-                    >
-                      <UIcon
-                        name="material-symbols:floor"
-                        class="size-5 sm:size-6"
-                      />
-                      <span class="text-xs sm:text-sm"
-                        >{{ offer.house_floors_count }} эт.</span
-                      >
+                    <div v-if="offer.floor === null && offer.house_floors_count !== null" class="spec-item">
+                      <UIcon name="material-symbols:floor" class="size-5 sm:size-6" />
+                      <span class="text-xs sm:text-sm">{{ offer.house_floors_count }} эт.</span>
                     </div>
                     <div v-if="offer.has_water_supply" class="spec-item">
-                      <UIcon
-                        name="material-symbols:water-drop-outline"
-                        class="size-5 sm:size-6"
-                      />
+                      <UIcon name="material-symbols:water-drop-outline" class="size-5 sm:size-6" />
                       <span class="text-xs sm:text-sm">Вода</span>
                     </div>
                     <div v-if="offer.has_electricity" class="spec-item">
@@ -284,28 +176,15 @@
                       <span class="text-xs sm:text-sm">Электричество</span>
                     </div>
                     <div v-if="offer.renovation_type?.name" class="spec-item">
-                      <UIcon
-                        name="lsicon:decorate-outline"
-                        class="size-5 sm:size-6"
-                      />
-                      <span class="text-xs sm:text-sm">{{
-                        offer.renovation_type?.name
-                      }}</span>
+                      <UIcon name="lsicon:decorate-outline" class="size-5 sm:size-6" />
+                      <span class="text-xs sm:text-sm">{{ offer.renovation_type?.name }}</span>
                     </div>
                     <div v-if="offer.house_built_year" class="spec-item">
-                      <UIcon
-                        name="i-heroicons-calendar"
-                        class="size-5 sm:size-6"
-                      />
-                      <span class="text-xs sm:text-sm"
-                        >{{ offer.house_built_year }} г.</span
-                      >
+                      <UIcon name="i-heroicons-calendar" class="size-5 sm:size-6" />
+                      <span class="text-xs sm:text-sm">{{ offer.house_built_year }} г.</span>
                     </div>
                     <div v-if="offer.is_build_complete" class="spec-item">
-                      <UIcon
-                        name="fluent-mdl2:completed-solid"
-                        class="size-5 sm:size-6"
-                      />
+                      <UIcon name="fluent-mdl2:completed-solid" class="size-5 sm:size-6" />
                       <span class="text-xs sm:text-sm">Сдан</span>
                     </div>
                     <div v-if="offer.has_furniture" class="spec-item">
@@ -317,51 +196,39 @@
                       <span class="text-xs sm:text-sm">Лифт</span>
                     </div>
                     <div v-if="offer.has_garbage_chute" class="spec-item">
-                      <UIcon
-                        name="mdi:garbage-can-outline"
-                        class="size-5 sm:size-6"
-                      />
+                      <UIcon name="mdi:garbage-can-outline" class="size-5 sm:size-6" />
                       <span class="text-xs sm:text-sm">Мусоропровод</span>
                     </div>
                   </div>
                 </div>
-                <div
-                  class="offer-price-section flex justify-between pr-0! w-full sm:w-auto mt-4 sm:mt-0"
-                >
+                <div class="offer-price-section flex justify-between pr-0! w-full sm:w-auto mt-4 sm:mt-0">
                   <span class="creation-date spec-item text-xs sm:text-sm"
                     >Опубликовано:
                     {{
-                      new Date(offer.creation_date_source).toLocaleString(
-                        "ru-RU",
-                        {
-                          timeZone: "Europe/Moscow",
-                          year: "numeric",
-                          month: "numeric",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        },
-                      )
+                      new Date(offer.creation_date_source).toLocaleString("ru-RU", {
+                        timeZone: "Europe/Moscow",
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
                     }}</span
                   >
-                  <div
-                    class="flex flex-col items-center sm:flex-row sm:items-center gap-2 sm:gap-3"
-                  >
+                  <div class="flex flex-col items-center sm:flex-row sm:items-center gap-2 sm:gap-3">
                     <UBadge
                       v-if="offer.price_category"
-                      :color="getPriceCategoryColor(offer.price_category)"
+                      :color="getCategoryColor(offer.price_category)"
                       variant="solid"
                       class="category-badge text-xs w-fit sm:mb-3.5"
                     >
-                      {{ getPriceCategoryLabel(offer.price_category) }}
+                      {{ getCategoryLabel(offer.price_category) }}
                     </UBadge>
                     <div class="flex flex-col">
                       <div class="offer-price text-lg sm:text-xl">
                         {{ formatPrice(offer.price) }}
                       </div>
-                      <div class="price-per-meter text-sm sm:text-sm">
-                        {{ formatPrice(offer.price_per_square_meter) }}/м²
-                      </div>
+                      <div class="price-per-meter text-sm sm:text-sm">{{ formatPrice(offer.price_per_square_meter) }}/м²</div>
                     </div>
                   </div>
                 </div>
@@ -372,12 +239,7 @@
       </div>
       <div class="pagination-container" v-if="totalPages > 1">
         <div class="pagination sm:flex-row">
-          <UButton
-            @click="goToPage(currentPage - 1)"
-            :disabled="currentPage === 1"
-            variant="outline"
-            class="pagination-button sm:mb-0"
-          >
+          <UButton @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" variant="outline" class="pagination-button sm:mb-0">
             <UIcon name="i-heroicons-chevron-left" class="size-4" />
             <span class="hidden sm:inline">Назад</span>
           </UButton>
@@ -390,9 +252,7 @@
             >
               1
             </UButton>
-            <span v-if="currentPage > 4" class="page-ellipsis hidden sm:inline"
-              >...</span
-            >
+            <span v-if="currentPage > 4" class="page-ellipsis hidden sm:inline">...</span>
             <UButton
               v-for="page in visiblePages"
               :key="page"
@@ -403,11 +263,7 @@
             >
               {{ page }}
             </UButton>
-            <span
-              v-if="currentPage < totalPages - 3"
-              class="page-ellipsis hidden sm:inline"
-              >...</span
-            >
+            <span v-if="currentPage < totalPages - 3" class="page-ellipsis hidden sm:inline">...</span>
             <UButton
               v-if="currentPage < totalPages - 2"
               @click="goToPage(totalPages)"
@@ -437,13 +293,7 @@
             class="jump-input w-16 sm:w-20"
             @keyup.enter="goToPage(jumpPage)"
           />
-          <UButton
-            @click="goToPage(jumpPage)"
-            variant="outline"
-            class="jump-button text-xs sm:text-sm"
-          >
-            Перейти
-          </UButton>
+          <UButton @click="goToPage(jumpPage)" variant="outline" class="jump-button text-xs sm:text-sm"> Перейти </UButton>
         </div>
       </div>
     </main>
@@ -460,6 +310,7 @@ const userRole = computed(() => {
   if (!accessToken.value) return "";
   try {
     const {role} = jwtDecode<{role: string}>(accessToken.value);
+    console.log(role);
     return role;
   } catch {
     return "";
@@ -475,6 +326,7 @@ const toggleFiltersSidebar = () => {
   showFilters.value = !showFilters.value;
 };
 const {getCategoryLabel} = useCategoryLabel();
+const {getCategoryColor} = useCategoryColor();
 
 const exportCsv = async () => {
   try {
@@ -555,9 +407,7 @@ const sortFields = ref<SelectItem[]>([
   },
 ]);
 const sortValue = ref(sortFields.value[7]?.value);
-const icon = computed(
-  () => sortFields.value.find(item => item.value === sortValue.value)?.icon,
-);
+const sortIcon = computed(() => sortFields.value.find(item => item.value === sortValue.value)?.icon);
 const {$api} = useNuxtApp();
 const limit = ref(20);
 const offset = ref(0);
@@ -573,12 +423,7 @@ const prepareRequestQuery = () => {
 
   if (currentFilters.value && Object.keys(currentFilters.value).length > 0) {
     Object.entries(currentFilters.value).forEach(([key, value]) => {
-      if (
-        value == null ||
-        value === "" ||
-        (Array.isArray(value) && value.length === 0)
-      )
-        return;
+      if (value == null || value === "" || (Array.isArray(value) && value.length === 0)) return;
 
       if (Array.isArray(value)) {
         query[key] = value.filter(item => item != null && item !== "");
@@ -635,10 +480,7 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-const {data: favoritesData, refresh: refreshFavorites} = useAsyncData(
-  "favorites",
-  () => $api("offers/favorites/"),
-);
+const {data: favoritesData, refresh: refreshFavorites} = useAsyncData("favorites", () => $api("offers/favorites/"));
 
 const favoriteOffers = computed(() => {
   return new Set(favoritesData.value?.map(item => item.id) || []);
@@ -655,9 +497,7 @@ const toggleFavorite = async (offer: OfferResponseFull) => {
       $api(`offers/favorites/${offerId}`, {method: "DELETE"});
 
       if (favoritesData.value) {
-        favoritesData.value = favoritesData.value.filter(
-          item => item.id !== offerId,
-        );
+        favoritesData.value = favoritesData.value.filter(item => item.id !== offerId);
       }
     } else {
       $api(`offers/favorites/${offerId}`, {method: "POST"});
@@ -744,49 +584,7 @@ const openOffer = (offer: OfferResponseFull) => {
   router.push(`/offers/${offer.id}`);
 };
 
-const formatPrice = (price: number | null) =>
-  price
-    ? new Intl.NumberFormat("ru-RU").format(price) + " ₽"
-    : "Цена не указана";
-
-const getPriceCategoryColor = (category: string) => {
-  switch (category) {
-    case "expensive":
-      return "error";
-    case "normal":
-      return "info";
-    case "cheap":
-      return "success";
-    default:
-      return "gray";
-  }
-};
-
-const getPriceCategoryLabel = (category: string) => {
-  switch (category) {
-    case "expensive":
-      return "Выше рынка";
-    case "normal":
-      return "Рыночная цена";
-    case "cheap":
-      return "Ниже рынка";
-    default:
-      return category;
-  }
-};
-
-const getCategoryColor = (category: string) => {
-  switch (category) {
-    case "high":
-      return "success";
-    case "medium":
-      return "warning";
-    case "low":
-      return "error";
-    default:
-      return "gray";
-  }
-};
+const formatPrice = (price: number | null) => (price ? new Intl.NumberFormat("ru-RU").format(price) + " ₽" : "Цена не указана");
 
 watch(sortValue, async () => {
   offset.value = 0;
@@ -875,7 +673,7 @@ watch(currentPage, newPage => {
 }
 
 .creation-date {
-  @apply absolute top-[8.5rem] w-max text-nowrap;
+  @apply absolute top-38 w-max text-nowrap;
 }
 
 .page-numbers {

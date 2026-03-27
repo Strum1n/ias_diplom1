@@ -75,7 +75,9 @@ async def offers_urls_bypass(source: Literal["avito", "cian"]):
             await max_price_filter_el.send_keys(str(config[source]["max_price"])[-1])
             await page.sleep(1)
             await max_price_filter_el.clear_input()
-            await page.evaluate(f"document.querySelector('{config[source]['max_price_selector']}').value={str(config[source]['max_price'])[:-1]};")
+            await page.evaluate(
+                f"document.querySelector('{config[source]['max_price_selector']}').value={str(config[source]['max_price'])[:-1]};"
+            )
             await page.sleep(1)
             await max_price_filter_el.send_keys(str(config[source]["max_price"])[-1])
             await page.sleep(3)
@@ -84,7 +86,9 @@ async def offers_urls_bypass(source: Literal["avito", "cian"]):
             await min_price_filter_el.send_keys(str(config[source]["min_price"])[-1])
             await page.sleep(1)
             await min_price_filter_el.clear_input()
-            await page.evaluate(f"document.querySelector('{config[source]['min_price_selector']}').value={str(config[source]['min_price'])[:-1]};")
+            await page.evaluate(
+                f"document.querySelector('{config[source]['min_price_selector']}').value={str(config[source]['min_price'])[:-1]};"
+            )
             await page.sleep(1)
             await min_price_filter_el.send_keys(str(config[source]["min_price"])[-1])
             await page.sleep(3)
@@ -92,8 +96,15 @@ async def offers_urls_bypass(source: Literal["avito", "cian"]):
                 filter_btn = await page.select(config[source]["filter_btn_selector"])
             except Exception as e:
                 filter_btn = await page.select('[data-marker="page-title/count"]')
-            filtered_offers_count = int(re.findall(r"\d+", filter_btn.text_all.replace(" ", ""))[0]) if re.findall(r"\d+", filter_btn.text_all.replace(" ", "")) else 0
-            if filtered_offers_count > config[source]["items_on_page"] * config[source]["max_available_page"] or "Показать больше 1 тыс. объявлений" in filter_btn.text_all:
+            filtered_offers_count = (
+                int(re.findall(r"\d+", filter_btn.text_all.replace(" ", ""))[0])
+                if re.findall(r"\d+", filter_btn.text_all.replace(" ", ""))
+                else 0
+            )
+            if (
+                filtered_offers_count > config[source]["items_on_page"] * config[source]["max_available_page"]
+                or "Показать больше 1 тыс. объявлений" in filter_btn.text_all
+            ):
                 config[source]["max_price"] -= config[source]["price_step"]
                 break
             elif "Ничего не найден" in filter_btn.text_all:
@@ -120,7 +131,10 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
         await page.wait_for_ready_state("interactive")
         await page.sleep(1.5)
         if source == "avito":
-            offers_urls = [config[source]["domen_url"] + url_el.attrs["href"].split("?")[0] for url_el in await page.select_all(config[source]["offer_urls_selector"])]
+            offers_urls = [
+                config[source]["domen_url"] + url_el.attrs["href"].split("?")[0]
+                for url_el in await page.select_all(config[source]["offer_urls_selector"])
+            ]
         elif source == "cian":
             offers_urls = [url_el.attrs["href"].split("?")[0] for url_el in await page.select_all(config[source]["offer_urls_selector"])]
         global TOTAL_OFFERS
@@ -167,7 +181,9 @@ async def parse_offers_from_urls(browser: Browser, page: Tab, config: dict, sour
         try:
             next_page_btn = await page.select(config[source]["next_btn_selector"], timeout=2)
         except Exception as e:
-            print(f"Спарсили последнюю страницу {config[source]['p']} c ценами {config[source]['min_price']} - {config[source]['max_price']}")
+            print(
+                f"Спарсили последнюю страницу {config[source]['p']} c ценами {config[source]['min_price']} - {config[source]['max_price']}"
+            )
         if next_page_btn is None:
             config[source]["p"] = 1
             config[source]["min_price"] = config[source]["max_price"] + 1
@@ -198,11 +214,16 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
                 await property_page.reload()
                 await property_page.sleep(1.5)
 
-            if "Иногда такое случается, чтобы вернуться на сайт <b>нажмите на кнопку Продолжить</b> для решения капчи" in await property_page.get_content():
+            if (
+                "Иногда такое случается, чтобы вернуться на сайт <b>нажмите на кнопку Продолжить</b> для решения капчи"
+                in await property_page.get_content()
+            ):
                 raise Exception
             offer_info_el = await property_page.find("buyerItem", timeout=3)
             offer_info_raw_text_encoded = await offer_info_el.get_html()
-            offer_info_raw_text_encoded = offer_info_raw_text_encoded.split("<script>window.__staticRouterHydrationData = JSON.parse(")[1].split(");</script>")[0]
+            offer_info_raw_text_encoded = offer_info_raw_text_encoded.split("<script>window.__staticRouterHydrationData = JSON.parse(")[
+                1
+            ].split(");</script>")[0]
             offer_info_raw_text_decoded = unquote(offer_info_raw_text_encoded)
             offer_json = deep_parse_json(json.loads(offer_info_raw_text_decoded.replace("\xa0", "")))
             json_text = json.dumps(offer_json, ensure_ascii=False)
@@ -290,7 +311,10 @@ async def parse_offer_to_db_avito(browser: driver.Browser, url: str) -> Offer | 
             elif "Уже есть в БД" in str(e):
                 await property_page.close()
                 raise Exception(f"Уже есть в БД, {url}")
-            elif "Иногда такое случается, чтобы вернуться на сайт <b>нажмите на кнопку Продолжить</b> для решения капчи" in await property_page.get_content():
+            elif (
+                "Иногда такое случается, чтобы вернуться на сайт <b>нажмите на кнопку Продолжить</b> для решения капчи"
+                in await property_page.get_content()
+            ):
                 STOP_CREATE_NEW_PAGE = True
                 is_captcha_solved = await captcha_solver_v2(property_page)
                 if is_captcha_solved:
@@ -434,12 +458,23 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
             relation
             for relation in [*data.relations, *data.nodes]
             if (relation.tags.get("place", "ы") in ["city", "town", "village", "hamlet"] and relation.tags["name"] in geo_info["address"])
-        ] or [relation for relation in [*data.relations, *data.ways] if (relation.tags.get("place", "ы") in ["city", "town", "village", "hamlet"] and relation.tags["name"])]
+        ] or [
+            relation
+            for relation in [*data.relations, *data.ways]
+            if (relation.tags.get("place", "ы") in ["city", "town", "village", "hamlet"] and relation.tags["name"])
+        ]
         settlement = settlement[0].tags
         if settlement is None and region == "Москва":
             settlement = {"name": "Москва"}
 
-        settlement_types_prefix = {"деревня": "д.", "поселок": "пос.", "поселок городского типа": "пгт.", "рабочий поселок": " рп.", "село": "с.", "город": "г."}
+        settlement_types_prefix = {
+            "деревня": "д.",
+            "поселок": "пос.",
+            "поселок городского типа": "пгт.",
+            "рабочий поселок": " рп.",
+            "село": "с.",
+            "город": "г.",
+        }
         if re.search(r"д\.\s+[А-ЯЁA-Z]", geo_info["address"]) is None:
             del settlement_types_prefix["деревня"]
         found_settlement_type = next((key for key, value in settlement_types_prefix.items() if value in geo_info["address"]), "город")
@@ -449,12 +484,26 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
             settlement_full_name = found_settlement_type + " " + settlement_name
             settlement_short_name = settlement_types_prefix[found_settlement_type] + " " + settlement_name
 
-        super_municipality = next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "6" and "район" in relation.tags["name"]), None)
+        super_municipality = next(
+            (
+                relation.tags["name"]
+                for relation in data.relations
+                if relation.tags.get("admin_level") == "6" and "район" in relation.tags["name"]
+            ),
+            None,
+        )
 
         municipality = (
             next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") == "5"), None)
             if region == "Москва"
-            else next((relation.tags["name"] for relation in data.relations if relation.tags.get("admin_level") in ["8", "6"] and "район" not in relation.tags["name"]), None)
+            else next(
+                (
+                    relation.tags["name"]
+                    for relation in data.relations
+                    if relation.tags.get("admin_level") in ["8", "6"] and "район" not in relation.tags["name"]
+                ),
+                None,
+            )
         )
 
         district = (
@@ -485,7 +534,9 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
                 and re.findall(r"\b[A-ZА-ЯЁ0-9][^ \n\r\t]*\b", way.tags.get("name", ""))
                 and way.tags.get("name", "") != settlement_name
                 and "микрорайон" not in way.tags.get("name", "")
-                and re.findall(r"\b[A-ZА-ЯЁ0-9][^ \n\r\t]*\b", way.tags["name"])[0].split()[len(re.findall(r"\b[A-ZА-ЯЁ0-9][^ \n\r\t]*\b", way.tags["name"])[0].split()) - 1]
+                and re.findall(r"\b[A-ZА-ЯЁ0-9][^ \n\r\t]*\b", way.tags["name"])[0].split()[
+                    len(re.findall(r"\b[A-ZА-ЯЁ0-9][^ \n\r\t]*\b", way.tags["name"])[0].split()) - 1
+                ]
                 in geo_info["address"]
             ),
             None,
@@ -499,8 +550,20 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
                 and (
                     relation.tags.get("name", "ы") != street
                     and relation.tags.get("alt_name", "ы") != street
-                    and relation.tags.get("name").replace("микрорайон", "").replace("мкр.", "").replace("мкр", "").replace("мкр-н", "").strip() in geo_info["address"]
-                    or relation.tags.get("alt_name", "ы").replace("микрорайон", "").replace("мкр.", "").replace("мкр", "").replace("мкр-н", "").strip() in geo_info["address"]
+                    and relation.tags.get("name")
+                    .replace("микрорайон", "")
+                    .replace("мкр.", "")
+                    .replace("мкр", "")
+                    .replace("мкр-н", "")
+                    .strip()
+                    in geo_info["address"]
+                    or relation.tags.get("alt_name", "ы")
+                    .replace("микрорайон", "")
+                    .replace("мкр.", "")
+                    .replace("мкр", "")
+                    .replace("мкр-н", "")
+                    .strip()
+                    in geo_info["address"]
                 )
             ),
             None,
@@ -510,18 +573,34 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
         residential_complex = (
             json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["description"]
             if json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"].get("houseParams")
-            and "Название новостройки" in json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["title"]
+            and "Название новостройки"
+            in json_data["loaderData"]["catalog-or-main-or-item"]["buyerItem"]["item"]["houseParams"]["data"]["items"][0]["title"]
             else None
         )
         if residential_complex is None:
             residential_complex = (
-                re.findall(r"(?:(?<=кп\s)|(?<=жк\s)|(?<=жилой комплекс\s)|(?<=коттеджный посёлок\s)|(?<=коттеджный поселок\s))[^,]+", geo_info["address"])[0]
-                if re.findall(r"(?:(?<=кп\s)|(?<=жк\s)|(?<=жилой комплекс\s)|(?<=коттеджный посёлок\s)|(?<=коттеджный поселок\s))[^,]+", geo_info["address"])
+                re.findall(
+                    r"(?:(?<=кп\s)|(?<=жк\s)|(?<=жилой комплекс\s)|(?<=коттеджный посёлок\s)|(?<=коттеджный поселок\s))[^,]+",
+                    geo_info["address"],
+                )[0]
+                if re.findall(
+                    r"(?:(?<=кп\s)|(?<=жк\s)|(?<=жилой комплекс\s)|(?<=коттеджный посёлок\s)|(?<=коттеджный поселок\s))[^,]+",
+                    geo_info["address"],
+                )
                 else None
-                or next((way.tags["name"] for way in data.ways if way.tags.get("landuse") in ["allotments", "construction"] and way.tags.get("name") != partnership), None)
+                or next(
+                    (
+                        way.tags["name"]
+                        for way in data.ways
+                        if way.tags.get("landuse") in ["allotments", "construction"] and way.tags.get("name") != partnership
+                    ),
+                    None,
+                )
             )
         if residential_complex is None:
-            residential_complex = next((relation.tags["name"] for relation in data.relations if "ЖК" in relation.tags.get("name", "")), None)
+            residential_complex = next(
+                (relation.tags["name"] for relation in data.relations if "ЖК" in relation.tags.get("name", "")), None
+            )
 
         partnership_name = partnership
         partnership_full_name = partnership
@@ -597,14 +676,23 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
 
         if residential_complex:
             residential_complex_name = (
-                residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").replace("Коттеджный посёлок", "").replace("КП", "").strip()
+                residential_complex.replace("жилой комплекс", "")
+                .replace("Жилой комплекс", "")
+                .replace("ЖК", "")
+                .replace("Коттеджный посёлок", "")
+                .replace("КП", "")
+                .strip()
             )
             if "Коттеджный посёлок" not in residential_complex:
-                residential_complex_name = residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").strip()
+                residential_complex_name = (
+                    residential_complex.replace("жилой комплекс", "").replace("Жилой комплекс", "").replace("ЖК", "").strip()
+                )
                 residential_complex_short_name = "ЖК " + residential_complex_name[0].lower() + residential_complex_name[1:]
                 residential_complex_full_name = residential_complex_name + " жилой комплекс"
             else:
-                residential_complex_name = residential_complex.replace("Коттеджный посёлок", "").replace("коттеджный посёлок", "").replace("КП", "").strip()
+                residential_complex_name = (
+                    residential_complex.replace("Коттеджный посёлок", "").replace("коттеджный посёлок", "").replace("КП", "").strip()
+                )
                 residential_complex_short_name = "КП " + residential_complex_name[0].lower() + residential_complex_name[1:]
                 residential_complex_full_name = residential_complex_name + " коттеджный поселок"
             is_suburban = True if "коттеджный поселок" in residential_complex_full_name else False
@@ -642,7 +730,11 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
             "residential_complex_name": residential_complex_name if "residential_complex_name" in locals() else None,
             "residential_complex_full_name": residential_complex_full_name if "residential_complex_full_name" in locals() else None,
             "residential_complex_short_name": residential_complex_short_name if "residential_complex_short_name" in locals() else None,
-            "is_complex_suburban": True if ("is_suburban" in locals() and is_suburban) else False if ("is_suburban" in locals() and is_suburban == False) else None,
+            "is_complex_suburban": True
+            if ("is_suburban" in locals() and is_suburban)
+            else False
+            if ("is_suburban" in locals() and is_suburban == False)
+            else None,
             "house_number": house_number,
         }
 
@@ -677,13 +769,19 @@ way["highway"]["name"](around:600,{geo_info["coords"]["lat"]},{geo_info["coords"
                 "residential_complex_name": residential_complex_name if "residential_complex_name" in locals() else None,
                 "residential_complex_full_name": residential_complex_full_name if "residential_complex_full_name" in locals() else None,
                 "residential_complex_short_name": residential_complex_short_name if "residential_complex_short_name" in locals() else None,
-                "is_complex_suburban": True if ("is_suburban" in locals() and is_suburban) else False if ("is_suburban" in locals() and is_suburban == False) else None,
+                "is_complex_suburban": True
+                if ("is_suburban" in locals() and is_suburban)
+                else False
+                if ("is_suburban" in locals() and is_suburban == False)
+                else None,
                 "house_number": house_number,
             }
         full_address = ", ".join(
             value
             for key, value in address.items()
-            if ("full_name" in key or "house_number" in key or "settlement_short_name" in key) and value is not None and key != "settlement_full_name"
+            if ("full_name" in key or "house_number" in key or "settlement_short_name" in key)
+            and value is not None
+            and key != "settlement_full_name"
         )
 
         address["full_address"] = full_address
@@ -757,7 +855,9 @@ async def parse_offer_info(json_data: dict):
         )
         living_area = re.findall(r"[\d.,]+", ga[1].get("area_live", ""))[0] if re.findall(r"[\d.,]+", ga[1].get("area_live", "")) else None
         land_area = re.findall(r"[\d.,]+", ga[1].get("site_area", ""))[0] if re.findall(r"[\d.,]+", ga[1].get("site_area", "")) else None
-        kitchen_area = re.findall(r"[\d.,]+", ga[1].get("area_kitchen", ""))[0] if re.findall(r"[\d.,]+", ga[1].get("area_kitchen", "")) else None
+        kitchen_area = (
+            re.findall(r"[\d.,]+", ga[1].get("area_kitchen", ""))[0] if re.findall(r"[\d.,]+", ga[1].get("area_kitchen", "")) else None
+        )
         floor = ga[1].get("floor")
         house_floors_count = int(ga[1].get("floors_count")) if ga[1].get("floors_count") else None
         ceiling_height = next(
@@ -786,7 +886,11 @@ async def parse_offer_info(json_data: dict):
             (item.context.value["description"] for item in all_attributes if item.value in [110687]),
             "",
         )
-        window_view_type = "На улицу и двор" if ("во двор" in window_view_type and "на улицу" in window_view_type) else window_view_type.split(",")[0].capitalize()
+        window_view_type = (
+            "На улицу и двор"
+            if ("во двор" in window_view_type and "на улицу" in window_view_type)
+            else window_view_type.split(",")[0].capitalize()
+        )
         house_material_type = (
             next(
                 (item.context.value["description"] for item in all_attributes if item.value in [498, 527]),
@@ -799,7 +903,9 @@ async def parse_offer_info(json_data: dict):
             .replace("Брус", "Каркасный")
             .replace("Бревно", "Деревянный")
         )
-        house_material_type = house_material_type.replace("Кирпич", "Кирпичный") if "Кирпичнно" not in house_material_type else house_material_type
+        house_material_type = (
+            house_material_type.replace("Кирпич", "Кирпичный") if "Кирпичнно" not in house_material_type else house_material_type
+        )
         parking_type = (
             next(
                 (item.context.value["description"] for item in all_attributes if item.value in [110919, 118584]),
@@ -874,10 +980,22 @@ async def parse_offer_info(json_data: dict):
             else None
         )
         has_sewerage = (
-            True if sewerage_type or ("канализация" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), ""))) else None
+            True
+            if sewerage_type
+            or ("канализация" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), "")))
+            else None
         )
-        has_gas = True if gas_type or ("газ" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), ""))) else None
-        has_heating = True if heating_type or ("отопление" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), ""))) else None
+        has_gas = (
+            True
+            if gas_type or ("газ" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), "")))
+            else None
+        )
+        has_heating = (
+            True
+            if heating_type
+            or ("отопление" in (next((item.context.value["description"] for item in all_attributes if item.value in [118600]), "")))
+            else None
+        )
         has_water_supply = True if water_supply_type else None
         has_garage = True if "Гараж" in parking_type else None
         has_pool = (
@@ -984,7 +1102,9 @@ async def parse_offer_info(json_data: dict):
         logging.error(f"Произошла ошибка: {e} в {url}", exc_info=True)
 
 
-async def parse_infrastructure(coordinates: tuple[float, float], radius: int = 1500, timeout: int = 25) -> dict[str, list[dict[str, str | tuple[float, float]]]] | None:
+async def parse_infrastructure(
+    coordinates: tuple[float, float], radius: int = 1500, timeout: int = 25
+) -> dict[str, list[dict[str, str | tuple[float, float]]]] | None:
     lat, lon = coordinates
     result = {
         "Супермаркет": [],

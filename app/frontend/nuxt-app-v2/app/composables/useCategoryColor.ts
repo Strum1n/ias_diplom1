@@ -1,5 +1,5 @@
 
-export type CategoryColor = "success" | "warning" | "error" | "gray"| "info"
+export type CategoryColor = "success" | "warning" | "error" | "gray"| "info" | unefined
 
 export const useCategoryColor = () => {
   const getCategoryColor = (
@@ -19,7 +19,7 @@ export const useCategoryColor = () => {
       case "expensive":
         return "error"
       default:
-        return "gray"
+        return undefined
     }
   }
 

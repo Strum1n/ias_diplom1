@@ -1,47 +1,26 @@
 <template>
-  <div
-    class="flex flex-col max-h-full md:flex-row gap-2.5 mx-auto p-3 md:p-5 md:gap-5 md:max-h-[92.9vh]!"
-  >
+  <div class="flex flex-col max-h-full md:flex-row gap-2.5 mx-auto p-3 md:p-5 md:gap-5 md:max-h-[92.9vh]!">
     <div class="md:hidden">
-      <UButton
-        icon="i-heroicons-funnel"
-        @click="toggleFiltersSidebar"
-        variant="outline"
-        color="primary"
-        class="w-full justify-center"
-      >
+      <UButton icon="i-heroicons-funnel" @click="toggleFiltersSidebar" variant="outline" color="primary" class="w-full justify-center">
         {{ showFilters ? "Скрыть фильтры" : "Показать фильтры" }}
       </UButton>
     </div>
     <div
       class="w-full md:w-[22%]"
       :class="{
-        'max-h-0 overflow-hidden md:max-h-none md:overflow-visible':
-          !showFilters,
+        'max-h-0 overflow-hidden md:max-h-none md:overflow-visible': !showFilters,
         'max-h-500 overflow-visible mb-4': showFilters,
       }"
     >
-      <FiltersSidebar
-        @filters-apply="handleFiltersApply"
-        @filters-reset="handleFiltersReset"
-      />
+      <FiltersSidebar @filters-apply="handleFiltersApply" @filters-reset="handleFiltersReset" />
     </div>
 
     <main class="map-content max-h-[84.5vh] min-h-150! flex-1 sm:max-h-max">
       <div class="mb-3">
-        <AddressAutocomplete
-          @address-selected="handleAddressSearch"
-          @search-triggered="handleAddressSearch"
-        />
+        <AddressAutocomplete @address-selected="handleAddressSearch" @search-triggered="handleAddressSearch" />
       </div>
 
-      <UBadge
-        v-if="addressForSearch"
-        size="xs"
-        variant="subtle"
-        class="mb-2 px-2 w-full md:px-3 text-xs md:w-fit md:text-sm"
-        color="info"
-      >
+      <UBadge v-if="addressForSearch" size="xs" variant="subtle" class="mb-2 px-2 w-full md:px-3 text-xs md:w-fit md:text-sm" color="info">
         <span class="truncate w-fit md:w-fit">{{ addressForSearch }}</span>
         <UButton
           trailing-icon="heroicons:x-mark-16-solid"
@@ -64,24 +43,14 @@
         </div>
         <div v-else class="text-sm md:text-base">
           Объектов на карте:
-          <span class="font-semibold text-primary">{{
-            offers.length.toLocaleString("ru-RU")
-          }}</span>
+          <span class="font-semibold text-primary">{{ offers.length.toLocaleString("ru-RU") }}</span>
         </div>
       </div>
 
       <div class="map-container relative">
-        <UIcon
-          v-if="offersPending"
-          name="line-md:loading-loop"
-          class="loading-icon absolute inset-0 m-auto z-10"
-        />
+        <UIcon v-if="offersPending" name="line-md:loading-loop" class="loading-icon absolute inset-0 m-auto z-10" />
 
-        <YandexMap
-          :parent-offers="offers"
-          :favorite-offers="favoriteOffers"
-          class="h-full w-full"
-        ></YandexMap>
+        <YandexMap :parent-offers="offers" :favorite-offers="favoriteOffers" class="h-full w-full"></YandexMap>
       </div>
     </main>
   </div>
@@ -106,9 +75,7 @@ const showFilters = ref(false);
 const toggleFiltersSidebar = () => {
   showFilters.value = !showFilters.value;
 };
-const {data: favoritesData} = useAsyncData("favorites", () =>
-  $api("offers/favorites/"),
-);
+const {data: favoritesData} = useAsyncData("favorites", () => $api("offers/favorites/"));
 const favoriteOffers = computed(() => {
   return new Set(favoritesData.value?.map(item => item.id) || []);
 });
@@ -123,12 +90,7 @@ const prepareRequestQuery = () => {
 
   if (currentFilters.value && Object.keys(currentFilters.value).length > 0) {
     Object.entries(currentFilters.value).forEach(([key, value]) => {
-      if (
-        value == null ||
-        value === "" ||
-        (Array.isArray(value) && value.length === 0)
-      )
-        return;
+      if (value == null || value === "" || (Array.isArray(value) && value.length === 0)) return;
 
       if (Array.isArray(value)) {
         query[key] = value.filter(item => item != null && item !== "");
@@ -228,14 +190,12 @@ onBeforeUnmount(() => {
   @apply flex justify-center max-w-[1444px] items-center flex-auto min-h-0 overflow-hidden border border-[#e2e8f0] bg-white rounded-xl  md:h-auto;
 }
 
-/* Мобильные адаптации */
 @media (max-width: 640px) {
   .map-container {
     @apply h-[50vh];
   }
 }
 
-/* Анимация для фильтров */
 .filters-transition-enter-active,
 .filters-transition-leave-active {
   transition:

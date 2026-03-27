@@ -9,12 +9,13 @@ from sqlalchemy import case
 from sqlalchemy.orm import joinedload
 from sqlmodel import Numeric, and_, cast, func, select, text
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app.backend.db.config import get_async_session
+from app.backend.db.config import BaseModel, get_async_session
+
 from app.backend.fuzzy_logic.fuzzy_evaluator import FuzzyEvaluator
 from app.backend.MCDA.electre import electre
 from app.backend.MCDA.topsis import topsis
 from openai import OpenAI
-from app.backend.db.config import BaseModel
+
 from app.backend.config import settings
 
 analysis_router = APIRouter(prefix="/analysis", tags=["analysis"])
@@ -155,7 +156,9 @@ async def update_price_categories_in_db(
     await session.exec(update_query)
     await session.commit()
 
-    stats_stmt = select(Offer.price_category, func.count().label("count")).where(Offer.price_category.is_not(None)).group_by(Offer.price_category)
+    stats_stmt = (
+        select(Offer.price_category, func.count().label("count")).where(Offer.price_category.is_not(None)).group_by(Offer.price_category)
+    )
     stats_result = await session.exec(stats_stmt)
     stats = stats_result.all()
 
@@ -1098,7 +1101,9 @@ async def get_offers_by_location(
         if price_cat in price_categories:
             price_categories[price_cat] = count
 
-    prop_type_stmt = select(PropertyType.name, func.count(subq.c.id)).join(subq, PropertyType.id == subq.c.property_type_id).group_by(PropertyType.name)
+    prop_type_stmt = (
+        select(PropertyType.name, func.count(subq.c.id)).join(subq, PropertyType.id == subq.c.property_type_id).group_by(PropertyType.name)
+    )
     prop_types = await session.execute(prop_type_stmt)
     property_types = {}
     for prop_name, count in prop_types:
@@ -1187,7 +1192,9 @@ async def get_offers_by_location(
         "statistics": {
             "averages": {
                 "average_price": int(main_stats_row.avg_price) if main_stats_row and main_stats_row.avg_price else None,
-                "average_price_per_square_meter": float(main_stats_row.avg_price_per_sqm) if main_stats_row and main_stats_row.avg_price_per_sqm else None,
+                "average_price_per_square_meter": float(main_stats_row.avg_price_per_sqm)
+                if main_stats_row and main_stats_row.avg_price_per_sqm
+                else None,
                 "average_area": float(main_stats_row.avg_area) if main_stats_row and main_stats_row.avg_area else None,
                 "average_views_count": float(main_stats_row.avg_views_count) if main_stats_row and main_stats_row.avg_views_count else None,
             },

@@ -1,7 +1,7 @@
 from sqlmodel import Field, Relationship
 
 from app.backend.db.config import BaseModel
-from app.backend.db.models.infrastructure import Infrastructure, InfrastructureRead
+from app.backend.db.models.infrastructure import Infrastructure
 from app.backend.db.models.types import TypeBase
 
 
@@ -17,6 +17,6 @@ class AddressInfrastructureLink(BaseModel, table=True):
 
 class AddressInfrastructureLinkRead(BaseModel):
     name: str
-    coordinates: list | None
+    coordinates: list[float] | None
     distance: float | None
     type: TypeBase

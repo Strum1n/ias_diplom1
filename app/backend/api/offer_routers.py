@@ -1,10 +1,10 @@
 from datetime import datetime
 import io
-from typing import Annotated, Literal, Union
+from typing import Literal, Union
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import selectinload
+
 from shapely.geometry import mapping
 from geoalchemy2.shape import to_shape
 from sqlmodel import and_, asc, case, desc, func, select
@@ -29,7 +29,14 @@ from app.backend.db.models.address import (
 from app.backend.db.models.address_infrastructure_link import AddressInfrastructureLink, AddressInfrastructureLinkRead
 from app.backend.db.models.favorites import Favorites
 from app.backend.db.models.infrastructure import Infrastructure
-from app.backend.db.models.offer import Offer, OfferFavoriteRead, OfferRead, OfferReadShort, OffersReadWithPagination
+from app.backend.db.models.offer import (
+    Offer,
+    OfferFavoriteRead,
+    OfferRead,
+    OfferReadShort,
+    OfferReadWithInfrastucture,
+    OffersReadWithPagination,
+)
 from app.backend.db.models.seller import Seller
 from app.backend.db.models.types import (
     BathroomType,
@@ -58,8 +65,8 @@ class OfferQueryParams(BaseModel):
 
     address_query: str | None = None
 
-    sort_by: Literal["price", "price_per_square_meter", "creation_date_source", "views_count", "total_area"] = "creation_date_source"
-    sort_order: Literal["asc", "desc"] = "asc"
+    sort_by: Literal["price", "price_per_square_meter", "creation_date_source", "views_count", "total_area"] | None = None
+    sort_order: Literal["asc", "desc"] | None = None
 
     is_new_house: bool | None = None
     has_furniture: bool | None = None
@@ -141,8 +148,8 @@ class FilterTypesRead(BaseModel):
 
 @offer_router.get("/export")
 async def export_offers_excel(
-    current_user: Annotated[User, Depends(get_current_user)],
-    params: Annotated[OfferQueryParams, Query()],
+    current_user: User = Depends(get_current_user),
+    params: OfferQueryParams = Query(),
     session: AsyncSession = Depends(get_async_session),
 ):
     filters = []
@@ -508,8 +515,8 @@ async def export_offers_excel(
 
 @offer_router.get("", response_model=Union[list[OfferReadShort], OffersReadWithPagination])
 async def get_offers(
-    current_user: Annotated[User, Depends(get_current_user)],
-    params: Annotated[OfferQueryParams, Query()],
+    current_user: User = Depends(get_current_user),
+    params: OfferQueryParams = Query(),
     session: AsyncSession = Depends(get_async_session),
 ):
     total_count_stmt = select(func.count(Offer.id))
@@ -667,8 +674,8 @@ async def get_offers(
 
 @offer_router.get("/autocomplete")
 async def autocomplete_addresses(
-    current_user: Annotated[User, Depends(get_current_user)],
-    q: Annotated[str, Query(min_length=1)],
+    current_user: User = Depends(get_current_user),
+    q: str = Query(min_length=1),
     session: AsyncSession = Depends(get_async_session),
 ) -> list[str]:
     ts_query = " & ".join(f"{w}:*" for w in q.lower().split() if w.strip())
@@ -687,7 +694,7 @@ async def autocomplete_addresses(
 
 @offer_router.get("/filter_types", response_model=FilterTypesRead)
 async def get_all_types(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
 ):
     bathroom_types = await session.exec(select(BathroomType).order_by((BathroomType.name)))
@@ -720,9 +727,9 @@ async def get_all_types(
 
 @offer_router.get("/autocomplete-filters")
 async def autocomplete(
-    current_user: Annotated[User, Depends(get_current_user)],
-    q: Annotated[str, Query(min_length=1)],
-    type: Annotated[Literal["region", "municipality", "settlement", "street", "district", "microdistrict"], Query()],
+    current_user: User = Depends(get_current_user),
+    q: str = Query(min_length=1),
+    type: Literal["region", "municipality", "settlement", "street", "district", "microdistrict"] = Query(),
     session: AsyncSession = Depends(get_async_session),
 ) -> list[str]:
     query_like = f"%{q}%"
@@ -748,24 +755,50 @@ async def autocomplete(
     return results
 
 
-@offer_router.get("/{offer_id}", response_model=OfferRead)
+@offer_router.get("/{offer_id}", response_model=OfferReadWithInfrastucture)
 async def get_offer(
     offer_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
 ):
     res = await session.exec(select(Offer).where(Offer.id == offer_id))
+
+    def get_all_infrastructure(links: list[AddressInfrastructureLink]):
+        result = []
+
+        for link in links:
+            infra = link.infrastructure
+            if not infra:
+                continue
+
+            result.append(
+                AddressInfrastructureLinkRead(
+                    name=infra.name,
+                    type=infra.infrastructure_type,
+                    distance=link.distance,
+                    coordinates=list(mapping(to_shape(infra.coordinates))["coordinates"]) if infra.coordinates else None,
+                )
+            )
+
+        return result
+
     offer = res.first()
+
     if not offer:
         raise HTTPException(status_code=404, detail="Объект не найден")
 
-    return offer
+    return OfferReadWithInfrastucture.model_validate(
+        offer,
+        update={
+            "infrastructures": get_all_infrastructure(offer.address.infrastructure_links),
+        },
+    )
 
 
 @offer_router.delete("/favorites/{offer_id}")
 async def delete_from_favorites(
     offer_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
 ):
 
@@ -784,7 +817,7 @@ async def delete_from_favorites(
 @offer_router.post("/favorites/{offer_id}")
 async def add_to_favorites(
     offer_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
 ):
     res = await session.exec(select(Offer.id).where(Offer.id == offer_id))
@@ -806,7 +839,7 @@ async def add_to_favorites(
 
 @offer_router.get("/favorites/", response_model=list[OfferFavoriteRead])
 async def get_favorites(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
 ):
     def get_nearest_infrastructure(links: list[AddressInfrastructureLink]):
@@ -830,7 +863,7 @@ async def get_favorites(
         OfferFavoriteRead.model_validate(
             favorite.offer,
             update={
-                "added_favorites_date": favorite.added_date,
+                "added_date": favorite.added_date,
                 "infrastructures": [
                     AddressInfrastructureLinkRead(
                         name=infra.infrastructure.name,

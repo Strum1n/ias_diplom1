@@ -18,9 +18,9 @@ export function useAuth() {
       if (refreshToken.value) {
         headers.Cookie = `refresh_token=${refreshToken.value}`
       }
-      
+      console.log('url: ',`${config.apiBase}/auth/refresh-token`)
       const res = await $fetch<{ access_token: string }>(
-        `${config.public.apiBase}/auth/refresh-token`,
+        `${config.apiBase}/auth/refresh-token`,
         {
           method: 'POST',
           headers,

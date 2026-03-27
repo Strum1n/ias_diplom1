@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta, timezone
-from typing import Annotated, Literal
-from fastapi import APIRouter, Body, Cookie, Depends, HTTPException, Query, Form, Response, status
+from datetime import timedelta
+from typing import Literal
+from fastapi import APIRouter, Body, Cookie, Depends, HTTPException, Form, Response, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from jwt import PyJWTError, ExpiredSignatureError, decode
+from jwt import PyJWTError, decode
 import jwt
 from pydantic import EmailStr
 from sqlmodel import or_, select
@@ -74,7 +74,7 @@ class PasswordResetRequestBody(BaseModel):
 
 @auth_router.post("/request-password-reset")
 async def request_password_reset(
-    data: Annotated[PasswordResetRequestBody, Form()],
+    data: PasswordResetRequestBody = Form(),
     session: AsyncSession = Depends(get_async_session),
 ):
     statement = select(User).where(User.email == data.email)
@@ -96,7 +96,7 @@ class ConfirmPasswordResetBody(BaseModel):
 
 @auth_router.post("/confirm-password-reset")
 async def confirm_password_reset(
-    data: Annotated[ConfirmPasswordResetBody, Form()],
+    data: ConfirmPasswordResetBody = Form(),
     session: AsyncSession = Depends(get_async_session),
 ):
 
@@ -124,7 +124,7 @@ async def logout(response: Response):
 
 @auth_router.post("/refresh-token")
 async def refresh_access_token(
-    refresh_token: Annotated[str | None, Cookie()] = None,
+    refresh_token: str = Cookie(),
     session: AsyncSession = Depends(get_async_session),
 ):
     if not refresh_token:
@@ -152,6 +152,7 @@ async def refresh_access_token(
             "token_type": "bearer",
         }
     )
+
     response.set_cookie(
         key="refresh_token",
         value=new_refresh_token,
@@ -176,7 +177,7 @@ async def validate_reset_token(token: str):
 
 
 @auth_router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register_user(user_data: Annotated[RegisterBody, Body()], session: AsyncSession = Depends(get_async_session)):
+async def register_user(user_data: RegisterBody = Body(), session: AsyncSession = Depends(get_async_session)):
 
     statement = select(User).where(User.email == user_data.email)
     result = await session.exec(statement)

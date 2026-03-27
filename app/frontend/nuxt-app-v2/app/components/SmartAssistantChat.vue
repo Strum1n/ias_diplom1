@@ -48,7 +48,7 @@
 
               <!-- Результаты поиска -->
               <template
-                v-else-if="msg.content.rows && msg.content.rows.length > 0"
+                v-else-if="msg.content.result && msg.content.result.length > 0"
               >
                 <div class="assistant-intro">
                   Я нашёл подходящие объявления:
@@ -56,7 +56,7 @@
 
                 <div class="assistant-results">
                   <div
-                    v-for="offer in msg.content.rows"
+                    v-for="offer in msg.content.result"
                     :key="offer.id"
                     class="assistant-offer"
                     @click="navigateTo(`/offers/${offer.id}`)"
@@ -79,15 +79,11 @@
                   </div>
                 </div>
               </template>
-              <template
-                v-else-if="msg.content.rows && msg.content.rows.length == 0"
-              >
+              <template v-else>
                 <div class="assistant-intro">
                   К сожалению я не нашел объявлений по такому запросу.
                 </div>
               </template>
-              <!-- Нет результатов -->
-              <div v-else>{{ msg.content.explanation }}</div>
             </template>
           </div>
 
@@ -111,7 +107,7 @@
 <script setup lang="ts">
 type AssistantResponse = {
   sql?: string;
-  rows?: {
+  result?: {
     id: number;
     full_address: string;
     price: number;
@@ -163,13 +159,13 @@ async function send() {
 
   try {
     const response = await $api("/analysis/chat_assistant", {
-      method: "POST",
+      method: "GET",
       params: {query: userMessage},
     });
 
     messages.value.push({
       role: "assistant",
-      content: response, // тут будет объект { sql, rows }
+      content: response,
     });
   } catch (e) {
     messages.value.push({

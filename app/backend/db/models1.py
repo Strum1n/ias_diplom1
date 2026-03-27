@@ -269,16 +269,22 @@ class Address(SQLModel, table=True):
 
     region: Optional["Region"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     municipality: Optional["Municipality"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
-    super_municipality: Optional["SuperMunicipality"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    super_municipality: Optional["SuperMunicipality"] = Relationship(
+        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
+    )
     settlement: Optional["Settlement"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     partnership: Optional["Partnership"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     district: Optional["District"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     microdistrict: Optional["Microdistrict"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
     street: Optional["Street"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
-    residential_complex: Optional["ResidentialComplex"] = Relationship(back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"})
+    residential_complex: Optional["ResidentialComplex"] = Relationship(
+        back_populates="addresses", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
     offers: List["Offer"] = Relationship(back_populates="address", sa_relationship_kwargs={"lazy": "selectin"})
-    infrastructures_links: list["AddressInfrastructureLink"] = Relationship(back_populates="address", sa_relationship_kwargs={"lazy": "selectin"})
+    infrastructures_links: list["AddressInfrastructureLink"] = Relationship(
+        back_populates="address", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
     @field_serializer("coordinates")
     def serialize_coordinates(self, geom):
@@ -436,7 +442,9 @@ class Infrastructure(SQLModel, table=True):
 
     infrastructure_type_id: int | None = Field(foreign_key="infrastructure_type.id")
 
-    infrastructure_type: Optional["InfrastructureType"] = Relationship(back_populates="infrastructure", sa_relationship_kwargs={"lazy": "selectin"})
+    infrastructure_type: Optional["InfrastructureType"] = Relationship(
+        back_populates="infrastructure", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
     addresses_links: list["AddressInfrastructureLink"] = Relationship(back_populates="infrastructure")
 

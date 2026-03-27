@@ -1,10 +1,8 @@
 export default defineNuxtPlugin(async () => {
-    //  #для прода всегда это
+
     const config = useRuntimeConfig()
     let baseURL = process.server
-    ? 'http://backend:8000'
-     : '/apiback/'
-    
+    ? 'http://backend:8000' : '/apiback/'
     baseURL = config.public.isDev? 'http://localhost:8000': baseURL
     // console.log(baseURL)
     // console.log(config.public.isDev)

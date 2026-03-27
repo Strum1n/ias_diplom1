@@ -2,10 +2,11 @@ import numpy as np
 
 
 def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.01, verbose=True):
-    m, n = evaluations.shape
-    evaluations = evaluations.astype(float).copy()
-    weights = np.array(weights, dtype=float)
 
+    evaluations = np.array(evaluations, dtype=float)
+    weights = np.array(weights, dtype=float)
+    is_min = np.array(is_min, dtype=bool)
+    m, n = evaluations.shape
     for j in range(n):
         if is_min[j]:
             evaluations[:, j] = -evaluations[:, j]
@@ -72,7 +73,9 @@ def electre(evaluations, weights, is_min, alpha_init=0.9, beta_init=0.1, step=0.
         log.append(log_entry)
 
         if verbose:
-            print(f"[Шаг {step_id:02d}] α = {log_entry['alpha']:.2f}, β = {log_entry['beta']:.2f} → |ядро| = {log_entry['kernel_size']} {kernel}")
+            print(
+                f"[Шаг {step_id:02d}] α = {log_entry['alpha']:.2f}, β = {log_entry['beta']:.2f} → |ядро| = {log_entry['kernel_size']} {kernel}"
+            )
 
         if len(kernel) == 1:
             if verbose:

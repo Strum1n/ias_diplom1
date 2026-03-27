@@ -17,41 +17,21 @@
       </template>
 
       <!-- Форма -->
-      <UForm
-        @submit="handleSubmit"
-        :state="form"
-        :validate="validate"
-        class="login-form"
-      >
+      <UForm @submit="handleSubmit" :state="form" :validate="validate" class="login-form">
         <div class="form-field">
           <UFormField label="Новый пароль" name="password">
-            <UInput
-              v-model="form.password"
-              type="password"
-              placeholder="••••••••"
-            />
+            <UInput v-model="form.password" type="password" placeholder="••••••••" />
           </UFormField>
         </div>
 
         <div class="form-field">
           <UFormField label="Подтвердите пароль" name="confirmPassword">
-            <UInput
-              v-model="form.confirmPassword"
-              type="password"
-              placeholder="••••••••"
-            />
+            <UInput v-model="form.confirmPassword" type="password" placeholder="••••••••" />
           </UFormField>
         </div>
 
         <div class="button-container">
-          <UButton
-            type="submit"
-            class="button-submit"
-            color="primary"
-            :loading="submitting"
-          >
-            Сменить пароль
-          </UButton>
+          <UButton type="submit" class="button-submit" color="primary" :loading="submitting"> Сменить пароль </UButton>
         </div>
       </UForm>
 
@@ -93,12 +73,9 @@ onMounted(async () => {
   token.value = queryToken;
   const runtimeConfig = useRuntimeConfig();
   try {
-    await $fetch(
-      `${runtimeConfig.public.apiBase}/auth/validate-reset-token?token=${token.value}`,
-      {
-        method: "POST",
-      },
-    );
+    await $fetch(`${runtimeConfig.public.apiBase}/auth/validate-reset-token?token=${token.value}`, {
+      method: "POST",
+    });
   } catch {
     router.push("/forgot-password");
   } finally {
@@ -135,17 +112,14 @@ const handleSubmit = async () => {
   submitting.value = true;
   const runtimeConfig = useRuntimeConfig();
   try {
-    await $fetch(
-      `${runtimeConfig.public.apiBase}/auth/confirm-password-reset`,
-      {
-        method: "POST",
-        body: {
-          token: token.value,
-          new_password: form.password,
-        },
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    await $fetch(`${runtimeConfig.public.apiBase}/auth/confirm-password-reset`, {
+      method: "POST",
+      body: {
+        token: token.value,
+        new_password: form.password,
       },
-    );
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    });
 
     success.value = true;
   } catch (e: any) {
@@ -157,7 +131,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* Берём тот же layout что и login */
 .login-container {
   min-height: 100vh;
   display: flex;
