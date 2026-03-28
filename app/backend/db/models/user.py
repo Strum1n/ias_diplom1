@@ -4,6 +4,7 @@ from sqlmodel import Column, DateTime, Field, Relationship, func
 from app.backend.db.config import BaseModel
 from app.backend.db.models.favorites import Favorites
 from app.backend.db.models.password import Password
+from app.backend.db.models.types import Role
 
 
 class UserBase(BaseModel):

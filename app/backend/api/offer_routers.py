@@ -17,7 +17,6 @@ from sqlalchemy import literal_column
 
 from app.backend.db.models.address import (
     Address,
-    AddressRead,
     AddressReadShort,
     District,
     Microdistrict,
@@ -32,7 +31,6 @@ from app.backend.db.models.infrastructure import Infrastructure
 from app.backend.db.models.offer import (
     Offer,
     OfferFavoriteRead,
-    OfferRead,
     OfferReadShort,
     OfferReadWithInfrastucture,
     OffersReadWithPagination,
@@ -156,9 +154,7 @@ async def export_offers_excel(
 
     if params.address_query:
         ts_query = " & ".join(f"{w}:*" for w in params.address_query.lower().split() if w.strip())
-        address_subquery = (
-            select(AddressRead.id).where(AddressRead.search_vector.op("@@")(func.to_tsquery("russian", ts_query))).scalar_subquery()
-        )
+        address_subquery = select(Address.id).where(Address.search_vector.op("@@")(func.to_tsquery("russian", ts_query))).scalar_subquery()
         filters.append(Offer.address_id.in_(address_subquery))
 
     for param, param_value in params.model_dump().items():
@@ -530,9 +526,7 @@ async def get_offers(
 
     if params.address_query:
         ts_query = " & ".join(f"{w}:*" for w in params.address_query.lower().split() if w.strip())
-        address_subquery = (
-            select(AddressRead.id).where(AddressRead.search_vector.op("@@")(func.to_tsquery("russian", ts_query))).scalar_subquery()
-        )
+        address_subquery = select(Address.id).where(Address.search_vector.op("@@")(func.to_tsquery("russian", ts_query))).scalar_subquery()
         filters.append(Offer.address_id.in_(address_subquery))
 
     for param, param_value in params.model_dump().items():
