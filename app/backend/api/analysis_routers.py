@@ -439,7 +439,7 @@ async def assistant(query: str = Query(), session: AsyncSession = Depends(get_as
         return {"explanation": "Ошибка конфигурации. Обратитесь к администратору."}
 
     client = OpenAI(api_key=settings.OPEN_ROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
-
+    print("Промт прочитан")
     response = client.chat.completions.create(
         model="arcee-ai/trinity-large-preview:free",
         messages=[
