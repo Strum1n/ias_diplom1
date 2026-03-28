@@ -1,6 +1,7 @@
 from sqlmodel import Field, Relationship
 
 from app.backend.db.config import BaseModel
+from app.backend.db.models.user import User
 
 
 class TypeBase(BaseModel):

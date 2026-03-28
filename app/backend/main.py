@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.backend.api.analysis_routers1 import analysis_router
+from app.backend.api.analysis_routers import analysis_router
 from app.backend.api.auth_routers import auth_router
 from app.backend.api.offer_routers import offer_router
 from app.backend.auth_utils.auth import get_current_user

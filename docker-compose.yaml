@@ -7,7 +7,7 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/postgres_db
-      - ./db_backup.dump:/backup/bd_dump.dump
+      - ./db_backup.dump:/backup/db_backup.dump
       - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
       - app-network
@@ -22,13 +22,14 @@ services:
       dockerfile: app/backend/Dockerfile
     container_name: backend_app
     restart: always
-    env_file: prod.env
+    env_file: .env
+    environment:
+      PYTHONPATH: /origin
+      DB_URL: postgresql+asyncpg://postgres:1@db:5432/diplom_db
     depends_on:
       - db
     ports:
       - "8000:8000"  
-    environment:
-      PYTHONPATH: /origin
     networks:
       - app-network
 

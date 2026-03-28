@@ -27,7 +27,7 @@ if [ "${TABLE_COUNT:-0}" = "0" ]; then
     echo "========================================="
     
     # Выполняем восстановление
-    if pg_restore -U postgres -d diplom_db -v /backup/bd_dump.dump 2>&1; then
+    if pg_restore -U postgres -d diplom_db -v /backup/db_backup.dump 2>&1; then
         echo "========================================="
         echo "✅ Restore completed successfully!"
         echo "========================================="
@@ -36,11 +36,9 @@ if [ "${TABLE_COUNT:-0}" = "0" ]; then
         NEW_COUNT=$(psql -U postgres -d diplom_db -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public'" | xargs)
         echo "Tables after restore: $NEW_COUNT"
     else
-        echo "========================================="
-        echo "❌ Restore failed!"
-        echo "========================================="
+
         echo "You can restore manually with:"
-        echo "docker exec -it postgres_db pg_restore -U postgres -d diplom_db -v /backup/bd_dump.dump"
+        echo "docker exec -it postgres_db pg_restore -U postgres -d diplom_db -v /backup/db_backup.dump"
     fi
 else
     echo "Database already has $TABLE_COUNT tables. Skipping restore."

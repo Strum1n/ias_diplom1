@@ -1,31 +1,24 @@
-import json
-import logging
 from datetime import date
+import json
 import re
-from typing import Dict, Literal
-import numpy as np
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import case
-from sqlalchemy.orm import joinedload
-from sqlmodel import Numeric, and_, cast, func, select, text
-from sqlmodel.ext.asyncio.session import AsyncSession
-from app.backend.db.config import BaseModel, get_async_session
 
-from app.backend.fuzzy_logic.fuzzy_evaluator import FuzzyEvaluator
+from fastapi import APIRouter, Body, HTTPException, Query
+import numpy as np
+from openai import OpenAI
+from sqlmodel import TIMESTAMP, Date, Integer, and_, case, cast, lateral, literal, or_, select, func, text, true, update
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
+from typing import List, Literal
 from app.backend.MCDA.electre import electre
 from app.backend.MCDA.topsis import topsis
-from openai import OpenAI
-
 from app.backend.config import settings
+from app.backend.db.config import BaseModel, get_async_session
+from app.backend.db.models.address import Address, District, Microdistrict, Municipality, Region, Settlement, Street
+from app.backend.db.models.offer import Offer, OfferRead
+from app.backend.db.models.types import PropertyType, SettlementType
+
 
 analysis_router = APIRouter(prefix="/analysis", tags=["analysis"])
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
-logger = logging.getLogger(__name__)
-BATCH_SIZE = 1000
-
 INFRA_MAP = {
     "Школа": "school_distance",
     "Детский сад": "kindergarten_distance",
@@ -42,1231 +35,114 @@ INFRA_MAP = {
 }
 
 
-@analysis_router.post("/statistics/update-price-categories")
-async def update_price_categories_in_db(
-    session: AsyncSession = Depends(get_async_session),
-):
+class Averages(BaseModel):
+    average_price: float | None
+    average_price_per_square_meter: float | None
+    average_area: float | None
+    average_views_count: float | None
 
-    update_query = text("""
-    WITH price_avgs AS (
-        SELECT 
-            a.district_id,
-            a.street_id,
-            a.settlement_id,
-            a.microdistrict_id,
-            pt.id AS property_type_id,
-            CASE WHEN pt.name IN ('Квартира', 'Аппартаменты') THEN o.rooms_count ELSE NULL END AS rooms_count,
-            CASE WHEN pt.name IN ('Квартира', 'Аппартаменты') THEN o.renovation_type_id ELSE NULL END AS renovation_type_id,
-            CASE WHEN pt.name IN ('Дом', 'Коттедж', 'Таунхаус') THEN o.house_floors_count ELSE NULL END AS house_floors_count,
-            AVG(o.price) AS avg_price,
-            CASE 
-                WHEN a.street_id IS NOT NULL THEN 1
-                WHEN a.microdistrict_id IS NOT NULL THEN 2
-                WHEN a.district_id IS NOT NULL THEN 3
-                ELSE 4
-            END AS level_order
-        FROM offer o
-        JOIN address a ON o.address_id = a.id
-        JOIN property_type pt ON o.property_type_id = pt.id
-        WHERE o.price IS NOT NULL
-        GROUP BY a.district_id, a.street_id, a.settlement_id, a.microdistrict_id, pt.id, pt.name,
-                 rooms_count, renovation_type_id, house_floors_count
-    ),
-    offer_avg AS (
-        SELECT 
-            o.id AS offer_id,
-            COALESCE(pa_street.avg_price, pa_microdistrict.avg_price, pa_district.avg_price, pa_settlement.avg_price) AS avg_price
-        FROM offer o
-        JOIN address a ON o.address_id = a.id
-        JOIN property_type pt ON o.property_type_id = pt.id
 
-        LEFT JOIN price_avgs pa_street
-            ON pa_street.level_order = 1
-            AND pa_street.settlement_id = a.settlement_id
-            AND pa_street.street_id = a.street_id
-            AND pa_street.property_type_id = pt.id
-            AND (
-                (pt.name IN ('Квартира', 'Аппартаменты') 
-                    AND pa_street.rooms_count = o.rooms_count 
-                    AND pa_street.renovation_type_id IS NOT DISTINCT FROM o.renovation_type_id)
-                OR (pt.name IN ('Дом', 'Коттедж', 'Таунхаус') 
-                    AND pa_street.house_floors_count IS NOT DISTINCT FROM o.house_floors_count)
-                OR (pt.name NOT IN ('Квартира', 'Апартаменты', 'Дом', 'Коттедж', 'Таунхаус')
-                    AND pa_street.rooms_count IS NULL
-                    AND pa_street.house_floors_count IS NULL)
-            )
+class CategoryStats(BaseModel):
+    low: int | None
+    medium: int | None
+    high: int | None
 
-        LEFT JOIN price_avgs pa_microdistrict
-            ON pa_microdistrict.level_order = 2
-            AND pa_microdistrict.settlement_id = a.settlement_id
-            AND pa_microdistrict.microdistrict_id = a.microdistrict_id
-            AND pa_microdistrict.property_type_id = pt.id
-            AND (
-                (pt.name IN ('Квартира', 'Апартаменты') 
-                    AND pa_microdistrict.rooms_count = o.rooms_count 
-                    AND pa_microdistrict.renovation_type_id IS NOT DISTINCT FROM o.renovation_type_id)
-                OR (pt.name IN ('Дом', 'Коттедж', 'Таунхаус') 
-                    AND pa_microdistrict.house_floors_count IS NOT DISTINCT FROM o.house_floors_count)
-                OR (pt.name NOT IN ('Квартира', 'Аппартаменты', 'Дом', 'Коттедж', 'Таунхаус')
-                    AND pa_microdistrict.rooms_count IS NULL
-                    AND pa_microdistrict.house_floors_count IS NULL)
-            )
 
-        LEFT JOIN price_avgs pa_district
-            ON pa_district.level_order = 3
-            AND pa_district.settlement_id = a.settlement_id
-            AND pa_district.district_id = a.district_id
-            AND pa_district.property_type_id = pt.id
-            AND (
-                (pt.name IN ('Квартира', 'Аппартаменты') 
-                    AND pa_district.rooms_count = o.rooms_count 
-                    AND pa_district.renovation_type_id IS NOT DISTINCT FROM o.renovation_type_id)
-                OR (pt.name IN ('Дом', 'Коттедж', 'Таунхаус') 
-                    AND pa_district.house_floors_count IS NOT DISTINCT FROM o.house_floors_count)
-                OR (pt.name NOT IN ('Квартира', 'Апартаменты', 'Дом', 'Коттедж', 'Таунхаус')
-                    AND pa_district.rooms_count IS NULL
-                    AND pa_district.house_floors_count IS NULL)
-            )
+class PriceCategoryStats(BaseModel):
+    cheap: int | None
+    normal: int | None
+    expensive: int | None
 
-        LEFT JOIN price_avgs pa_settlement
-            ON pa_settlement.level_order = 4
-            AND pa_settlement.settlement_id = a.settlement_id
-            AND pa_settlement.property_type_id = pt.id
-            AND (
-                (pt.name IN ('Квартира', 'Аппартаменты') 
-                    AND pa_settlement.rooms_count = o.rooms_count 
-                    AND pa_settlement.renovation_type_id IS NOT DISTINCT FROM o.renovation_type_id)
-                OR (pt.name IN ('Дом', 'Коттедж', 'Таунхаус') 
-                    AND pa_settlement.house_floors_count IS NOT DISTINCT FROM o.house_floors_count)
-                OR (pt.name NOT IN ('Квартира', 'Апартаменты', 'Дом', 'Коттедж', 'Таунхаус')
-                    AND pa_settlement.rooms_count IS NULL
-                    AND pa_settlement.house_floors_count IS NULL)
-            )
-    )
-    UPDATE offer
-    SET price_category = CASE
-        WHEN oa.avg_price IS NOT NULL AND offer.price > oa.avg_price * 1.05 THEN 'expensive'
-        WHEN oa.avg_price IS NOT NULL AND offer.price < oa.avg_price * 0.95 THEN 'cheap'
-        ELSE 'normal'
-    END
-    FROM offer_avg oa
-    WHERE offer.id = oa.offer_id;
-    """)
 
-    await session.exec(update_query)
-    await session.commit()
+class Boxplot(BaseModel):
+    min: float | None
+    q1: float | None
+    median: float | None
+    q3: float | None
+    max: float | None
 
-    stats_stmt = (
-        select(Offer.price_category, func.count().label("count")).where(Offer.price_category.is_not(None)).group_by(Offer.price_category)
-    )
-    stats_result = await session.exec(stats_stmt)
-    stats = stats_result.all()
 
-    return {
-        "message": "Ценовые категории успешно обновлены",
-        "status": "success",
-        "statistics": {row.price_category: row.count for row in stats},
-    }
+class GroupStatsItem(BaseModel):
+    name: str
+    offers_count: int
+    averages: Averages
+    price_categories: PriceCategoryStats
+    family_categories: CategoryStats
+    elderly_categories: CategoryStats
+    transport_access_categories: CategoryStats
+    area_boxplot: Boxplot
+    price_boxplot: Boxplot
 
 
-@analysis_router.post("/recalculate_fuzzy_scores")
-async def recalculate_fuzzy_scores(
-    session=Depends(get_async_session),
-    only_missing: bool = Query(False, description="Обрабатывать только офферы без вычисленных score"),
-):
-    fuzzy = FuzzyEvaluator()
+class ApartmentsByRooms(BaseModel):
+    rooms: dict[str, int]
+    flat_type: dict[str, int]
 
-    logger.info("Collecting infrastructure by addresses...")
-    infra_stmt = (
-        select(
-            AddressInfrastructureLink.address_id,
-            InfrastructureType.name.label("infra_type"),
-            func.min(AddressInfrastructureLink.distance).label("min_distance"),
-        )
-        .join(
-            Infrastructure,
-            Infrastructure.id == AddressInfrastructureLink.infrastructure_id,
-        )
-        .join(
-            InfrastructureType,
-            InfrastructureType.id == Infrastructure.infrastructure_type_id,
-        )
-        .where(InfrastructureType.name.in_(list(INFRA_MAP.keys())))
-        .group_by(AddressInfrastructureLink.address_id, InfrastructureType.name)
-    )
 
-    infra_rows = (await session.exec(infra_stmt)).all()
-    logger.info(f"Loaded {len(infra_rows)} infrastructure records")
+class Statistics(BaseModel):
+    averages: Averages
+    price_categories: dict[str, int]
+    property_types: dict[str, int]
+    apartments_by_rooms: ApartmentsByRooms
 
-    address_infra: Dict[int, Dict[str, float]] = {}
-    for row in infra_rows:
-        addr_id = row.address_id
-        key = INFRA_MAP.get(row.infra_type)
-        if not key:
-            continue
-        if addr_id not in address_infra:
-            address_infra[addr_id] = {}
-        address_infra[addr_id][key] = row.min_distance
 
-    logger.info(f"Infrastructure collected for {len(address_infra)} addresses")
+class StatsResponse(BaseModel):
+    total_count: int | None
+    offers_today: int | None
+    statistics: Statistics
+    top_offers_by_views: list[OfferRead]
 
-    base_stmt = select(Offer)
-    if only_missing:
-        base_stmt = base_stmt.where(
-            Offer.transport_access_score.is_(None),
-            Offer.elderly_score.is_(None),
-            Offer.family_score.is_(None),
-        )
 
-    total_offers = await session.scalar(select(func.count()).select_from(base_stmt.subquery()))
-    logger.info(f"Total offers to process: {total_offers} (only_missing={only_missing})")
+class AddressQueryParams(BaseModel):
+    region_name: str | None = None
+    municipality_name: str | None = None
+    settlement_name: str | None = None
+    district_name: str | None = None
+    microdistrict_name: str | None = None
+    street_name: str | None = None
+    settlement_type_names: str | None = None
+    is_new_house: bool | None = None
 
-    processed = 0
-    null_results = 0
 
-    for offset in range(0, total_offers, BATCH_SIZE):
-        stmt = base_stmt.offset(offset).limit(BATCH_SIZE).options(joinedload(Offer.address))
-        offers = (await session.exec(stmt)).all()
-        if not offers:
-            break
+class ViewHistoryItem(BaseModel):
+    date: date
+    views: int
 
-        for offer in offers:
-            if not offer.address_id:
-                logger.warning(f"Skipped Offer ID={offer.id}: no address_id")
-                continue
 
-            infra = address_infra.get(offer.address_id)
-            if not infra:
-                logger.warning(f"Offer ID={offer.id}: no infrastructure for address {offer.address_id}")
-                infra = {}
-
-            data = {
-                "metro_distance": infra.get("metro_distance", 9999),
-                "bus_distance": infra.get("bus_distance", 9999),
-                "parking_availability": True if offer.parking_type_id else False,
-                "hospital_distance": infra.get("hospital_distance", 9999),
-                "pharmacy_distance": infra.get("pharmacy_distance", 9999),
-                "floor": offer.floor or 1,
-                "elevator_availability": offer.has_elevator or False,
-                "school_distance": infra.get("school_distance", 9999),
-                "kindergarten_distance": infra.get("kindergarten_distance", 9999),
-                "total_area": offer.total_area,
-                "total_rooms": offer.rooms_count or offer.bedrooms_count or 1,
-            }
-            logger.info(f"data for Offer ID={offer.id}: {data}")
-
-            try:
-                result = fuzzy.evaluate_all(data)
-
-                logger.info(
-                    "Result: %s",
-                    {
-                        "transport_access": result.get("transport_access"),
-                        "elderly_friendly": result.get("elderly_friendly"),
-                        "family_friendly": result.get("family_friendly"),
-                    },
-                )
-                if not result:
-                    logger.error(f"Fuzzy returned None for Offer ID={offer.id} (data={data})")
-                    null_results += 1
-                    continue
-
-                offer.transport_access_score = result["transport_access"]["score"]
-                offer.transport_access_category = result["transport_access"]["category"]
-                offer.elderly_score = result["elderly_friendly"]["score"]
-                offer.elderly_category = result["elderly_friendly"]["category"]
-                offer.family_score = result["family_friendly"]["score"]
-                offer.family_category = result["family_friendly"]["category"]
-
-                if offer.transport_access_score is None or offer.elderly_score is None or offer.family_score is None:
-                    logger.warning(f"Null fuzzy score for Offer ID={offer.id} → result={data}")
-                    null_results += 1
-
-            except Exception as e:
-                logger.exception(f"Error processing Offer ID={offer.id}: {e} data={data}")
-                null_results += 1
-
-        await session.commit()
-        processed += len(offers)
-        logger.info(f"Processed {processed}/{total_offers} offers")
-
-    logger.info(f"Completed: processed={processed}, with null={null_results}")
-
-    return {
-        "status": "success",
-        "processed": processed,
-        "total_offers": total_offers,
-        "null_results": null_results,
-        "only_missing": only_missing,
-    }
-
-
-class ElectreResponse(BaseModel):
-    kernel: List[int]
-    dominance_info: Dict[str, Any]
-    final_outranking: List[List[bool]]
-
-
-@analysis_router.get("/electre")
-def electre_endpoint(
-    evaluations: str = Query(..., description="JSON матрица, пример: [[3,5],[4,2]]"),
-    weights: str = Query(..., description="JSON список, пример: [0.4,0.6]"),
-    is_min: str = Query(..., description="JSON список, пример: [false,true]"),
-    alpha_init: float = 0.9,
-    beta_init: float = 0.1,
-    step: float = 0.05,
-):
-    evaluations = np.array(json.loads(evaluations), dtype=float)
-    weights = np.array(json.loads(weights), dtype=float)
-    is_min = np.array(json.loads(is_min), dtype=bool)
-
-    kernel, dominance_info, outranking = electre(
-        evaluations=evaluations,
-        weights=weights,
-        is_min=is_min,
-        alpha_init=alpha_init,
-        beta_init=beta_init,
-    )
-    response = {
-        "kernel": convert_to_list(kernel),
-        "dominance_info": convert_to_list(dominance_info),
-        "outranking": convert_to_list(outranking),
-        "allIds": list(range(len(evaluations))),
-    }
-
-    return response
-
-
-@analysis_router.post("/chat_assistant")
-async def assistant(query: str, session: AsyncSession = Depends(get_async_session)):
-    client = OpenAI(api_key=settings.OPEN_ROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
-    response = client.chat.completions.create(
-        model="arcee-ai/trinity-large-preview:free",
-        messages=[
-            {
-                "role": "system",
-                "content": """Ты — помощник по выбору недвижимости. 
-                Твоя задача — вежливо общаться с пользователем и, когда он просит найти недвижимость, 
-                формировать корректный SQL-запрос к предоставленной базе данных, 
-                а затем возвращать результаты в указанном формате.
-                {
-                "sql": "ЗДЕСЬ_ТВОЙ_ПОЛНЫЙ_SQL_ЗАПРОС",
-                "explanation": "Краткое пояснение на русском языке, почему запрос составлен именно так, основываясь на пожеланиях пользователя."
-                }
-
-ИМЕЙ В ВИДУ СЛЕДУЮЩИЕ КЛЮЧЕВЫЕ ПРАВИЛА ПРИ ФОРМИРОВАНИИ ЗАПРОСОВ:
-1.  ВСЕГДА возвращай только первые 5 вариантов (используй `LIMIT 5`).
-2.  Для каждого найденного объявления (`offer`) возвращай следующие поля: `o.id`, `a.full_address`, `o.price`, `o.is_new_house`, `o.images_urls[1]` (первое изображение), `o.url`, `o.price_category`, `o.family_category`, `o.elderly_category`, `o.transport_access_category`.
-3.  Когда пользователь ищет объект "недалеко от центра", "близко к метро" или около другого объекта инфраструктуры, тебе необходимо связать таблицы `offer`, `address` и `address_infrastructure_link`. Фильтруй результаты по полю `distance` в таблице `address_infrastructure_link`.
-4.  Если речь идет о метро, в запросе фильтруй по типу инфраструктуры (`infrastructure_type.name`) 'Станция метро'.
-5.  В условиях `WHERE` при сравнении с текстовыми значениями из справочников (например, тип недвижимости, категория) ВСЕГДА указывай названия с заглавной буквы, как они должны быть записаны в БД: 'Квартира', 'Дом', 'Коттедж', 'Евроремонт' и т.д.
-6.  Названия административных объектов (область, город) используй без указания их типа. Например: 'Брянская' (не 'Брянская область'), 'Брянск' (не 'город Брянск'). Для улиц используй естественный порядок слов: 'Авиационная улица'.
-7.  Для фильтрации по категориям (`family_category`, `elderly_category`, `transport_access_category`) используй значения: 'low', 'medium', 'high'. Для `price_category` используй: 'cheap', 'normal', 'expensive'.
-8. Твой ответ на запрос пользователя о поиске недвижимости ДОЛЖЕН быть строго в следующем формате, без каких-либо markdown-разметки, комментариев или дополнительного текста:
-9. Когда тебя просят найти недвижимость подальше от чего то, не используй координаты, обращайся к таблице  address_infrastructure_link и сортируй по расстоянию до инфраструктуры. В infrastructure_type содержится так же тип инфраструктуры Цетр города.
-10. ИСПОЛЬЗУЙ JOIN ВМЕСТО ПОДЗАПРОСОВ, вместо (SELECT id FROM property_type WHERE name = 'Квартира') делай JOIN ON o.property_type_id = pt.id WHERE pt.name = 'Квартира'.
-11. Запомни, когда ты хочешь найти тип инфраструктуры ты должен делать извелать name из infrastructure_type. В infrastructure.name хранятся имена самих объектов инфраструктуры, например парк Горького, но не названия их типов.
-{
-"sql": "ЗДЕСЬ_ТВОЙ_ПОЛНЫЙ_SQL_ЗАПРОС",
-"explanation": "Краткое пояснение на русском языке, почему запрос составлен именно так, основываясь на пожеланиях пользователя."
-}""",
-            },
-            {
-                "role": "user",
-                "content": """СХЕМА БАЗЫ ДАННЫХ ДЛЯ СПРАВКИ:
-
-alter table public.district
-    owner to postgres;
-
-create table if not exists public.microdistrict
-(
-    id         serial
-        constraint pk_microdistrict
-            primary key,
-    name       varchar
-        constraint uq_microdistrict_name
-            unique,
-
-);
-
-alter table public.microdistrict
-    owner to postgres;
-
-create table if not exists public.region
-(
-    id         serial
-        constraint pk_region
-            primary key,
-    name       varchar
-        constraint uq_region_name
-            unique,
-
-);
-
-alter table public.region
-    owner to postgres;
-
-create table if not exists public.settlement_type
-(
-    id   serial
-        constraint pk_settlement_type
-            primary key,
-    name varchar
-);
-
-alter table public.settlement_type
-    owner to postgres;
-
-create table if not exists public.settlement
-(
-    id                 serial
-        constraint pk_settlement
-            primary key,
-    name               varchar,
-
-    settlement_type_id integer
-        constraint fk_settlement_settlement_type_id_settlement_type
-            references public.settlement_type
-);
-
-alter table public.settlement
-    owner to postgres;
-
-create table if not exists public.bathroom_type
-(
-    id   serial
-        constraint pk_bathroom_type
-            primary key,
-    name varchar
-);
-
-alter table public.bathroom_type
-    owner to postgres;
-
-create table if not exists public.gas_type
-(
-    id   serial
-        constraint pk_gas_type
-            primary key,
-    name varchar
-);
-
-alter table public.gas_type
-    owner to postgres;
-
-create table if not exists public.heating_type
-(
-    id   serial
-        constraint pk_heating_type
-            primary key,
-    name varchar
-);
-
-alter table public.heating_type
-    owner to postgres;
-
-create table if not exists public.house_material_type
-(
-    id   serial
-        constraint pk_house_material_type
-            primary key,
-    name varchar
-);
-
-alter table public.house_material_type
-    owner to postgres;
-
-create table if not exists public.infrastructure_type
-(
-    id   serial
-        constraint pk_infrastructure_type
-            primary key,
-    name varchar
-);
-
-alter table public.infrastructure_type
-    owner to postgres;
-
-create table if not exists public.infrastructure
-(
-    id                     serial
-        constraint pk_infrastructure
-            primary key,
-    name                   varchar,
-    coordinates            geography(Point, 4326),
-    infrastructure_type_id integer
-        constraint fk_infrastructure_infrastructure_type_id_infrastructure_type
-            references public.infrastructure_type,
-    constraint uq_infrastructure_name_coordinates
-        unique (name, coordinates)
-);
-
-alter table public.infrastructure
-    owner to postgres;
-
-create index if not exists idx_infrastructure_coordinates
-    on public.infrastructure using gist (coordinates);
-
-create table if not exists public.land_type
-(
-    id   serial
-        constraint pk_land_type
-            primary key,
-    name varchar
-);
-
-alter table public.land_type
-    owner to postgres;
-
-create table if not exists public.municipality_type
-(
-    id   serial
-        constraint pk_municipality_type
-            primary key,
-    name varchar
-);
-
-alter table public.municipality_type
-    owner to postgres;
-
-create index if not exists ix_municipality_type_name
-    on public.municipality_type (name);
-
-create table if not exists public.offer_type
-(
-    id   serial
-        constraint pk_offer_type
-            primary key,
-    name varchar
-);
-
-alter table public.offer_type
-    owner to postgres;
-
-create table if not exists public.parking_type
-(
-    id   serial
-        constraint pk_parking_type
-            primary key,
-    name varchar
-);
-
-alter table public.parking_type
-    owner to postgres;
-
-create table if not exists public.partnership_type
-(
-    id   serial
-        constraint pk_partnership_type
-            primary key,
-    name varchar
-);
-
-alter table public.partnership_type
-    owner to postgres;
-
-create table if not exists public.partnership
-(
-    id                  serial
-        constraint pk_partnership
-            primary key,
-    name                varchar
-        constraint uq_partnership_name
-            unique,
-    partnership_type_id integer
-        constraint fk_partnership_partnership_type_id_partnership_type
-            references public.partnership_type
-);
-
-alter table public.partnership
-    owner to postgres;
-
-create table if not exists public.property_type
-(
-    id   serial
-        constraint pk_property_type
-            primary key,
-    name varchar
-);
-
-alter table public.property_type
-    owner to postgres;
-
-create table if not exists public.renovation_type
-(
-    id   serial
-        constraint pk_renovation_type
-            primary key,
-    name varchar
-);
-
-alter table public.renovation_type
-    owner to postgres;
-
-create table if not exists public.residential_complex
-(
-    id          serial
-        constraint pk_residential_complex
-            primary key,
-    name        varchar
-        constraint uq_residential_complex_name
-            unique,
-    is_suburban boolean
-);
-
-alter table public.residential_complex
-    owner to postgres;
-
-create table if not exists public.role
-(
-    id   serial
-        constraint pk_role
-            primary key,
-    name varchar
-        constraint uq_role_name
-            unique
-);
-
-alter table public.role
-    owner to postgres;
-
-create table if not exists public.seller_type
-(
-    id   serial
-        constraint pk_seller_type
-            primary key,
-    name varchar
-);
-
-alter table public.seller_type
-    owner to postgres;
-
-create table if not exists public.seller
-(
-    id              serial
-        constraint pk_seller
-            primary key,
-    name            varchar
-        constraint uq_seller_name
-            unique,
-    rating          double precision,
-    foundation_date integer,
-    seller_type_id  integer
-        constraint fk_seller_seller_type_id_seller_type
-            references public.seller_type
-);
-
-alter table public.seller
-    owner to postgres;
-
-create table if not exists public.sewerage_type
-(
-    id   serial
-        constraint pk_sewerage_type
-            primary key,
-    name varchar
-);
-
-alter table public.sewerage_type
-    owner to postgres;
-
-create table if not exists public.street_type
-(
-    id   serial
-        constraint pk_street_type
-            primary key,
-    name varchar
-);
-
-alter table public.street_type
-    owner to postgres;
-
-create table if not exists public.street
-(
-    id             serial
-        constraint pk_street
-            primary key,
-    name           varchar
-        constraint uq_street_name
-            unique,
-    street_type_id integer
-        constraint fk_street_street_type_id_street_type
-            references public.street_type
-);
-
-alter table public.street
-    owner to postgres;
-
-create table if not exists public.super_municipality_type
-(
-    id   serial
-        constraint pk_super_municipality_type
-            primary key,
-    name varchar
-);
-
-create table if not exists public.address
-(
-    id                     serial
-        constraint pk_address
-            primary key,
-    house_number           varchar,
-    full_address           varchar,
-    coordinates            geography(Point, 4326)
-        constraint uq_address_coordinates
-            unique,
-    region_id              integer
-        constraint fk_address_region_id_region
-            references public.region,
-
-    settlement_id          integer
-        constraint fk_address_settlement_id_settlement
-            references public.settlement,
-    partnership_id         integer
-        constraint fk_address_partnership_id_partnership
-            references public.partnership,
-    district_id            integer
-        constraint fk_address_district_id_district
-            references public.district,
-    microdistrict_id       integer
-        constraint fk_address_microdistrict_id_microdistrict
-            references public.microdistrict,
-    street_id              integer
-        constraint fk_address_street_id_street
-            references public.street,
-    residential_complex_id integer
-        constraint fk_address_residential_complex_id_residential_complex
-            references public.residential_complex,
-    search_vector          tsvector
-);
-
-alter table public.address
-    owner to postgres;
-
-create index if not exists idx_address_coordinates
-    on public.address using gist (coordinates);
-
-create index if not exists idx_address_search_vector
-    on public.address using gin (search_vector);
-
-create index if not exists ix_address_district_id
-    on public.address (district_id);
-
-create trigger address_tsvector_update_trigger
-    before insert or update
-    on public.address
-    for each row
-execute procedure public.address_tsvector_update();
-
-create table if not exists public.address_infrastructure_link
-(
-    infrastructure_id integer not null
-        constraint fk_address_infrastructure_link_infrastructure_id_infrastructure
-            references public.infrastructure
-            on delete cascade,
-    address_id        integer not null
-        constraint fk_address_infrastructure_link_address_id_address
-            references public.address
-            on delete cascade,
-    distance          integer,
-    constraint pk_address_infrastructure_link
-        primary key (infrastructure_id, address_id)
-);
-
-alter table public.address_infrastructure_link
-    owner to postgres;
-
-create trigger trg_calc_distance_link
-    before insert or update
-    on public.address_infrastructure_link
-    for each row
-execute procedure public.calc_distance_link();
-
-create table if not exists public.water_supply_type
-(
-    id   serial
-        constraint pk_water_supply_type
-            primary key,
-    name varchar
-);
-
-alter table public.water_supply_type
-    owner to postgres;
-
-create table if not exists public.window_view_type
-(
-    id   serial
-        constraint pk_window_view_type
-            primary key,
-    name varchar
-);
-
-alter table public.window_view_type
-    owner to postgres;
-
-create table if not exists public.offer
-(
-    id                        serial
-        constraint pk_offer
-            primary key,
-    url                       varchar(500),
-    images_urls               varchar(500)[],
-    is_new_house              boolean,
-    price                     integer,
-    price_history             jsonb,
-    price_per_square_meter    integer,
-    total_area                double precision,
-    living_area               double precision,
-    kitchen_area              double precision,
-    ceiling_height            double precision,
-    floor                     integer,
-    bathrooms_count           integer,
-    has_furniture             boolean,
-    description               varchar,
-    house_built_year          integer,
-    land_area                 double precision,
-    is_build_complete         boolean,
-    rooms_count               integer,
-    bedrooms_count            integer,
-    elevators_count           integer,
-    balconies_count           integer,
-    house_floors_count        integer,
-    title                     varchar,
-    has_water_supply          boolean,
-    has_electricity           boolean,
-    has_gas                   boolean,
-    has_sewerage              boolean,
-    has_heating               boolean,
-    has_garbage_chute         boolean,
-    has_guard                 boolean,
-    has_garage                boolean,
-    has_bathhouse             boolean,
-    has_pool                  boolean,
-    has_terrace               boolean,
-    update_date               timestamp with time zone default now(),
-    update_date_source        timestamp with time zone,
-    contact_phone             varchar(20),
-    transport_access_score    double precision,
-    transport_access_category varchar,
-    elderly_score             double precision,
-    elderly_category          varchar,
-    family_score              double precision,
-    family_category           varchar,
-    price_category            varchar,
-    address_id                integer
-        constraint fk_offer_address_id_address
-            references public.address
-            on delete cascade,
-    offer_type_id             integer
-        constraint fk_offer_offer_type_id_offer_type
-            references public.offer_type,
-    property_type_id          integer
-        constraint fk_offer_property_type_id_property_type
-            references public.property_type,
-    bathroom_type_id          integer
-        constraint fk_offer_bathroom_type_id_bathroom_type
-            references public.bathroom_type,
-    renovation_type_id        integer
-        constraint fk_offer_renovation_type_id_renovation_type
-            references public.renovation_type,
-    window_view_type_id       integer
-        constraint fk_offer_window_view_type_id_window_view_type
-            references public.window_view_type,
-    parking_type_id           integer
-        constraint fk_offer_parking_type_id_parking_type
-            references public.parking_type,
-    house_material_type_id    integer
-        constraint fk_offer_house_material_type_id_house_material_type
-            references public.house_material_type,
-    heating_type_id           integer
-        constraint fk_offer_heating_type_id_heating_type
-            references public.heating_type,
-    gas_type_id               integer
-        constraint fk_offer_gas_type_id_gas_type
-            references public.gas_type,
-    sewerage_type_id          integer
-        constraint fk_offer_sewerage_type_id_sewerage_type
-            references public.sewerage_type,
-    water_supply_type_id      integer
-        constraint fk_offer_water_supply_type_id_water_supply_type
-            references public.water_supply_type,
-    seller_id                 integer
-        constraint fk_offer_seller_id_seller
-            references public.seller,
-    land_type_id              integer
-        constraint fk_offer_land_type_id_land_type
-            references public.land_type,
-    has_elevator              boolean,
-    has_balcony               boolean,
-    views_count               integer,
-    creation_date_source      timestamp with time zone,
-    views_history             jsonb,
-    last_ten_days_views_count integer,
-    daily_views_count         integer,
-    source                    varchar,
-    identical_urls            varchar(500)[],
-    is_active                 boolean                  default true not null
-);
-
-alter table public.offer
-    owner to postgres;
-
-create index if not exists ix_offer_address_id
-    on public.offer (address_id);""",
-            },
-            {"role": "user", "content": f"{query}"},
-        ],
-    )
-    print(response.choices[0].message.content)
-    try:
-        data = json.loads(response.choices[0].message.content)
-    except Exception as e:
-        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
-    print(data)
-    sql = data["sql"].strip()
-
-    if data.get("sql") is None:
-        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
-
-    sql_upper = re.sub(r"--.*?$|/\*.*?\*/", "", sql.upper(), flags=re.S)
-
-    if not sql_upper.lstrip().startswith("SELECT"):
-        return {"explanation": "Простите, это вне моей компетенции."}
-
-    if re.search(r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|REPLACE)\b", sql_upper):
-        return {"explanation": "Простите, это вне моей компетенции."}
-
-    if "user" in sql.lower():
-        return {"explanation": "Простите, это вне моей компетенции."}
-    if "password" in sql.lower():
-        return {"explanation": "Простите, это вне моей компетенции."}
-    print(sql)
-    try:
-        result = await session.execute(text(sql))
-    except Exception as e:
-        return {"sql": sql, "explanation": data["explanation"], "rows": []}
-    rows = result.mappings().all()
-    print(rows)
-    return {"sql": sql, "explanation": data["explanation"], "rows": rows}
-
-
-def convert_to_list(data):
-
-    if hasattr(data, "tolist"):
-        return data.tolist()
-    elif isinstance(data, (list, tuple)):
-        return [convert_to_list(item) for item in data]
-    else:
-        return data
-
-
-@analysis_router.get("/topsis")
-def topsis_endpoint(
-    X: str = Query(..., description="JSON матрица решений, пример: [[3,5],[4,2]]"),
-    weights: str = Query(..., description="JSON список весов, пример: [0.4,0.6]"),
-    criteria: str = Query(
-        ...,
-        description="JSON список: true=максимум, false=минимум, пример: [true,false]",
-    ),
-):
-    X = np.array(json.loads(X), dtype=float)
-    weights = np.array(json.loads(weights), dtype=float)
-    criteria = np.array(json.loads(criteria), dtype=bool)
-
-    scores, ranked_indices = topsis(X, weights, criteria)
-
-    return {"scores": scores.tolist(), "ranked_indices": ranked_indices.tolist()}
-
-
-@analysis_router.get("/stats")
-async def get_offers_by_location(
-    region_name: Optional[str] = Query(None, description="Название области"),
-    settlement_name: Optional[str] = Query(None, description="Название поселения"),
-    municipality_name: Optional[str] = Query(None, description="Название муниципального образования"),
-    district_name: Optional[str] = Query(None, description="Название района"),
-    microdistrict_name: Optional[str] = Query(None, description="Название микрорайона"),
-    street_name: Optional[str] = Query(None, description="Название улицы"),
-    settlement_type_names: Optional[List[str]] = Query(None, description="Типы поселений"),
-    session: AsyncSession = Depends(get_async_session),
-    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
-):
+def build_address_filters(params: AddressQueryParams):
     filters = []
-    base_filters = []
 
-    location_filters = [
-        (Region.short_name, region_name),
-        (Settlement.short_name, settlement_name),
-        (Municipality.short_name, municipality_name),
-        (District.short_name, district_name),
-        (Microdistrict.short_name, microdistrict_name),
-        (Street.short_name, street_name),
-    ]
+    if params.region_name:
+        filters.append(Region.short_name == params.region_name)
 
-    for model_field, value in location_filters:
-        if value:
-            filters.append(model_field == value)
-            base_filters.append(model_field == value)
+    if params.settlement_name:
+        filters.append(Settlement.short_name == params.settlement_name)
 
-    if is_new_house is not None:
-        filters.append(Offer.is_new_house == is_new_house)
-        base_filters.append(Offer.is_new_house == is_new_house)
+    if params.municipality_name:
+        filters.append(Municipality.short_name == params.municipality_name)
 
-    if settlement_type_names:
-        filters.append(SettlementType.name.in_(settlement_type_names))
-        base_filters.append(SettlementType.name.in_(settlement_type_names))
+    if params.district_name:
+        filters.append(District.short_name == params.district_name)
 
-    base_query = (
-        select(Offer)
-        .join(Address, Offer.address_id == Address.id)
-        .join(PropertyType, Offer.property_type_id == PropertyType.id)
-        .join(Region, Address.region_id == Region.id, isouter=True)
-        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
-        .join(Municipality, Address.municipality_id == Municipality.id, isouter=True)
-        .join(
-            SettlementType,
-            Settlement.settlement_type_id == SettlementType.id,
-            isouter=True,
-        )
-        .join(District, Address.district_id == District.id, isouter=True)
-        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
-        .join(Street, Address.street_id == Street.id, isouter=True)
-    )
+    if params.microdistrict_name:
+        filters.append(Microdistrict.short_name == params.microdistrict_name)
 
-    if filters:
-        base_query = base_query.where(and_(*filters))
+    if params.street_name:
+        filters.append(Street.short_name == params.street_name)
 
-    subq = base_query.subquery()
+    if params.settlement_type_names:
+        filters.append(SettlementType.name.in_(params.settlement_type_names))
 
-    stmt = select(
-        func.count().label("total_count"),
-        func.sum(
-            case(
-                (
-                    func.date(func.timezone("Europe/Moscow", subq.c.creation_date_source)) == date.today(),
-                    1,
-                ),
-                else_=0,
-            )
-        ).label("offers_today"),
-        func.round(func.avg(subq.c.price)).label("avg_price"),
-        func.round(func.avg(subq.c.price_per_square_meter)).label("avg_price_per_sqm"),
-        func.round(func.avg(subq.c.total_area)).label("avg_area"),
-        func.round(func.avg(subq.c.daily_views_count)).label("avg_views_count"),
-        func.round(cast(func.min(subq.c.total_area), Numeric(10, 1)), 1).label("min_area"),
-        func.round(
-            cast(
-                func.percentile_cont(0.25).within_group(subq.c.total_area),
-                Numeric(10, 1),
-            ),
-            1,
-        ).label("q1_area"),
-        func.round(
-            cast(
-                func.percentile_cont(0.50).within_group(subq.c.total_area),
-                Numeric(10, 1),
-            ),
-            1,
-        ).label("median_area"),
-        func.round(
-            cast(
-                func.percentile_cont(0.75).within_group(subq.c.total_area),
-                Numeric(10, 1),
-            ),
-            1,
-        ).label("q3_area"),
-        func.round(cast(func.max(subq.c.total_area), Numeric(10, 1)), 1).label("max_area"),
-        func.round(cast(func.min(subq.c.price), Numeric(12, 1)), 1).label("min_price"),
-        func.round(
-            cast(func.percentile_cont(0.25).within_group(subq.c.price), Numeric(12, 1)),
-            1,
-        ).label("q1_price"),
-        func.round(
-            cast(func.percentile_cont(0.50).within_group(subq.c.price), Numeric(12, 1)),
-            1,
-        ).label("median_price"),
-        func.round(
-            cast(func.percentile_cont(0.75).within_group(subq.c.price), Numeric(12, 1)),
-            1,
-        ).label("q3_price"),
-        func.round(cast(func.max(subq.c.price), Numeric(12, 1)), 1).label("max_price"),
-    )
+    if params.is_new_house is not None:
+        filters.append(Offer.is_new_house == params.is_new_house)
 
-    main_stats = await session.execute(stmt)
-    main_stats_row = main_stats.first()
-
-    price_cat_stmt = select(subq.c.price_category, func.count()).group_by(subq.c.price_category)
-    price_cats = await session.execute(price_cat_stmt)
-    price_categories = {"cheap": 0, "normal": 0, "expensive": 0}
-    for price_cat, count in price_cats:
-        if price_cat in price_categories:
-            price_categories[price_cat] = count
-
-    prop_type_stmt = (
-        select(PropertyType.name, func.count(subq.c.id)).join(subq, PropertyType.id == subq.c.property_type_id).group_by(PropertyType.name)
-    )
-    prop_types = await session.execute(prop_type_stmt)
-    property_types = {}
-    for prop_name, count in prop_types:
-        property_types[prop_name] = count
-
-    apartments_subq = base_query.where(PropertyType.name.in_(["Квартира", "Аппартаменты"])).subquery()
-
-    rooms_stmt = select(
-        apartments_subq.c.rooms_count,
-        apartments_subq.c.is_new_house,
-        func.count(apartments_subq.c.id).label("count"),
-    ).group_by(apartments_subq.c.rooms_count, apartments_subq.c.is_new_house)
-    rooms_data = await session.execute(rooms_stmt)
-
-    rooms_by_count = {}
-    apartments_by_house_type = {"new_houses": 0, "secondary": 0}
-
-    for rooms, is_new, count in rooms_data:
-        if rooms is not None:
-            room_label = f"{rooms}_rooms" if 0 < rooms < 10 else "studio" if rooms == 0 else "open_plan"
-            rooms_by_count[room_label] = rooms_by_count.get(room_label, 0) + count
-
-        if is_new is True:
-            apartments_by_house_type["new_houses"] += count
-        elif is_new is False:
-            apartments_by_house_type["secondary"] += count
-
-    top_offers_stmt = (
-        select(
-            Offer.id,
-            Offer.title,
-            Offer.price,
-            Offer.price_per_square_meter,
-            Offer.images_urls,
-            Offer.is_new_house,
-            Offer.creation_date_source,
-            Offer.total_area,
-            Offer.land_area,
-            Offer.rooms_count,
-            Offer.floor,
-            Offer.house_floors_count,
-            Offer.house_built_year,
-            Offer.has_water_supply,
-            Offer.has_electricity,
-            Offer.has_furniture,
-            Offer.has_elevator,
-            Offer.has_garbage_chute,
-            Offer.is_build_complete,
-            Offer.views_count,
-            Offer.family_category,
-            Offer.family_score,
-            Offer.elderly_category,
-            Offer.elderly_score,
-            Offer.transport_access_category,
-            Offer.transport_access_score,
-            Offer.price_category,
-            Address.full_address,
-            RenovationType.name.label("renovation_type_name"),
-        )
-        .join(Address, Offer.address_id == Address.id)
-        .join(PropertyType, Offer.property_type_id == PropertyType.id)
-        .join(Region, Address.region_id == Region.id, isouter=True)
-        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
-        .join(Municipality, Address.municipality_id == Municipality.id, isouter=True)
-        .join(
-            SettlementType,
-            Settlement.settlement_type_id == SettlementType.id,
-            isouter=True,
-        )
-        .join(District, Address.district_id == District.id, isouter=True)
-        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
-        .join(Street, Address.street_id == Street.id, isouter=True)
-        .join(RenovationType, Offer.renovation_type_id == RenovationType.id, isouter=True)
-    )
-
-    if filters:
-        top_offers_stmt = top_offers_stmt.where(and_(*filters))
-
-    top_offers_stmt = top_offers_stmt.order_by(Offer.views_count.desc(), Offer.creation_date_source.desc()).limit(5)
-
-    top_offers_result = await session.execute(top_offers_stmt)
-
-    return {
-        "total_count": main_stats_row.total_count if main_stats_row else 0,
-        "offers_today": main_stats_row.offers_today if main_stats_row else 0,
-        "statistics": {
-            "averages": {
-                "average_price": int(main_stats_row.avg_price) if main_stats_row and main_stats_row.avg_price else None,
-                "average_price_per_square_meter": float(main_stats_row.avg_price_per_sqm)
-                if main_stats_row and main_stats_row.avg_price_per_sqm
-                else None,
-                "average_area": float(main_stats_row.avg_area) if main_stats_row and main_stats_row.avg_area else None,
-                "average_views_count": float(main_stats_row.avg_views_count) if main_stats_row and main_stats_row.avg_views_count else None,
-            },
-            "area_boxplot": {
-                "min": float(main_stats_row.min_area) if main_stats_row and main_stats_row.min_area is not None else None,
-                "q1": float(main_stats_row.q1_area) if main_stats_row and main_stats_row.q1_area is not None else None,
-                "median": float(main_stats_row.median_area) if main_stats_row and main_stats_row.median_area is not None else None,
-                "q3": float(main_stats_row.q3_area) if main_stats_row and main_stats_row.q3_area is not None else None,
-                "max": float(main_stats_row.max_area) if main_stats_row and main_stats_row.max_area is not None else None,
-            },
-            "price_boxplot": {
-                "min": float(main_stats_row.min_price) if main_stats_row and main_stats_row.min_price is not None else None,
-                "q1": float(main_stats_row.q1_price) if main_stats_row and main_stats_row.q1_price is not None else None,
-                "median": float(main_stats_row.median_price) if main_stats_row and main_stats_row.median_price is not None else None,
-                "q3": float(main_stats_row.q3_price) if main_stats_row and main_stats_row.q3_price is not None else None,
-                "max": float(main_stats_row.max_price) if main_stats_row and main_stats_row.max_price is not None else None,
-            },
-            "price_categories": price_categories,
-            "property_types": property_types,
-            "apartments_by_rooms": {
-                "rooms": rooms_by_count,
-                "flat_type": apartments_by_house_type,
-            },
-        },
-        "top_offers_by_views": [
-            {
-                "id": offer.id,
-                "title": offer.title,
-                "price": offer.price,
-                "price_per_square_meter": offer.price_per_square_meter,
-                "images_urls": offer.images_urls,
-                "is_new_house": offer.is_new_house,
-                "creation_date_source": offer.creation_date_source,
-                "total_area": offer.total_area,
-                "land_area": offer.land_area,
-                "rooms_count": offer.rooms_count,
-                "floor": offer.floor,
-                "house_floors_count": offer.house_floors_count,
-                "house_built_year": offer.house_built_year,
-                "has_water_supply": offer.has_water_supply,
-                "has_electricity": offer.has_electricity,
-                "has_furniture": offer.has_furniture,
-                "has_elevator": offer.has_elevator,
-                "has_garbage_chute": offer.has_garbage_chute,
-                "is_build_complete": offer.is_build_complete,
-                "views_count": offer.views_count,
-                "family_category": offer.family_category,
-                "family_score": offer.family_score,
-                "elderly_category": offer.elderly_category,
-                "elderly_score": offer.elderly_score,
-                "transport_access_category": offer.transport_access_category,
-                "transport_access_score": offer.transport_access_score,
-                "price_category": offer.price_category,
-                "address": {"full_address": offer.full_address},
-                "renovation_type": {"name": offer.renovation_type_name} if offer.renovation_type_name else None,
-            }
-            for offer in top_offers_result
-        ],
-    }
+    return filters
 
 
-@analysis_router.get("/group-stats")
+@analysis_router.get("/group-stats", response_model=list[GroupStatsItem])
 async def get_grouped_stats(
-    group_by: Literal["region", "municipality", "settlement", "district", "microdistrict", "street"] = Query(...),
-    region_name: Optional[str] = Query(None),
-    settlement_name: Optional[str] = Query(None),
-    municipality_name: Optional[str] = Query(None, description="Название муниципального образования"),
-    district_name: Optional[str] = Query(None),
-    microdistrict_name: Optional[str] = Query(None),
-    street_name: Optional[str] = Query(None),
-    settlement_type_names: Optional[List[str]] = Query(None),
-    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
+    params: AddressQueryParams = Depends(),
+    group_by: Literal["region", "municipality", "settlement", "district", "microdistrict", "street"] = Query(),
     session: AsyncSession = Depends(get_async_session),
 ):
     group_map = {
@@ -1283,29 +159,13 @@ async def get_grouped_stats(
 
     group_col = group_map[group_by]
 
-    filters = []
-    if region_name:
-        filters.append(Region.short_name == region_name)
-    if settlement_name:
-        filters.append(Settlement.short_name == settlement_name)
-    if municipality_name:
-        filters.append(Municipality.short_name == municipality_name)
-    if district_name:
-        filters.append(District.short_name == district_name)
-    if microdistrict_name:
-        filters.append(Microdistrict.short_name == microdistrict_name)
-    if street_name:
-        filters.append(Street.short_name == street_name)
-    if settlement_type_names:
-        filters.append(SettlementType.name.in_(settlement_type_names))
-    if is_new_house is not None:
-        filters.append(Offer.is_new_house == is_new_house)
+    filters = build_address_filters(params)
 
     offers_count_col = func.count(Offer.id).label("offers_count")
 
     stmt = (
         select(
-            group_col.label(group_by),
+            group_col.label("name"),
             offers_count_col,
             func.round(func.avg(Offer.price)).label("average_price"),
             func.round(func.avg(Offer.price_per_square_meter)).label("average_price_per_square_meter"),
@@ -1334,22 +194,18 @@ async def get_grouped_stats(
             func.percentile_cont(0.75).within_group(Offer.price).label("price_q3"),
             func.max(Offer.price).label("price_max"),
         )
-        .select_from(Offer)
-        .join(Address, Offer.address_id == Address.id)
-        .join(Region, Address.region_id == Region.id, isouter=True)
-        .join(Settlement, Address.settlement_id == Settlement.id, isouter=True)
-        .join(Municipality, Address.municipality_id == Municipality.id, isouter=True)
-        .join(
-            SettlementType,
-            Settlement.settlement_type_id == SettlementType.id,
-            isouter=True,
-        )
-        .join(District, Address.district_id == District.id, isouter=True)
-        .join(Microdistrict, Address.microdistrict_id == Microdistrict.id, isouter=True)
-        .join(Street, Address.street_id == Street.id, isouter=True)
+        .join(Offer.address)
+        .outerjoin(Address.region)
+        .outerjoin(Address.settlement)
+        .outerjoin(Address.municipality)
+        .outerjoin(Settlement.settlement_type)
+        .outerjoin(Address.district)
+        .outerjoin(Address.microdistrict)
+        .outerjoin(Address.street)
         .group_by(group_col)
         .order_by(group_col.asc())
     )
+
     null_guard = {
         "region": Region.id,
         "settlement": Settlement.id,
@@ -1360,504 +216,650 @@ async def get_grouped_stats(
     }
 
     stmt = stmt.where(null_guard[group_by].isnot(None))
+
     if filters:
         stmt = stmt.where(and_(*filters))
 
-    result = await session.exec(stmt)
-    rows = result.all()
+    rows = (await session.exec(stmt)).all()
 
-    return {
-        "results": [
-            {
-                group_by: getattr(row, group_by),
-                "offers_count": row.offers_count,
-                "averages": {
-                    "average_price": row.average_price,
-                    "average_price_per_square_meter": row.average_price_per_square_meter,
-                    "average_area": row.average_area,
-                    "average_views_count": row.average_views_count,
-                },
-                "price_categories": {
-                    "cheap": row.cheap,
-                    "normal": row.normal,
-                    "expensive": row.expensive,
-                },
-                "family_categories": {
-                    "low": row.family_low,
-                    "medium": row.family_medium,
-                    "high": row.family_high,
-                },
-                "elderly_categories": {
-                    "low": row.elderly_low,
-                    "medium": row.elderly_medium,
-                    "high": row.elderly_high,
-                },
-                "transport_access_categories": {
-                    "low": row.transport_low,
-                    "medium": row.transport_medium,
-                    "high": row.transport_high,
-                },
-                "area_boxplot": {
-                    "min": row.area_min,
-                    "q1": row.area_q1,
-                    "median": row.area_median,
-                    "q3": row.area_q3,
-                    "max": row.area_max,
-                },
-                "price_boxplot": {
-                    "min": row.price_min,
-                    "q1": row.price_q1,
-                    "median": row.price_median,
-                    "q3": row.price_q3,
-                    "max": row.price_max,
-                },
-            }
-            for row in rows
-        ],
+    return [
+        GroupStatsItem(
+            name=row.name,
+            offers_count=row.offers_count,
+            averages={
+                "average_price": row.average_price,
+                "average_price_per_square_meter": row.average_price_per_square_meter,
+                "average_area": row.average_area,
+                "average_views_count": row.average_views_count,
+            },
+            price_categories={
+                "cheap": row.cheap,
+                "normal": row.normal,
+                "expensive": row.expensive,
+            },
+            family_categories={
+                "low": row.family_low,
+                "medium": row.family_medium,
+                "high": row.family_high,
+            },
+            elderly_categories={
+                "low": row.elderly_low,
+                "medium": row.elderly_medium,
+                "high": row.elderly_high,
+            },
+            transport_access_categories={
+                "low": row.transport_low,
+                "medium": row.transport_medium,
+                "high": row.transport_high,
+            },
+            area_boxplot={
+                "min": row.area_min,
+                "q1": row.area_q1,
+                "median": row.area_median,
+                "q3": row.area_q3,
+                "max": row.area_max,
+            },
+            price_boxplot={
+                "min": row.price_min,
+                "q1": row.price_q1,
+                "median": row.price_median,
+                "q3": row.price_q3,
+                "max": row.price_max,
+            },
+        )
+        for row in rows
+    ]
+
+
+@analysis_router.get("/stats", response_model=StatsResponse)
+async def get_offers_by_location(
+    params: AddressQueryParams = Depends(),
+    session: AsyncSession = Depends(get_async_session),
+):
+    filters = build_address_filters(params)
+
+    base_stmt = (
+        select(Offer)
+        .join(Offer.address)
+        .outerjoin(Address.region)
+        .outerjoin(Address.settlement)
+        .outerjoin(Address.municipality)
+        .outerjoin(Settlement.settlement_type)
+        .outerjoin(Address.district)
+        .outerjoin(Address.microdistrict)
+        .outerjoin(Address.street)
+        .outerjoin(PropertyType, Offer.property_type_id == PropertyType.id)
+    )
+
+    if filters:
+        base_stmt = base_stmt.where(and_(*filters))
+
+    subq = base_stmt.subquery()
+
+    stats_stmt = select(
+        func.count().label("total_count"),
+        func.count().filter(func.date(func.timezone("Europe/Moscow", subq.c.creation_date_source)) == date.today()).label("offers_today"),
+        func.round(func.avg(subq.c.price)).label("avg_price"),
+        func.round(func.avg(subq.c.price_per_square_meter)).label("avg_price_per_sqm"),
+        func.round(func.avg(subq.c.total_area)).label("avg_area"),
+        func.round(func.avg(subq.c.daily_views_count)).label("avg_views_count"),
+    )
+
+    stats = (await session.exec(stats_stmt)).first()
+
+    price_categories_raw = {
+        k: v for k, v in await session.exec(select(subq.c.price_category, func.count()).group_by(subq.c.price_category))
     }
 
+    price_categories = {
+        "cheap": 0,
+        "normal": 0,
+        "expensive": 0,
+    }
 
-@analysis_router.get("/last-10-days-views-history")
+    price_categories.update({k: v for k, v in price_categories_raw.items() if k is not None})
+
+    property_types = {
+        name: count
+        for name, count in await session.exec(
+            select(PropertyType.name, func.count(subq.c.id))
+            .join(subq, PropertyType.id == subq.c.property_type_id)
+            .group_by(PropertyType.name)
+        )
+    }
+
+    apartments_subq = base_stmt.where(PropertyType.name.in_(["Квартира", "Аппартаменты"])).subquery()
+
+    rooms_by_count = {}
+    apartments_by_house_type = {"new_houses": 0, "secondary": 0}
+
+    rooms_data = await session.exec(
+        select(apartments_subq.c.rooms_count, apartments_subq.c.is_new_house, func.count()).group_by(
+            apartments_subq.c.rooms_count, apartments_subq.c.is_new_house
+        )
+    )
+
+    for rooms, is_new, count in rooms_data:
+        if rooms is not None:
+            key = "studio" if rooms == 0 else f"{rooms}_rooms" if rooms < 10 else "open_plan"
+            rooms_by_count[key] = rooms_by_count.get(key, 0) + count
+
+        if is_new is True:
+            apartments_by_house_type["new_houses"] += count
+        elif is_new is False:
+            apartments_by_house_type["secondary"] += count
+
+    top_offers = (await session.exec(base_stmt.order_by(Offer.views_count.desc(), Offer.creation_date_source.desc()).limit(5))).all()
+
+    return StatsResponse(
+        total_count=stats.total_count,
+        offers_today=stats.offers_today,
+        statistics=Statistics(
+            averages=Averages(
+                average_price=stats.avg_price,
+                average_price_per_square_meter=stats.avg_price_per_sqm,
+                average_area=stats.avg_area,
+                average_views_count=stats.avg_views_count,
+            ),
+            price_categories=price_categories,
+            property_types=property_types,
+            apartments_by_rooms=ApartmentsByRooms(
+                rooms=rooms_by_count,
+                flat_type=apartments_by_house_type,
+            ),
+        ),
+        top_offers_by_views=top_offers,
+    )
+
+
+@analysis_router.get("/last-10-days-views-history", response_model=list[ViewHistoryItem])
 async def get_views_last_10_days(
     session: AsyncSession = Depends(get_async_session),
-    region_name: Optional[str] = Query(None),
-    settlement_name: Optional[str] = Query(None),
-    municipality_name: Optional[str] = Query(None),
-    district_name: Optional[str] = Query(None),
-    microdistrict_name: Optional[str] = Query(None),
-    street_name: Optional[str] = Query(None),
-    settlement_type_names: Optional[List[str]] = Query(None, description="Типы населённых пунктов"),
-    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
+    params: AddressQueryParams = Depends(),
+    settlement_type_names: list[str] | None = Query(None),
 ):
+
+    elem = func.jsonb_array_elements(Offer.views_history).table_valued("value").alias("elem")
+
+    elem_date = cast(func.jsonb_extract_path_text(elem.c.value, "date"), TIMESTAMP)
+    elem_views = cast(func.jsonb_extract_path_text(elem.c.value, "views"), Integer)
+
     conditions = [
-        "o.views_history IS NOT NULL",
-        "jsonb_typeof(o.views_history) = 'array'",
-        "(elem->>'date')::timestamptz >= (now() AT TIME ZONE 'utc') - interval '10 days'",
+        Offer.views_history.isnot(None),
+        func.jsonb_typeof(Offer.views_history) == "array",
+        elem_date >= func.now() - text("interval '10 days'"),
     ]
 
-    params = {}
-
-    if region_name:
-        conditions.append("r.short_name = :region_name")
-        params["region_name"] = region_name
-
-    if settlement_name:
-        conditions.append("s.short_name = :settlement_name")
-        params["settlement_name"] = settlement_name
-
-    if municipality_name:
-        conditions.append("m.short_name = :municipality_name")
-        params["municipality_name"] = municipality_name
-
-    if district_name:
-        conditions.append("d.short_name = :district_name")
-        params["district_name"] = district_name
-
-    if microdistrict_name:
-        conditions.append("md.short_name = :microdistrict_name")
-        params["microdistrict_name"] = microdistrict_name
-
-    if street_name:
-        conditions.append("st.short_name = :street_name")
-        params["street_name"] = street_name
-
+    if params.region_name:
+        conditions.append(Region.short_name == params.region_name)
+    if params.settlement_name:
+        conditions.append(Settlement.short_name == params.settlement_name)
+    if params.municipality_name:
+        conditions.append(Municipality.short_name == params.municipality_name)
+    if params.district_name:
+        conditions.append(District.short_name == params.district_name)
+    if params.microdistrict_name:
+        conditions.append(Microdistrict.short_name == params.microdistrict_name)
+    if params.street_name:
+        conditions.append(Street.short_name == params.street_name)
     if settlement_type_names:
-        conditions.append("stt.name = ANY(:settlement_type_names)")
-        params["settlement_type_names"] = settlement_type_names
+        conditions.append(SettlementType.name.in_(settlement_type_names))
+    if params.is_new_house is not None:
+        conditions.append(Offer.is_new_house == params.is_new_house)
 
-    if is_new_house is not None:
-        conditions.append("o.is_new_house = :is_new_house")
-        params["is_new_house"] = is_new_house
+    stmt = (
+        select(cast(elem_date, Date).label("date"), func.sum(elem_views).label("views"))
+        .select_from(Offer)
+        .join(Address, Offer.address_id == Address.id)
+        .outerjoin(Region, Address.region_id == Region.id)
+        .outerjoin(Settlement, Address.settlement_id == Settlement.id)
+        .outerjoin(Municipality, Address.municipality_id == Municipality.id)
+        .outerjoin(District, Address.district_id == District.id)
+        .outerjoin(Microdistrict, Address.microdistrict_id == Microdistrict.id)
+        .outerjoin(Street, Address.street_id == Street.id)
+        .outerjoin(SettlementType, Settlement.settlement_type_id == SettlementType.id)
+        .join(lateral(elem), true())
+        .where(and_(*conditions))
+        .group_by(cast(elem_date, Date))
+        .order_by(cast(elem_date, Date))
+    )
 
-    where_clause = " AND ".join(conditions)
-
-    query = text(f"""
-        SELECT 
-            (elem->>'date')::date AS date,
-            SUM((elem->>'views')::int) AS views
-        FROM offer o
-        JOIN address a ON o.address_id = a.id
-        LEFT JOIN region r ON a.region_id = r.id
-        LEFT JOIN settlement s ON a.settlement_id = s.id
-        LEFT JOIN municipality m ON a.municipality_id = m.id
-        LEFT JOIN settlement_type stt ON s.settlement_type_id = stt.id
-        LEFT JOIN district d ON a.district_id = d.id
-        LEFT JOIN street st ON a.street_id = st.id
-        LEFT JOIN microdistrict md ON a.microdistrict_id = md.id
-        CROSS JOIN LATERAL jsonb_array_elements(o.views_history) AS elem
-        WHERE {where_clause}
-        GROUP BY (elem->>'date')::date
-        ORDER BY (elem->>'date')::date
-    """)
-
-    result = await session.execute(query, params)
+    result = await session.execute(stmt)
     rows = result.all()
 
-    return [{"date": row.date, "views": row.views} for row in rows]
+    return [ViewHistoryItem(date=row.date, views=row.views) for row in rows]
 
 
-@analysis_router.get("/average-prices-history")
-async def get_average_prices_history(
-    region_name: Optional[str] = Query(None),
-    settlement_name: Optional[str] = Query(None),
-    municipality_name: Optional[str] = Query(None),
-    district_name: Optional[str] = Query(None),
-    microdistrict_name: Optional[str] = Query(None),
-    street_name: Optional[str] = Query(None),
-    settlement_type_names: Optional[List[str]] = Query(None, description="Типы населённых пунктов"),
+@analysis_router.get("/chat_assistant")
+async def assistant(query: str = Query(), session: AsyncSession = Depends(get_async_session)):
+    try:
+        with open("assistant_prompt.txt", "r", encoding="utf-8") as file:
+            system_prompt = file.read()
+    except FileNotFoundError:
+        return {"explanation": "Ошибка конфигурации. Обратитесь к администратору."}
+
+    client = OpenAI(api_key=settings.OPEN_ROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
+
+    response = client.chat.completions.create(
+        model="arcee-ai/trinity-large-preview:free",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": query},
+        ],
+    )
+    print(response.choices[0].message.content)
+    try:
+        data = json.loads(response.choices[0].message.content)
+    except Exception as e:
+        print(e)
+        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
+
+    sql = data["sql"].strip()
+
+    if data.get("sql") is None:
+        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
+
+    if (
+        "user" in sql.lower()
+        or "password" in sql.lower()
+        or re.search(r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|REPLACE)\b", sql)
+        or not sql.startswith("SELECT")
+    ):
+        return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
+
+    print(sql)
+
+    result = await session.execute(text(sql))
+    rows = result.mappings().all()
+
+    return {"sql": sql, "explanation": data["explanation"], "result": rows}
+
+
+@analysis_router.post("/statistics/update-price-categories")
+async def update_price_categories_in_db(
     session: AsyncSession = Depends(get_async_session),
-    is_new_house: Optional[bool] = Query(None, description="Новостройка"),
 ):
-    active_filters = [
-        region_name,
-        settlement_name,
-        municipality_name,
-        district_name,
-        street_name,
-        microdistrict_name,
-        settlement_type_names,
-    ]
-    other_filters = [
-        settlement_name,
-        municipality_name,
-        district_name,
-        street_name,
-        microdistrict_name,
-        settlement_type_names,
-    ]
-    other_filters1 = [
-        settlement_name,
-        municipality_name,
-        district_name,
-        street_name,
-        microdistrict_name,
-        region_name,
-    ]
-    print(settlement_type_names)
-    # Проверяем наличие фильтров
-    if is_new_house is None and not any(other_filters):
-        # Нет фильтров и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif settlement_type_names == ["город"] and all(
-        x is None
-        for x in [
-            region_name,
-            settlement_name,
-            municipality_name,
-            district_name,
-            microdistrict_name,
-            street_name,
-            is_new_house,
-        ]
-    ):
-        # Нет фильтров и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_city
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif (
-        settlement_type_names == ["город"]
-        and is_new_house is True
-        and all(
-            x is None
-            for x in [
-                region_name,
-                settlement_name,
-                municipality_name,
-                district_name,
-                microdistrict_name,
-                street_name,
-            ]
-        )
-    ):
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_city_new_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif (
-        settlement_type_names == ["город"]
-        and is_new_house is False
-        and all(
-            x is None
-            for x in [
-                region_name,
-                settlement_name,
-                municipality_name,
-                district_name,
-                microdistrict_name,
-                street_name,
-            ]
-        )
-    ):
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_city_old_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif settlement_type_names == ["деревня"] and all(
-        x is None
-        for x in [
-            region_name,
-            settlement_name,
-            municipality_name,
-            district_name,
-            microdistrict_name,
-            street_name,
-            is_new_house,
-        ]
-    ):
-        # Нет фильтров и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_village
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif not is_new_house and not any(other_filters):
-        # Нет фильтров и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_old_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif is_new_house and not any(other_filters):
-        # Только is_new_house=True, остальные фильтры пустые
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_new_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif region_name == "Московская область" and not any(other_filters) and not is_new_house:
-        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
-        print("Какого хуя ты сюда не попадаешь")
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_moscow_obl_old_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif region_name == "Московская область" and not any(other_filters) and is_new_house is None:
-        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_moscow_obl
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif region_name == "Московская область" and not any(other_filters) and is_new_house:
-        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_moscow_obl_new_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
 
-    elif settlement_name == "г. Москва" and is_new_house is None and district_name is None and microdistrict_name is None:
-        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
-        query = text("""
-        SELECT
-            date,
-            avg_price
-        FROM avg_prices_history_moscow
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif settlement_name == "г. Москва" and is_new_house and district_name is None and microdistrict_name is None:
-        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_moscow_new_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif settlement_name == "г. Москва" and not is_new_house and district_name is None and microdistrict_name is None:
-        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_moscow_old_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif region_name == "Москва" and not is_new_house and not any(other_filters):
-        query = text("SELECT date, avg_price FROM avg_prices_history_moscow ORDER BY date;")
-        result = await session.execute(query)
-        rows = result.fetchall()
-    elif region_name == "Москва" and not any(other_filters) and is_new_house:
-        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_region_moscow_new_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
+    street_avg = (
+        select(
+            Address.street_id,
+            PropertyType.id.label("property_type_id"),
+            Offer.rooms_count,
+            Offer.renovation_type_id,
+            func.avg(Offer.price).label("avg_price"),
+            func.count(Offer.id).label("count"),
+            literal(1).label("level"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .where(Offer.price.isnot(None))
+        .where(Address.street_id.isnot(None))
+        .group_by(Address.street_id, PropertyType.id, Offer.rooms_count, Offer.renovation_type_id)
+        .having(func.count(Offer.id) >= 3)
+        .cte("street_avg")
+    )
 
-    elif region_name == "Москва" and not any(other_filters) and not is_new_house:
-        # Только settlement_name="г. Москва", остальные фильтры пустые и is_new_house=False
-        query = text("""
-        SELECT 
-            date,
-            avg_price
-        FROM avg_prices_history_region_moscow_old_house
-        ORDER BY date;
-        """)
-        result = await session.execute(query)
-        rows = result.fetchall()
+    microdistrict_avg = (
+        select(
+            Address.microdistrict_id,
+            PropertyType.id.label("property_type_id"),
+            Offer.rooms_count,
+            Offer.renovation_type_id,
+            func.avg(Offer.price).label("avg_price"),
+            func.count(Offer.id).label("count"),
+            literal(2).label("level"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .where(Offer.price.isnot(None))
+        .where(Address.microdistrict_id.isnot(None))
+        .group_by(Address.microdistrict_id, PropertyType.id, Offer.rooms_count, Offer.renovation_type_id)
+        .having(func.count(Offer.id) >= 3)
+        .cte("microdistrict_avg")
+    )
+
+    district_avg = (
+        select(
+            Address.district_id,
+            PropertyType.id.label("property_type_id"),
+            Offer.rooms_count,
+            Offer.renovation_type_id,
+            func.avg(Offer.price).label("avg_price"),
+            func.count(Offer.id).label("count"),
+            literal(3).label("level"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .where(Offer.price.isnot(None))
+        .where(Address.district_id.isnot(None))
+        .group_by(Address.district_id, PropertyType.id, Offer.rooms_count, Offer.renovation_type_id)
+        .having(func.count(Offer.id) >= 3)
+        .cte("district_avg")
+    )
+
+    settlement_avg = (
+        select(
+            Address.settlement_id,
+            PropertyType.id.label("property_type_id"),
+            Offer.rooms_count,
+            Offer.renovation_type_id,
+            func.avg(Offer.price).label("avg_price"),
+            func.count(Offer.id).label("count"),
+            literal(4).label("level"),
+        )
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .where(Offer.price.isnot(None))
+        .where(Address.settlement_id.isnot(None))
+        .group_by(Address.settlement_id, PropertyType.id, Offer.rooms_count, Offer.renovation_type_id)
+        .having(func.count(Offer.id) >= 3)
+        .cte("settlement_avg")
+    )
+
+    all_avgs = (
+        select(
+            Offer.id.label("offer_id"),
+            Offer.price.label("offer_price"),
+            PropertyType.name.label("property_type_name"),
+            Address.street_id,
+            Address.microdistrict_id,
+            Address.district_id,
+            Address.settlement_id,
+            Offer.rooms_count,
+            Offer.renovation_type_id,
+            func.coalesce(
+                street_avg.c.avg_price, microdistrict_avg.c.avg_price, district_avg.c.avg_price, settlement_avg.c.avg_price
+            ).label("avg_price"),
+        )
+        .select_from(Offer)
+        .join(Address, Offer.address_id == Address.id)
+        .join(PropertyType, Offer.property_type_id == PropertyType.id)
+        .where(Offer.price.isnot(None))
+        .outerjoin(
+            street_avg,
+            and_(
+                street_avg.c.street_id == Address.street_id,
+                street_avg.c.property_type_id == PropertyType.id,
+                or_(
+                    and_(
+                        PropertyType.name.in_(["Квартира", "Апартаменты"]),
+                        street_avg.c.rooms_count == Offer.rooms_count,
+                        street_avg.c.renovation_type_id == Offer.renovation_type_id,
+                    ),
+                    and_(PropertyType.name.in_(["Дом", "Коттедж", "Таунхаус"]), street_avg.c.rooms_count.is_(None)),
+                    and_(
+                        ~PropertyType.name.in_(["Квартира", "Апартаменты", "Дом", "Коттедж", "Таунхаус"]),
+                        street_avg.c.rooms_count.is_(None),
+                        street_avg.c.renovation_type_id.is_(None),
+                    ),
+                ),
+            ),
+        )
+        .outerjoin(
+            microdistrict_avg,
+            and_(
+                microdistrict_avg.c.microdistrict_id == Address.microdistrict_id,
+                microdistrict_avg.c.property_type_id == PropertyType.id,
+                or_(
+                    and_(
+                        PropertyType.name.in_(["Квартира", "Апартаменты"]),
+                        microdistrict_avg.c.rooms_count == Offer.rooms_count,
+                        microdistrict_avg.c.renovation_type_id == Offer.renovation_type_id,
+                    ),
+                    and_(PropertyType.name.in_(["Дом", "Коттедж", "Таунхаус"]), microdistrict_avg.c.rooms_count.is_(None)),
+                    and_(
+                        ~PropertyType.name.in_(["Квартира", "Апартаменты", "Дом", "Коттедж", "Таунхаус"]),
+                        microdistrict_avg.c.rooms_count.is_(None),
+                        microdistrict_avg.c.renovation_type_id.is_(None),
+                    ),
+                ),
+            ),
+        )
+        .outerjoin(
+            district_avg,
+            and_(
+                district_avg.c.district_id == Address.district_id,
+                district_avg.c.property_type_id == PropertyType.id,
+                or_(
+                    and_(
+                        PropertyType.name.in_(["Квартира", "Апартаменты"]),
+                        district_avg.c.rooms_count == Offer.rooms_count,
+                        district_avg.c.renovation_type_id == Offer.renovation_type_id,
+                    ),
+                    and_(PropertyType.name.in_(["Дом", "Коттедж", "Таунхаус"]), district_avg.c.rooms_count.is_(None)),
+                    and_(
+                        ~PropertyType.name.in_(["Квартира", "Апартаменты", "Дом", "Коттедж", "Таунхаус"]),
+                        district_avg.c.rooms_count.is_(None),
+                        district_avg.c.renovation_type_id.is_(None),
+                    ),
+                ),
+            ),
+        )
+        .outerjoin(
+            settlement_avg,
+            and_(
+                settlement_avg.c.settlement_id == Address.settlement_id,
+                settlement_avg.c.property_type_id == PropertyType.id,
+                or_(
+                    and_(
+                        PropertyType.name.in_(["Квартира", "Апартаменты"]),
+                        settlement_avg.c.rooms_count == Offer.rooms_count,
+                        settlement_avg.c.renovation_type_id == Offer.renovation_type_id,
+                    ),
+                    and_(PropertyType.name.in_(["Дом", "Коттедж", "Таунхаус"]), settlement_avg.c.rooms_count.is_(None)),
+                    and_(
+                        ~PropertyType.name.in_(["Квартира", "Апартаменты", "Дом", "Коттедж", "Таунхаус"]),
+                        settlement_avg.c.rooms_count.is_(None),
+                        settlement_avg.c.renovation_type_id.is_(None),
+                    ),
+                ),
+            ),
+        )
+        .cte("all_avgs")
+    )
+
+    update_stmt = (
+        update(Offer)
+        .where(Offer.id == all_avgs.c.offer_id)
+        .values(
+            price_category=case(
+                (and_(all_avgs.c.avg_price.isnot(None), all_avgs.c.offer_price > all_avgs.c.avg_price * 1.05), "expensive"),
+                (and_(all_avgs.c.avg_price.isnot(None), all_avgs.c.offer_price < all_avgs.c.avg_price * 0.95), "cheap"),
+                else_="normal",
+            )
+        )
+    )
+
+    result = await session.execute(update_stmt)
+    await session.commit()
+
+    stats_result = await session.execute(
+        select(Offer.price_category, func.count().label("count")).where(Offer.price_category.isnot(None)).group_by(Offer.price_category)
+    )
+
+    stats = {row.price_category: row.count for row in stats_result}
+
+    return {"message": "Ценовые категории успешно обновлены", "updated_count": result.rowcount, "statistics": stats}
+
+
+class ElectreResponse(BaseModel):
+    kernel: list[int]
+    dominance_info: dict[int, dict[int, dict[str, list[int]]]]
+    outranking: list[list[bool]]
+    allIds: list[int]
+
+    class Config:
+        arbitrary_types_allowed = False
+        json_encoders = {
+            np.ndarray: lambda v: v.tolist(),
+            np.bool_: lambda v: bool(v),
+            np.int64: lambda v: int(v),
+            np.float64: lambda v: float(v),
+        }
+
+
+class MCDABodyParams(BaseModel):
+    evaluations: List[List[float]]
+    weights: List[float]
+    is_min: List[bool]
+
+
+@analysis_router.post("/electre", response_model=ElectreResponse)
+def electre_endpoint(params: MCDABodyParams = Depends(), alpha_init: float = Body(), beta_init: float = Body()):
+    kernel, dominance_info, outranking = electre(
+        evaluations=params.evaluations,
+        weights=params.weights,
+        is_min=params.is_min,
+        alpha_init=alpha_init,
+        beta_init=beta_init,
+        verbose=False,
+    )
+
+    if isinstance(kernel, np.ndarray):
+        kernel = kernel.tolist()
+    elif kernel is None:
+        kernel = []
     else:
-        filters = []
-        params = {}
+        kernel = [int(k) for k in kernel]
 
-        if region_name is not None:
-            filters.append("r.short_name = :region_name")
-            params["region_name"] = region_name
-        if settlement_name is not None:
-            filters.append("s.short_name = :settlement_name")
-            params["settlement_name"] = settlement_name
-        if municipality_name is not None:
-            filters.append("m.short_name = :municipality_name")
-            params["municipality_name"] = municipality_name
-        if district_name is not None:
-            filters.append("d.short_name = :district_name")
-            params["district_name"] = district_name
-        if microdistrict_name is not None:
-            filters.append("md.short_name = :microdistrict_name")
-            params["microdistrict_name"] = microdistrict_name
-        if street_name is not None:
-            filters.append("st.short_name = :street_name")
-            params["street_name"] = street_name
-        if is_new_house is not None:
-            filters.append("o.is_new_house = :is_new_house")
-            params["is_new_house"] = is_new_house
+    response = ElectreResponse(
+        kernel=kernel, dominance_info=dominance_info, outranking=outranking, allIds=list(range(len(params.evaluations)))
+    )
 
-        if settlement_type_names is not None and len(settlement_type_names) > 0:
-            placeholders = ", ".join([f":settlement_type_{i}" for i in range(len(settlement_type_names))])
-            filters.append(f"stt.name IN ({placeholders})")
-            for i, st_name in enumerate(settlement_type_names):
-                params[f"settlement_type_{i}"] = st_name
+    return response
 
-        where_clause = " AND ".join(filters) if filters else "TRUE"
 
-        query = text(f"""
-        WITH filtered_offers AS (
-            SELECT 
-                o.id AS offer_id, 
-                o.price AS initial_price, 
+class TopsisResponse(BaseModel):
+    scores: List[float]
+    ranked_indices: List[int]
+    allIds: List[int]
+
+
+@analysis_router.post("/topsis", response_model=TopsisResponse)
+def topsis_endpoint(params: MCDABodyParams = Body()):
+    scores, ranked_indices = topsis(X=np.array(params.evaluations), weights=np.array(params.weights), criteria=np.array(params.is_min))
+
+    if isinstance(scores, np.ndarray):
+        scores = scores.tolist()
+    if isinstance(ranked_indices, np.ndarray):
+        ranked_indices = ranked_indices.tolist()
+
+    response = TopsisResponse(scores=scores, ranked_indices=ranked_indices, allIds=list(range(len(params.evaluations))))
+
+    return response
+
+
+@analysis_router.get("/avg-price-history")
+async def avg_price_by_day(
+    session: AsyncSession = Depends(get_async_session),
+    params: AddressQueryParams = Depends(),
+):
+    filters = []
+    query_params = {}
+
+    if params.region_name:
+        filters.append("r.short_name = :region_name")
+        query_params["region_name"] = params.region_name
+
+    if params.municipality_name:
+        filters.append("m.short_name = :municipality_name")
+        query_params["municipality_name"] = params.municipality_name
+
+    if params.settlement_name:
+        filters.append("s.short_name = :settlement_name")
+        query_params["settlement_name"] = params.settlement_name
+
+    if params.district_name:
+        filters.append("d.short_name = :district_name")
+        query_params["district_name"] = params.district_name
+
+    if params.microdistrict_name:
+        filters.append("md.short_name = :microdistrict_name")
+        query_params["microdistrict_name"] = params.microdistrict_name
+
+    if params.street_name:
+        filters.append("st.short_name = :street_name")
+        query_params["street_name"] = params.street_name
+
+    if params.settlement_type_names:
+        filters.append("stt.name = :settlement_type_names")
+        query_params["settlement_type_names"] = params.settlement_type_names
+
+    if params.is_new_house is not None:
+        filters.append("o.is_new_house = :is_new_house")
+        query_params["is_new_house"] = params.is_new_house
+
+    where_clause = ""
+    if filters:
+        where_clause = "AND " + " AND ".join(filters)
+
+    query = text(f"""
+        WITH offer_prices AS (
+            SELECT
+                o.id AS offer_id,
+                o.price AS initial_price,
                 o.creation_date_source::date AS creation_date,
-                a.id AS address_id, 
-                r.short_name AS region, 
-                s.short_name AS settlement,
-                m.short_name AS municipality,
-                d.short_name AS district,
-                md.short_name AS microdistrict,  
-                st.short_name AS street,
-                stt.name AS settlement_type,
-                jsonb_array_elements(o.price_history) AS ph
+                (ph->'priceData'->>'price')::numeric AS price,
+                (ph->>'changeTime')::date AS change_date
             FROM offer o
             JOIN address a ON a.id = o.address_id
             LEFT JOIN region r ON a.region_id = r.id
-            LEFT JOIN settlement s ON a.settlement_id = s.id
             LEFT JOIN municipality m ON a.municipality_id = m.id
-            LEFT JOIN settlement_type stt ON s.settlement_type_id = stt.id
+            LEFT JOIN settlement s ON a.settlement_id = s.id
             LEFT JOIN district d ON a.district_id = d.id
             LEFT JOIN microdistrict md ON a.microdistrict_id = md.id
             LEFT JOIN street st ON a.street_id = st.id
-            WHERE {where_clause}
+            LEFT JOIN settlement_type stt ON s.settlement_type_id = stt.id
+            CROSS JOIN LATERAL jsonb_array_elements(o.price_history) ph
+            WHERE 1=1
+            {where_clause}
         ),
-        offer_prices AS (
+        dates AS (
+            SELECT generate_series(
+                (SELECT MIN(creation_date) FROM offer_prices),
+                (SELECT MAX(change_date) FROM offer_prices),
+                interval '1 day'
+            )::date AS date
+        ),
+        timeline AS (
             SELECT
-                fo.offer_id,
-                (fo.ph->'priceData'->>'price')::numeric AS price,
-                (fo.ph->>'changeTime')::timestamp AS change_time
-            FROM filtered_offers fo
+                o.offer_id,
+                d.date,
+                o.initial_price,
+                o.creation_date,
+                op.price
+            FROM (
+                SELECT DISTINCT offer_id, initial_price, creation_date
+                FROM offer_prices
+            ) o
+            JOIN dates d ON d.date >= o.creation_date
+            LEFT JOIN offer_prices op
+                ON op.offer_id = o.offer_id
+               AND op.change_date = d.date
         ),
-        latest_price_per_offer AS (
-            SELECT 
-                op.offer_id,
-                op.price,
-                op.change_time::date AS date,
-                ROW_NUMBER() OVER (
-                    PARTITION BY op.offer_id, op.change_time::date
-                    ORDER BY op.change_time DESC
-                ) AS rn
-            FROM offer_prices op
-        ),
-        unique_dates AS (
-            SELECT DISTINCT date(change_time) AS date FROM offer_prices
+        filled AS (
+            SELECT
+                offer_id,
+                date,
+                COALESCE(
+                    LAST_VALUE(price) OVER (
+                        PARTITION BY offer_id
+                        ORDER BY date
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                    ),
+                    initial_price
+                ) AS price
+            FROM timeline
         )
-        SELECT 
-            d.date,
-            ROUND(AVG(
-                COALESCE(lp.price, CASE WHEN fo.creation_date < d.date THEN fo.initial_price ELSE NULL END)
-            ))::bigint AS avg_price
-        FROM unique_dates d
-        JOIN filtered_offers fo ON TRUE
-        LEFT JOIN latest_price_per_offer lp
-            ON lp.offer_id = fo.offer_id
-           AND lp.date = d.date
-           AND lp.rn = 1
-        GROUP BY d.date
-        ORDER BY d.date;
-        """)
+        SELECT
+            date,
+            ROUND(AVG(price))::bigint AS avg_price
+        FROM filled
+        GROUP BY date
+        ORDER BY date
+    """)
 
-        result = await session.execute(query, params)
-        rows = result.fetchall()
+    result = await session.execute(query, query_params)
+    rows = result.fetchall()
 
-    return [
-        {
-            "date": row.date.isoformat(),
-            "avg_price": int(row.avg_price) if row.avg_price is not None else None,
-        }
-        for row in rows
-    ]
+    return [{"date": row.date, "avg_price": row.avg_price} for row in rows]

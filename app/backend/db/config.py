@@ -32,6 +32,7 @@ async def init_db():
 
 
 engine = create_async_engine(DATABASE_URL, echo=False)
+
 async_session_maker = sessionmaker(
     engine,
     class_=AsyncSession,
