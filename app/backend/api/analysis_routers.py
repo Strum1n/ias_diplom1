@@ -433,12 +433,14 @@ async def get_views_last_10_days(
 @analysis_router.get("/chat_assistant")
 async def assistant(query: str = Query(), session: AsyncSession = Depends(get_async_session)):
     try:
-        with open("assistant_prompt.txt", "r", encoding="utf-8") as file:
+        with open("app/backend/assistant_prompt.txt", "r", encoding="utf-8") as file:
             system_prompt = file.read()
     except FileNotFoundError:
         return {"explanation": "Ошибка конфигурации. Обратитесь к администратору."}
 
-    client = OpenAI(api_key=settings.OPEN_ROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
+    client = OpenAI(
+        api_key="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", base_url="https://openrouter.ai/api/v1"
+    )
     print("Промт прочитан")
     response = client.chat.completions.create(
         model="arcee-ai/trinity-large-preview:free",
