@@ -4,6 +4,7 @@ import re
 
 from fastapi import APIRouter, Body, HTTPException, Query
 import numpy as np
+from ollama import AsyncClient, Client, chat
 from openai import OpenAI
 from sqlmodel import TIMESTAMP, Date, Integer, and_, case, cast, lateral, literal, or_, select, func, text, true, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +20,7 @@ from app.backend.db.models.types import PropertyType, SettlementType
 
 
 analysis_router = APIRouter(prefix="/analysis", tags=["analysis"])
+
 INFRA_MAP = {
     "Школа": "school_distance",
     "Детский сад": "kindergarten_distance",
@@ -432,24 +434,21 @@ async def get_views_last_10_days(
 
 @analysis_router.get("/chat_assistant")
 async def assistant(query: str = Query(), session: AsyncSession = Depends(get_async_session)):
-    try:
-        with open("app/backend/assistant_prompt.txt", "r", encoding="utf-8") as file:
-            system_prompt = file.read()
-    except FileNotFoundError:
-        return {"explanation": "Ошибка конфигурации. Обратитесь к администратору."}
-
-    client = OpenAI(api_key=settings.OPEN_ROUTER_API_KEY, base_url="https://openrouter.ai/api/v1")
-    print("Промт прочитан")
-    response = client.chat.completions.create(
-        model="arcee-ai/trinity-large-preview:free",
+    with open("app/backend/assistant_prompt.txt", "r", encoding="utf-8") as file:
+        system_prompt = file.read()
+    client = AsyncClient(
+        host="https://ollama.com", headers={"Authorization": "Bearer " + "ec79c30ff77e4dce8053fb8df0e08a0c.cNPQz341SlrH4U7dmT0YME4u"}
+    )
+    response = await client.chat(
+        model="gpt-oss:120b",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": query},
         ],
     )
-    print(response.choices[0].message.content)
+    print(response.message.content)
     try:
-        data = json.loads(response.choices[0].message.content)
+        data = json.loads(response.message.content)
     except Exception as e:
         print(e)
         return {"explanation": "Простите, это вне моей компетенции. Попросите меня найти недвижимость."}
