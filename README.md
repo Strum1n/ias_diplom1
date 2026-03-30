@@ -1,1 +1,1 @@
-docker compose up
+Для запуска: docker compose up
