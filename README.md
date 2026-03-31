@@ -1,1 +1,2 @@
-Для запуска: docker compose up
+1. docker compose up
+2. http://localhost
