@@ -1,3 +1,5 @@
 1. docker compose up
 2. http://localhost
-Для теста: test@mail.ru 123456
+Для теста: 
+Email: test@mail.ru
+Пароль: 1
