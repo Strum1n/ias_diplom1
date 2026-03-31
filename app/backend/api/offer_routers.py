@@ -107,7 +107,7 @@ class OfferQueryParams(BaseModel):
     rooms_count: list[int] | None = None
     bathrooms_count: list[int] | None = None
     bedrooms_count: list[int] | None = None
-    transport_access_category: list[int] | None = None
+    transport_access_category: list[str] | None = None
     elderly_category: list[str] | None = None
     family_category: list[str] | None = None
     price_category: list[str] | None = None

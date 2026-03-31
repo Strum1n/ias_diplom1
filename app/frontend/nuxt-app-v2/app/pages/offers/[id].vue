@@ -226,7 +226,7 @@
                   <span class="text-sm sm:text-base">{{ offer.bathrooms_count }} {{ offer.bathroom_type?.name }}</span>
                 </div>
                 <div v-if="offer.has_balcony">
-                  <p class="text-sm sm:text-base">Балкон</p>
+                  <p class="text-sm sm:text-base">Балкон:</p>
                   <span class="text-sm sm:text-base">Есть</span>
                 </div>
                 <div v-if="offer.floor">
@@ -241,6 +241,10 @@
                   <p v-if="offer.is_new_house" class="text-sm sm:text-base">Отделка:</p>
                   <p v-else class="text-sm sm:text-base">Ремонт:</p>
                   <span class="text-sm sm:text-base">{{ offer.renovation_type?.name }}</span>
+                </div>
+                <div v-if="offer.has_furniture">
+                  <p class="text-sm sm:text-base">С мебелью:</p>
+                  <span class="text-sm sm:text-base">Да</span>
                 </div>
               </div>
 
