@@ -142,7 +142,7 @@
             :items="[
               {label: 'Город', value: 'город'},
               {label: 'Деревня', value: 'деревня'},
-              {label: 'Посёлок', value: 'поселок'},
+              {label: 'Поселок', value: 'поселок'},
               {label: 'Село', value: 'село'},
             ]"
             class="mb-2 mt-1 flex flex-wrap gap-2"

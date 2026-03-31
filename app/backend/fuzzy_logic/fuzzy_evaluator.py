@@ -28,15 +28,10 @@ class FuzzyEvaluator:
             "category": self.get_category(score, consequent),
         }
 
-    # -------------------------
-    # TRANSPORT
-    # -------------------------
-
     def create_transport_system(self):
         metro_distance = ctrl.Antecedent(np.arange(0, 1001, 1), "metro_distance")
         bus_distance = ctrl.Antecedent(np.arange(0, 1001, 1), "bus_distance")
 
-        # ВАЖНО: numpy array
         parking_availability = ctrl.Antecedent(np.array([0, 1]), "parking")
 
         transport_access = ctrl.Consequent(np.arange(0, 11, 0.1), "transport_access")
@@ -46,7 +41,6 @@ class FuzzyEvaluator:
             var["medium"] = fuzz.trimf(var.universe, [300, 500, 700])
             var["far"] = fuzz.trimf(var.universe, [600, 1000, 1000])
 
-        # Бинарные MF
         parking_availability["no"] = fuzz.trimf(parking_availability.universe, [0, 0, 1])
         parking_availability["yes"] = fuzz.trimf(parking_availability.universe, [0, 1, 1])
 
@@ -77,10 +71,6 @@ class FuzzyEvaluator:
 
         return ctrl.ControlSystemSimulation(ctrl.ControlSystem(rules))
 
-    # -------------------------
-    # ELDERLY
-    # -------------------------
-
     def create_elderly_system(self):
         hospital_distance = ctrl.Antecedent(np.arange(0, 3001, 1), "hospital_distance")
         pharmacy_distance = ctrl.Antecedent(np.arange(0, 1001, 1), "pharmacy_distance")
@@ -109,67 +99,216 @@ class FuzzyEvaluator:
         elderly_friendly["high"] = fuzz.trimf(elderly_friendly.universe, [5, 10, 10])
 
         rules = [
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["yes"], elderly_friendly["high"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["no"], elderly_friendly["high"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["high"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["no"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["yes"], elderly_friendly["high"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["no"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["yes"], elderly_friendly["high"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["no"], elderly_friendly["high"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["high"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["no"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["no"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["close"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["yes"], elderly_friendly["high"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["no"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["no"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["no"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["medium"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["no"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["yes"], elderly_friendly["medium"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["no"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["yes"], elderly_friendly["low"]),
-            ctrl.Rule(hospital_distance["far"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["yes"],
+                elderly_friendly["high"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["no"],
+                elderly_friendly["high"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["high"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["no"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["yes"],
+                elderly_friendly["high"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["no"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["yes"],
+                elderly_friendly["high"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["no"],
+                elderly_friendly["high"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["high"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["no"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["no"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["yes"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["close"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["yes"],
+                elderly_friendly["high"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["no"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["no"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["no"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["yes"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["no"], elderly_friendly["low"]
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["yes"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["medium"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["close"] & floor["low"] & elevator_availability["no"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["close"] & floor["medium"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["yes"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["close"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["yes"],
+                elderly_friendly["medium"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["medium"] & floor["low"] & elevator_availability["no"], elderly_friendly["low"]
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["medium"] & floor["medium"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["yes"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["medium"] & floor["high"] & elevator_availability["no"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["yes"], elderly_friendly["low"]
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["far"] & floor["low"] & elevator_availability["no"], elderly_friendly["low"]
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["yes"],
+                elderly_friendly["low"],
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["far"] & floor["medium"] & elevator_availability["no"], elderly_friendly["low"]
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["yes"], elderly_friendly["low"]
+            ),
+            ctrl.Rule(
+                hospital_distance["far"] & pharmacy_distance["far"] & floor["high"] & elevator_availability["no"], elderly_friendly["low"]
+            ),
         ]
 
         return ctrl.ControlSystemSimulation(ctrl.ControlSystem(rules))
-
-    # -------------------------
-    # FAMILY
-    # -------------------------
 
     def create_family_system(self):
         kindergarten_distance = ctrl.Antecedent(np.arange(0, 1501, 1), "kindergarten_distance")
@@ -199,69 +338,208 @@ class FuzzyEvaluator:
         family_friendly["high"] = fuzz.trimf(family_friendly.universe, [5, 10, 10])
 
         rules = [
-            # Правила для total_rooms = "few"
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["large"] & total_rooms["few"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["large"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["large"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["large"] & total_rooms["few"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["large"] & total_rooms["few"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["large"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["medium"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["large"] & total_rooms["few"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["large"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["large"] & total_rooms["few"], family_friendly["low"]),
-            # Правила для total_rooms = "many"
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["small"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["close"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["medium"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["close"] & school_distance["far"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["close"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["medium"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["small"] & total_rooms["many"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["medium"] & school_distance["far"] & total_area["large"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["small"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["medium"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["close"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["small"] & total_rooms["many"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["medium"] & total_area["large"] & total_rooms["many"], family_friendly["high"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["small"] & total_rooms["many"], family_friendly["low"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["medium"] & total_rooms["many"], family_friendly["medium"]),
-            ctrl.Rule(kindergarten_distance["far"] & school_distance["far"] & total_area["large"] & total_rooms["many"], family_friendly["medium"]),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["close"] & total_area["medium"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["close"] & total_area["large"] & total_rooms["few"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["medium"] & total_area["small"] & total_rooms["few"],
+                family_friendly["low"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["medium"] & total_area["large"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["far"] & total_area["large"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["close"] & total_area["small"] & total_rooms["few"],
+                family_friendly["low"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["close"] & total_area["medium"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["close"] & total_area["large"] & total_rooms["few"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["medium"] & total_area["small"] & total_rooms["few"],
+                family_friendly["low"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["medium"] & total_area["large"] & total_rooms["few"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["far"] & total_area["medium"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["far"] & total_area["large"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["close"] & total_area["small"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["close"] & total_area["medium"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["close"] & total_area["large"] & total_rooms["few"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["medium"] & total_area["small"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["medium"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["medium"] & total_area["large"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["far"] & total_area["small"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["far"] & total_area["medium"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["far"] & total_area["large"] & total_rooms["few"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["close"] & total_area["small"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["close"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["close"] & total_area["large"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["medium"] & total_area["small"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["medium"] & total_area["large"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["far"] & total_area["small"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["far"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["close"] & school_distance["far"] & total_area["large"] & total_rooms["many"], family_friendly["high"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["close"] & total_area["small"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["close"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["close"] & total_area["large"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["medium"] & total_area["small"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["medium"] & total_area["large"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["far"] & total_area["small"] & total_rooms["many"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["far"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["medium"] & school_distance["far"] & total_area["large"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["close"] & total_area["small"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["close"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["close"] & total_area["large"] & total_rooms["many"], family_friendly["high"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["medium"] & total_area["small"] & total_rooms["many"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["medium"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["medium"] & total_area["large"] & total_rooms["many"],
+                family_friendly["high"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["far"] & total_area["small"] & total_rooms["many"], family_friendly["low"]
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["far"] & total_area["medium"] & total_rooms["many"],
+                family_friendly["medium"],
+            ),
+            ctrl.Rule(
+                kindergarten_distance["far"] & school_distance["far"] & total_area["large"] & total_rooms["many"], family_friendly["medium"]
+            ),
         ]
 
         return ctrl.ControlSystemSimulation(ctrl.ControlSystem(rules))
-
-    # -------------------------
-    # PUBLIC API
-    # -------------------------
 
     def setup_fuzzy_systems(self):
         self.transport = self.create_transport_system()

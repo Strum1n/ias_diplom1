@@ -3,17 +3,11 @@
     <div class="filters-header">
       <p class="font-semibold text-lg">
         Фильтры
-        <UBadge
-          v-if="activeFiltersCount > 0"
-          color="info"
-          class="ml-2 font-bold"
-        >
+        <UBadge v-if="activeFiltersCount > 0" color="info" class="ml-2 font-bold">
           {{ activeFiltersCount }}
         </UBadge>
       </p>
-      <UButton @click="filtersReset" variant="ghost" color="info" size="xs">
-        Сбросить все
-      </UButton>
+      <UButton @click="filtersReset" variant="ghost" color="info" size="xs"> Сбросить все </UButton>
     </div>
 
     <div v-if="filterTypesError" class="error-filter-types">
@@ -27,12 +21,8 @@
           <UButton
             v-for="type in propertyTypeOptionsDynamic"
             :key="type.value"
-            :variant="
-              filters.property_type === type.value ? 'solid' : 'outline'
-            "
-            :color="
-              filters.property_type === type.value ? 'neutral' : 'neutral'
-            "
+            :variant="filters.property_type_id === type.value ? 'solid' : 'outline'"
+            :color="filters.property_type_id === type.value ? 'neutral' : 'neutral'"
             @click="setPropertyType(type.value)"
             size="sm"
           >
@@ -49,12 +39,8 @@
             <UButton
               v-for="option in flatTypeOptions"
               :key="option.value"
-              :variant="
-                filters.is_new_house === option.value ? 'solid' : 'outline'
-              "
-              :color="
-                filters.is_new_house === option.value ? 'primary' : 'neutral'
-              "
+              :variant="filters.is_new_house === option.value ? 'solid' : 'outline'"
+              :color="filters.is_new_house === option.value ? 'primary' : 'neutral'"
               @click="setPropertyTypeFilter(option.value)"
               size="sm"
             >
@@ -74,28 +60,12 @@
         <div class="filter-section">
           <h4>Цена</h4>
           <div class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_price"
-              type="number"
-              placeholder="Мин. цена"
-            />
-            <UInput
-              v-model.number="filters.max_price"
-              type="number"
-              placeholder="Макс. цена"
-            />
+            <UInput v-model.number="filters.min_price" type="number" placeholder="Мин. цена" />
+            <UInput v-model.number="filters.max_price" type="number" placeholder="Макс. цена" />
           </div>
           <div class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_price_per_square_meter"
-              type="number"
-              placeholder="Мин. цена за м²"
-            />
-            <UInput
-              v-model.number="filters.max_price_per_square_meter"
-              type="number"
-              placeholder="Макс. цена за м²"
-            />
+            <UInput v-model.number="filters.min_price_per_square_meter" type="number" placeholder="Мин. цена за м²" />
+            <UInput v-model.number="filters.max_price_per_square_meter" type="number" placeholder="Макс. цена за м²" />
           </div>
         </div>
 
@@ -103,56 +73,24 @@
         <div class="filter-section">
           <h4>Площадь (м²)</h4>
           <div class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_total_area"
-              type="number"
-              placeholder="Мин. общая"
-            />
-            <UInput
-              v-model.number="filters.max_total_area"
-              type="number"
-              placeholder="Макс. общая"
-            />
+            <UInput v-model.number="filters.min_total_area" type="number" placeholder="Мин. общая" />
+            <UInput v-model.number="filters.max_total_area" type="number" placeholder="Макс. общая" />
           </div>
           <div v-if="!isHouse" class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_living_area"
-              type="number"
-              placeholder="Мин. жилая"
-            />
-            <UInput
-              v-model.number="filters.max_living_area"
-              type="number"
-              placeholder="Макс. жилая"
-            />
+            <UInput v-model.number="filters.min_living_area" type="number" placeholder="Мин. жилая" />
+            <UInput v-model.number="filters.max_living_area" type="number" placeholder="Макс. жилая" />
           </div>
           <div v-if="!isHouse" class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_kitchen_area"
-              type="number"
-              placeholder="Мин. кухня"
-            />
-            <UInput
-              v-model.number="filters.max_kitchen_area"
-              type="number"
-              placeholder="Макс. кухня"
-            />
+            <UInput v-model.number="filters.min_kitchen_area" type="number" placeholder="Мин. кухня" />
+            <UInput v-model.number="filters.max_kitchen_area" type="number" placeholder="Макс. кухня" />
           </div>
         </div>
 
         <div v-if="!isFlat" class="filter-section">
           <h4>Площадь участка (сот.)</h4>
           <div class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_land_area"
-              type="number"
-              placeholder="Мин. площадь"
-            />
-            <UInput
-              v-model.number="filters.max_land_area"
-              type="number"
-              placeholder="Макс. площадь"
-            />
+            <UInput v-model.number="filters.min_land_area" type="number" placeholder="Мин. площадь" />
+            <UInput v-model.number="filters.max_land_area" type="number" placeholder="Макс. площадь" />
           </div>
         </div>
 
@@ -163,14 +101,8 @@
             <UButton
               v-for="bedroom in [1, 2, 3, 4, 5]"
               :key="bedroom"
-              :variant="
-                filters.bedrooms_count?.includes(bedroom) ? 'solid' : 'outline'
-              "
-              :color="
-                filters.bedrooms_count?.includes(bedroom)
-                  ? 'primary'
-                  : 'neutral'
-              "
+              :variant="filters.bedrooms_count?.includes(bedroom) ? 'solid' : 'outline'"
+              :color="filters.bedrooms_count?.includes(bedroom) ? 'primary' : 'neutral'"
               @click="toggleArrayFilter('bedrooms_count', bedroom)"
               size="sm"
             >
@@ -184,12 +116,8 @@
             <UButton
               v-for="room in [1, 2, 3, 4, 5, 0]"
               :key="room"
-              :variant="
-                filters.rooms_count?.includes(room) ? 'solid' : 'outline'
-              "
-              :color="
-                filters.rooms_count?.includes(room) ? 'primary' : 'neutral'
-              "
+              :variant="filters.rooms_count?.includes(room) ? 'solid' : 'outline'"
+              :color="filters.rooms_count?.includes(room) ? 'primary' : 'neutral'"
               @click="toggleArrayFilter('rooms_count', room)"
               size="sm"
             >
@@ -202,28 +130,12 @@
         <div class="filter-section">
           <h4>Этажи</h4>
           <div v-if="!isHouse" class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_floor"
-              type="number"
-              placeholder="Мин. этаж"
-            />
-            <UInput
-              v-model.number="filters.max_floor"
-              type="number"
-              placeholder="Макс. этаж"
-            />
+            <UInput v-model.number="filters.min_floor" type="number" placeholder="Мин. этаж" />
+            <UInput v-model.number="filters.max_floor" type="number" placeholder="Макс. этаж" />
           </div>
           <div class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_house_floors_count"
-              type="number"
-              placeholder="Мин. кол-во этажей"
-            />
-            <UInput
-              v-model.number="filters.max_house_floors_count"
-              type="number"
-              placeholder="Макс. кол-во этажей"
-            />
+            <UInput v-model.number="filters.min_house_floors_count" type="number" placeholder="Мин. кол-во этажей" />
+            <UInput v-model.number="filters.max_house_floors_count" type="number" placeholder="Макс. кол-во этажей" />
           </div>
         </div>
 
@@ -235,17 +147,9 @@
             <UButton
               v-for="option in filteredRenovationOptions"
               :key="option.value"
-              :variant="
-                filters.renovation_type.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.renovation_type.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="toggleArrayFilter('renovation_type', option.value)"
+              :variant="filters.renovation_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.renovation_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('renovation_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -259,17 +163,9 @@
             <UButton
               v-for="option in filteredBathroomOptions"
               :key="option.value"
-              :variant="
-                filters.bathroom_type.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.bathroom_type.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="toggleArrayFilter('bathroom_type', option.value)"
+              :variant="filters.bathroom_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.bathroom_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('bathroom_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -291,21 +187,13 @@
               @update:modelValue="v => setBooleanFilter('has_electricity', v)"
               label="Электричество"
             />
-            <UCheckbox
-              :model-value="filters.has_gas"
-              @update:modelValue="v => setBooleanFilter('has_gas', v)"
-              label="Газ"
-            />
+            <UCheckbox :model-value="filters.has_gas" @update:modelValue="v => setBooleanFilter('has_gas', v)" label="Газ" />
             <UCheckbox
               :model-value="filters.has_sewerage"
               @update:modelValue="v => setBooleanFilter('has_sewerage', v)"
               label="Канализация"
             />
-            <UCheckbox
-              :model-value="filters.has_heating"
-              @update:modelValue="v => setBooleanFilter('has_heating', v)"
-              label="Отопление"
-            />
+            <UCheckbox :model-value="filters.has_heating" @update:modelValue="v => setBooleanFilter('has_heating', v)" label="Отопление" />
           </div>
         </div>
 
@@ -319,50 +207,20 @@
                 @update:modelValue="v => setBooleanFilter('has_furniture', v)"
                 label="Мебель"
               />
-              <UCheckbox
-                :model-value="filters.has_elevator"
-                @update:modelValue="v => setBooleanFilter('has_elevator', v)"
-                label="Лифт"
-              />
-              <UCheckbox
-                :model-value="filters.has_balcony"
-                @update:modelValue="v => setBooleanFilter('has_balcony', v)"
-                label="Балкон"
-              />
+              <UCheckbox :model-value="filters.has_elevator" @update:modelValue="v => setBooleanFilter('has_elevator', v)" label="Лифт" />
+              <UCheckbox :model-value="filters.has_balcony" @update:modelValue="v => setBooleanFilter('has_balcony', v)" label="Балкон" />
               <UCheckbox
                 :model-value="filters.has_garbage_chute"
-                @update:modelValue="
-                  v => setBooleanFilter('has_garbage_chute', v)
-                "
+                @update:modelValue="v => setBooleanFilter('has_garbage_chute', v)"
                 label="Мусоропровод"
               />
             </template>
             <template v-else-if="!isFlat">
-              <UCheckbox
-                :model-value="filters.has_guard"
-                @update:modelValue="v => setBooleanFilter('has_guard', v)"
-                label="Охрана"
-              />
-              <UCheckbox
-                :model-value="filters.has_garage"
-                @update:modelValue="v => setBooleanFilter('has_garage', v)"
-                label="Гараж"
-              />
-              <UCheckbox
-                :model-value="filters.has_bathhouse"
-                @update:modelValue="v => setBooleanFilter('has_bathhouse', v)"
-                label="Баня"
-              />
-              <UCheckbox
-                :model-value="filters.has_pool"
-                @update:modelValue="v => setBooleanFilter('has_pool', v)"
-                label="Бассейн"
-              />
-              <UCheckbox
-                :model-value="filters.has_terrace"
-                @update:modelValue="v => setBooleanFilter('has_terrace', v)"
-                label="Терраса"
-              />
+              <UCheckbox :model-value="filters.has_guard" @update:modelValue="v => setBooleanFilter('has_guard', v)" label="Охрана" />
+              <UCheckbox :model-value="filters.has_garage" @update:modelValue="v => setBooleanFilter('has_garage', v)" label="Гараж" />
+              <UCheckbox :model-value="filters.has_bathhouse" @update:modelValue="v => setBooleanFilter('has_bathhouse', v)" label="Баня" />
+              <UCheckbox :model-value="filters.has_pool" @update:modelValue="v => setBooleanFilter('has_pool', v)" label="Бассейн" />
+              <UCheckbox :model-value="filters.has_terrace" @update:modelValue="v => setBooleanFilter('has_terrace', v)" label="Терраса" />
             </template>
           </div>
         </div>
@@ -374,17 +232,9 @@
             <UButton
               v-for="option in windowViewTypeOptions"
               :key="option.value"
-              :variant="
-                filters.window_view_type.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.window_view_type.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="toggleArrayFilter('window_view_type', option.value)"
+              :variant="filters.window_view_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.window_view_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('window_view_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -399,17 +249,9 @@
             <UButton
               v-for="option in parkingTypeOptions"
               :key="option.value"
-              :variant="
-                filters.parking_type.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.parking_type.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="toggleArrayFilter('parking_type', option.value)"
+              :variant="filters.parking_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.parking_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('parking_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -421,30 +263,12 @@
         <div class="filter-section">
           <h4>Дополнительно</h4>
           <div class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_house_built_year"
-              type="number"
-              placeholder="Год постройки от"
-            />
-            <UInput
-              v-model.number="filters.max_house_built_year"
-              type="number"
-              placeholder="Год постройки до"
-            />
+            <UInput v-model.number="filters.min_house_built_year" type="number" placeholder="Год постройки от" />
+            <UInput v-model.number="filters.max_house_built_year" type="number" placeholder="Год постройки до" />
           </div>
           <div class="button-group flex-col">
-            <UInput
-              v-model.number="filters.min_ceiling_height"
-              type="number"
-              placeholder="Высота потолков от"
-              step="0.1"
-            />
-            <UInput
-              v-model.number="filters.max_ceiling_height"
-              type="number"
-              placeholder="Высота потолков до"
-              step="0.1"
-            />
+            <UInput v-model.number="filters.min_ceiling_height" type="number" placeholder="Высота потолков от" step="0.1" />
+            <UInput v-model.number="filters.max_ceiling_height" type="number" placeholder="Высота потолков до" step="0.1" />
           </div>
         </div>
 
@@ -457,17 +281,9 @@
             <UButton
               v-for="option in filteredHouseMaterialOptions"
               :key="option.value"
-              :variant="
-                filters.house_material_type.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.house_material_type.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="toggleArrayFilter('house_material_type', option.value)"
+              :variant="filters.house_material_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.house_material_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('house_material_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -481,13 +297,9 @@
             <UButton
               v-for="option in landTypeOptions"
               :key="option.value"
-              :variant="
-                filters.land_type.includes(option.value) ? 'solid' : 'outline'
-              "
-              :color="
-                filters.land_type.includes(option.value) ? 'primary' : 'neutral'
-              "
-              @click="toggleArrayFilter('land_type', option.value)"
+              :variant="filters.land_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.land_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('land_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -502,17 +314,9 @@
             <UButton
               v-for="option in filteredHeatingOptions"
               :key="option.value"
-              :variant="
-                filters.heating_type.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.heating_type.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="toggleArrayFilter('heating_type', option.value)"
+              :variant="filters.heating_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.heating_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('heating_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -527,13 +331,9 @@
             <UButton
               v-for="option in gasTypeOptions"
               :key="option.value"
-              :variant="
-                filters.gas_type.includes(option.value) ? 'solid' : 'outline'
-              "
-              :color="
-                filters.gas_type.includes(option.value) ? 'primary' : 'neutral'
-              "
-              @click="toggleArrayFilter('gas_type', option.value)"
+              :variant="filters.gas_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.gas_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('gas_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -548,17 +348,9 @@
             <UButton
               v-for="option in sewerageTypeOptions"
               :key="option.value"
-              :variant="
-                filters.sewerage_type.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.sewerage_type.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="toggleArrayFilter('sewerage_type', option.value)"
+              :variant="filters.sewerage_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.sewerage_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('sewerage_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -573,17 +365,9 @@
             <UButton
               v-for="option in waterSupplyTypeOptions"
               :key="option.value"
-              :variant="
-                filters.water_supply_type.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.water_supply_type.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="toggleArrayFilter('water_supply_type', option.value)"
+              :variant="filters.water_supply_type_id.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.water_supply_type_id.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('water_supply_type_id', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -597,16 +381,8 @@
             <UButton
               v-for="option in priceCategoryOptions"
               :key="option.value"
-              :variant="
-                filters.price_category.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.price_category.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
+              :variant="filters.price_category.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.price_category.includes(option.value) ? 'primary' : 'neutral'"
               @click="toggleArrayFilter('price_category', option.value)"
               size="sm"
             >
@@ -621,12 +397,8 @@
             <UButton
               v-for="option in sourceOptions"
               :key="option.value"
-              :variant="
-                filters.source.includes(option.value) ? 'solid' : 'outline'
-              "
-              :color="
-                filters.source.includes(option.value) ? 'primary' : 'neutral'
-              "
+              :variant="filters.source.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.source.includes(option.value) ? 'primary' : 'neutral'"
               @click="toggleArrayFilter('source', option.value)"
               size="sm"
             >
@@ -642,16 +414,8 @@
             <UButton
               v-for="option in elderlyCategoryOptions"
               :key="option.value"
-              :variant="
-                filters.elderly_category.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.elderly_category.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
+              :variant="filters.elderly_category.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.elderly_category.includes(option.value) ? 'primary' : 'neutral'"
               @click="toggleArrayFilter('elderly_category', option.value)"
               size="sm"
             >
@@ -667,16 +431,8 @@
             <UButton
               v-for="option in familyCategoryOptions"
               :key="option.value"
-              :variant="
-                filters.family_category.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.family_category.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
+              :variant="filters.family_category.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.family_category.includes(option.value) ? 'primary' : 'neutral'"
               @click="toggleArrayFilter('family_category', option.value)"
               size="sm"
             >
@@ -692,19 +448,9 @@
             <UButton
               v-for="option in transportAccessCategoryOptions"
               :key="option.value"
-              :variant="
-                filters.transport_access_category.includes(option.value)
-                  ? 'solid'
-                  : 'outline'
-              "
-              :color="
-                filters.transport_access_category.includes(option.value)
-                  ? 'primary'
-                  : 'neutral'
-              "
-              @click="
-                toggleArrayFilter('transport_access_category', option.value)
-              "
+              :variant="filters.transport_access_category.includes(option.value) ? 'solid' : 'outline'"
+              :color="filters.transport_access_category.includes(option.value) ? 'primary' : 'neutral'"
+              @click="toggleArrayFilter('transport_access_category', option.value)"
               size="sm"
             >
               {{ option.label }}
@@ -716,13 +462,7 @@
 
     <!-- Кнопка применения -->
     <div class="filters-header">
-      <UButton
-        @click="handleFiltersApply"
-        color="primary"
-        class="w-full flex justify-center"
-      >
-        Искать объекты
-      </UButton>
+      <UButton @click="handleFiltersApply" color="primary" class="w-full flex justify-center"> Искать объекты </UButton>
     </div>
   </div>
 </template>
@@ -748,7 +488,7 @@ interface FilterTypes {
 }
 
 interface Filters {
-  property_type: number | null;
+  property_type_id: number | null;
   is_new_house: boolean | null;
   address_query: string | null;
   is_build_complete: boolean | null;
@@ -793,16 +533,16 @@ interface Filters {
   max_ceiling_height: number | null;
   min_land_area: number | null;
   max_land_area: number | null;
-  renovation_type: number[];
-  bathroom_type: number[];
-  window_view_type: number[];
-  parking_type: number[];
-  house_material_type: number[];
-  heating_type: number[];
-  gas_type: number[];
-  sewerage_type: number[];
-  water_supply_type: number[];
-  land_type: number[];
+  renovation_type_id: number[];
+  bathroom_type_id: number[];
+  window_view_type_id: number[];
+  parking_type_id: number[];
+  house_material_type_id: number[];
+  heating_type_id: number[];
+  gas_type_id: number[];
+  sewerage_type_id: number[];
+  water_supply_type_id: number[];
+  land_type_id: number[];
   seller_name: string | null;
   source: string[];
 }
@@ -858,7 +598,7 @@ const filterTypes = computed(
 
 // Инициализация фильтров
 const filters = reactive<Filters>({
-  property_type: null,
+  property_type_id: null,
   is_new_house: null,
   address_query: null,
   is_build_complete: null,
@@ -903,16 +643,16 @@ const filters = reactive<Filters>({
   max_ceiling_height: null,
   min_land_area: null,
   max_land_area: null,
-  renovation_type: [],
-  bathroom_type: [],
-  window_view_type: [],
-  parking_type: [],
-  house_material_type: [],
-  heating_type: [],
-  gas_type: [],
-  sewerage_type: [],
-  water_supply_type: [],
-  land_type: [],
+  renovation_type_id: [],
+  bathroom_type_id: [],
+  window_view_type_id: [],
+  parking_type_id: [],
+  house_material_type_id: [],
+  heating_type_id: [],
+  gas_type_id: [],
+  sewerage_type_id: [],
+  water_supply_type_id: [],
+  land_type_id: [],
   seller_name: null,
   source: [],
 });
@@ -955,10 +695,7 @@ const flatTypeOptions = [
 
 // Computed properties
 function makeOptions(key: keyof FilterTypes) {
-  return computed(
-    () =>
-      filterTypes.value[key]?.map(t => ({label: t.name, value: t.id})) || [],
-  );
+  return computed(() => filterTypes.value[key]?.map(t => ({label: t.name, value: t.id})) || []);
 }
 
 const propertyTypeOptionsDynamic = makeOptions("property_types");
@@ -974,24 +711,16 @@ const sewerageTypeOptions = makeOptions("sewerage_types");
 const waterSupplyTypeOptions = makeOptions("water_supply_types");
 const landTypeOptions = makeOptions("land_types");
 
-const currentPropertyType = computed(() =>
-  filterTypes.value.property_types?.find(t => t.id === filters.property_type),
-);
+const currentPropertyType = computed(() => filterTypes.value.property_types?.find(t => t.id === filters.property_type_id));
 
-const isFlat = computed(() =>
-  ["Квартира", "Апартаменты"].includes(currentPropertyType.value?.name || ""),
-);
-const isHouse = computed(() =>
-  ["Дом", "Таунхаус", "Коттедж"].includes(
-    currentPropertyType.value?.name || "",
-  ),
-);
+const isFlat = computed(() => ["Квартира", "Апартаменты"].includes(currentPropertyType.value?.name || ""));
+const isHouse = computed(() => ["Дом", "Таунхаус", "Коттедж"].includes(currentPropertyType.value?.name || ""));
 
 // Исключаем address_query из подсчета активных фильтров
 const activeFiltersCount = computed(() =>
   Object.entries(filters).reduce((count, [key, value]) => {
     // Исключаем системные поля
-    if (key === "property_type" || key === "address_query") return count;
+    if (key === "property_type_id" || key === "address_query") return count;
 
     // Для массивов
     if (Array.isArray(value)) {
@@ -1026,17 +755,10 @@ const filteredBathroomOptions = computed(() =>
 const filteredRenovationOptions = computed(() =>
   renovationTypeOptions.value.filter(option => {
     if (filters.is_new_house) {
-      return ![
-        "Без отделки",
-        "Косметический",
-        "Дизайнерксий",
-        "Евроремонт",
-      ].includes(option.label);
+      return !["Без отделки", "Косметический", "Дизайнерксий", "Евроремонт"].includes(option.label);
     }
     if (filters.is_new_house === false) {
-      return !["Без отделки", "Предчистовая", "Чистовая с мебелью"].includes(
-        option.label,
-      );
+      return !["Без отделки", "Предчистовая", "Чистовая с мебелью"].includes(option.label);
     }
     return true;
   }),
@@ -1045,21 +767,9 @@ const filteredRenovationOptions = computed(() =>
 const filteredHouseMaterialOptions = computed(() =>
   houseMaterialTypeOptions.value.filter(option => {
     if (isFlat.value) {
-      return ![
-        "Щитовой",
-        "Каркасный",
-        "Газобетонный блок",
-        "Газосиликатный блок",
-        "Пенобетонный блок",
-      ].includes(option.label);
+      return !["Щитовой", "Каркасный", "Газобетонный блок", "Газосиликатный блок", "Пенобетонный блок"].includes(option.label);
     }
-    if (isHouse.value)
-      return ![
-        "Панельный",
-        "Блочный",
-        "Сталинский",
-        "Кирпично   монолитный",
-      ].includes(option.label);
+    if (isHouse.value) return !["Панельный", "Блочный", "Сталинский", "Кирпично   монолитный"].includes(option.label);
     return true;
   }),
 );
@@ -1080,12 +790,7 @@ const filteredHeatingOptions = computed(() =>
       ].includes(option.label);
     }
     if (isHouse.value) {
-      return ![
-        "Центральное",
-        "Автономное",
-        "Автономная котельная",
-        "Индивидуальный тепловой пункт",
-      ].includes(option.label);
+      return !["Центральное", "Автономное", "Автономная котельная", "Индивидуальный тепловой пункт"].includes(option.label);
     }
     return true;
   }),
@@ -1093,12 +798,12 @@ const filteredHeatingOptions = computed(() =>
 
 // Методы для работы с фильтрами
 function setPropertyType(typeId: number) {
-  filters.property_type = typeId;
+  filters.property_type_id = typeId;
   console.log("МЕНЯЕМ ТИП НЕДВИЖИМОСТИ ФИЛЬТРЫ:", filters);
   console.log("filters:", filters);
   Object.keys(filters).forEach(key => {
-    if (key === "property_type") {
-      filters[key] = filters.property_type;
+    if (key === "property_type_id") {
+      filters[key] = filters.property_type_id;
     } else if (key === "address_query") {
       filters[key] = filters.address_query;
     } else if (Array.isArray(filters[key])) {
@@ -1107,10 +812,7 @@ function setPropertyType(typeId: number) {
       filters[key] = null;
     }
   });
-  console.log(
-    "Устанавливаем проперти тайп в фильтерссайдбаре:",
-    filters.property_type,
-  );
+  console.log("Устанавливаем проперти тайп в фильтерссайдбаре:", filters.property_type_id);
   emit("filtersApply", filters);
 }
 
@@ -1120,7 +822,7 @@ function handleFiltersApply() {
 
 function filtersReset() {
   console.log("ФИЛЬТЕРС РЕСЕТ");
-  const currentPropertyType = filters.property_type;
+  const currentPropertyType = filters.property_type_id;
   const currentAddress = filters.address_query;
 
   Object.keys(filters).forEach(key => {

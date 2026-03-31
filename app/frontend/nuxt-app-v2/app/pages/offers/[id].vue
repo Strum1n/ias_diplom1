@@ -847,7 +847,7 @@ onMounted(() => {
   @apply top-38;
 }
 .map-container {
-  @apply w-full h-110;
+  @apply w-full h-110 mb-18;
 }
 :deep(.map-container canvas) {
   @apply rounded-xl!;

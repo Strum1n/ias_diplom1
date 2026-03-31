@@ -102,8 +102,9 @@ class AddressQueryParams(BaseModel):
     district_name: str | None = None
     microdistrict_name: str | None = None
     street_name: str | None = None
-    settlement_type_names: str | None = None
+    settlement_type_names: list[str] | None = None
     is_new_house: bool | None = None
+    group_by: Literal["region", "municipality", "settlement", "district", "microdistrict", "street"] | None = None
 
 
 class ViewHistoryItem(BaseModel):
@@ -143,8 +144,7 @@ def build_address_filters(params: AddressQueryParams):
 
 @analysis_router.get("/group-stats", response_model=list[GroupStatsItem])
 async def get_grouped_stats(
-    params: AddressQueryParams = Depends(),
-    group_by: Literal["region", "municipality", "settlement", "district", "microdistrict", "street"] = Query(),
+    params: AddressQueryParams = Query(),
     session: AsyncSession = Depends(get_async_session),
 ):
     group_map = {
@@ -156,10 +156,10 @@ async def get_grouped_stats(
         "street": Street.short_name,
     }
 
-    if group_by not in group_map:
+    if params.group_by not in group_map:
         raise HTTPException(400, "Invalid group_by")
 
-    group_col = group_map[group_by]
+    group_col = group_map[params.group_by]
 
     filters = build_address_filters(params)
 
@@ -217,7 +217,7 @@ async def get_grouped_stats(
         "street": Street.id,
     }
 
-    stmt = stmt.where(null_guard[group_by].isnot(None))
+    stmt = stmt.where(null_guard[params.group_by].isnot(None))
 
     if filters:
         stmt = stmt.where(and_(*filters))
@@ -275,7 +275,7 @@ async def get_grouped_stats(
 
 @analysis_router.get("/stats", response_model=StatsResponse)
 async def get_offers_by_location(
-    params: AddressQueryParams = Depends(),
+    params: AddressQueryParams = Query(),
     session: AsyncSession = Depends(get_async_session),
 ):
     filters = build_address_filters(params)

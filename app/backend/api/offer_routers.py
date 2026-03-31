@@ -108,9 +108,9 @@ class OfferQueryParams(BaseModel):
     bathrooms_count: list[int] | None = None
     bedrooms_count: list[int] | None = None
     transport_access_category: list[int] | None = None
-    elderly_category: list[int] | None = None
-    family_category: list[int] | None = None
-    price_category: list[int] | None = None
+    elderly_category: list[str] | None = None
+    family_category: list[str] | None = None
+    price_category: list[str] | None = None
     offer_type_id: list[int] | None = None
     property_type_id: list[int] | None = None
     bathroom_type_id: list[int] | None = None
@@ -124,7 +124,7 @@ class OfferQueryParams(BaseModel):
     water_supply_type_id: list[int] | None = None
     seller_id: list[int] | None = None
     land_type_id: list[int] | None = None
-    source: list[int] | None = None
+    source: list[str] | None = None
 
     short: bool | None = None
 
@@ -237,7 +237,6 @@ async def export_offers_excel(
     if filters:
         filtered_count_stmt = filtered_count_stmt.where(and_(*filters))
 
-    # --- Расстояния до ближайших объектов инфраструктуры по типам ---
     infra_types = await session.exec(select(InfrastructureType).order_by(InfrastructureType.id))
     infra_types = infra_types.all()
 
@@ -254,7 +253,6 @@ async def export_offers_excel(
         )
         infra_distance_headers.append(f"Расстояние до {infra_type.name} (м)")
 
-    # --- Построение SELECT без list полей ---
     stmt = (
         select(
             Offer.id,
