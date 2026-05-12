@@ -86,12 +86,12 @@
               />
             </button>
             <div class="w-full sm:w-65 relative mb-4 sm:mb-0 h-48 sm:h-auto">
-  <!-- Плейсхолдер (всегда на заднем плане) -->
+ 
   <div class="no-image w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
     <UIcon name="i-heroicons-photo" class="text-gray-400 text-2xl" />
   </div>
   
-  <!-- Картинка поверх плейсхолдера -->
+ 
   <img 
     v-if="offer.images_urls?.length" 
     :src="offer.images_urls[0]" 
