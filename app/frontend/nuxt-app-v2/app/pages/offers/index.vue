@@ -86,14 +86,28 @@
               />
             </button>
             <div class="w-full sm:w-65 relative mb-4 sm:mb-0 h-48 sm:h-auto">
-              <img v-if="offer.images_urls?.length" :src="offer.images_urls[0]" class="object-cover w-full h-full rounded-lg" />
-              <div v-else class="no-image w-full h-full">
-                <UIcon name="i-heroicons-photo" class="text-gray-400 text-2xl" />
-              </div>
-              <UBadge v-if="offer.is_new_house == true" color="neutral" variant="solid" class="absolute top-2 left-2 text-xs">
-                Новостройка
-              </UBadge>
-            </div>
+  <!-- Плейсхолдер (всегда на заднем плане) -->
+  <div class="no-image w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
+    <UIcon name="i-heroicons-photo" class="text-gray-400 text-2xl" />
+  </div>
+  
+  <!-- Картинка поверх плейсхолдера -->
+  <img 
+    v-if="offer.images_urls?.length" 
+    :src="offer.images_urls[0]" 
+    @error="(e) => e.target.style.display = 'none'"
+    class="absolute inset-0 object-cover w-full h-full rounded-lg" 
+  />
+  
+  <UBadge 
+    v-if="offer.is_new_house == true" 
+    color="neutral" 
+    variant="solid" 
+    class="absolute top-2 left-2 z-10 text-xs"
+  >
+    Новостройка
+  </UBadge>
+</div>
             <div class="offer-details w-full md:px-6!">
               <div class="offer-header flex-col sm:flex-row">
                 <div class="offer-title-section w-full sm:flex-1">
