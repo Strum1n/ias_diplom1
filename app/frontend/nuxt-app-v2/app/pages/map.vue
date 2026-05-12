@@ -57,10 +57,6 @@
 </template>
 
 <script setup lang="ts">
-import type {OfferResponseShort, AddressResponseShort} from "~/types/api";
-
-type Address = AddressResponseShort;
-type Offer = OfferResponseShort;
 
 interface Filters {
   [key: string]: any;
@@ -68,10 +64,8 @@ interface Filters {
 
 const {$api} = useNuxtApp();
 
-// Состояние для показа/скрытия фильтров
 const showFilters = ref(false);
 
-// Функция для переключения видимости фильтров
 const toggleFiltersSidebar = () => {
   showFilters.value = !showFilters.value;
 };
@@ -130,7 +124,6 @@ const handleFiltersApply = async (filtersData: Filters) => {
     }),
   };
 
-  // Закрываем фильтры после применения на мобильных
   if (window.innerWidth < 768) {
     showFilters.value = false;
   }

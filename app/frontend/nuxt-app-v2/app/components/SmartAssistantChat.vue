@@ -151,7 +151,6 @@ async function send() {
   input.value = "";
   loading.value = true;
 
-  // сообщение пользователя
   messages.value.push({
     role: "user",
     content: userMessage,

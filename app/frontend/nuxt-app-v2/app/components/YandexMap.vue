@@ -196,12 +196,10 @@ const {$api} = useNuxtApp();
 const favoriteIds = ref<Set<number>>(new Set(props.favoriteOffers || []));
 
 function toggleFullscreen() {
-  // The document.fullscreenElement returns the Element that is currently being presented in fullscreen mode in this document, or null if fullscreen mode is not currently in use
+
   if (isFullscreen.value) {
-    // The document.exitFullscreen() requests that the element on this document which is currently being presented in fullscreen mode be taken out of fullscreen mode
     document.exitFullscreen();
   } else {
-    // The element.requestFullscreen() method issues an asynchronous request to make the element be displayed in fullscreen mode
     map.value!.container.requestFullscreen();
   }
 }
@@ -220,14 +218,12 @@ async function toggleFavorite(offer: Offer) {
     if (wasFavorite) {
       await $api(`offers/favorites/${offerId}`, {method: "DELETE"});
 
-      // Обновляем локальное состояние
       const newSet = new Set(favoriteIds.value);
       newSet.delete(offerId);
       favoriteIds.value = newSet;
     } else {
       await $api(`offers/favorites/${offerId}`, {method: "POST"});
 
-      // Обновляем локальное состояние
       const newSet = new Set(favoriteIds.value);
       newSet.add(offerId);
       favoriteIds.value = newSet;

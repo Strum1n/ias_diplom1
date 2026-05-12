@@ -547,7 +547,6 @@ interface Filters {
   source: string[];
 }
 
-// Emits
 const emit = defineEmits<{
   filtersApply: [filters: Filters];
   filtersReset: [];
@@ -596,7 +595,6 @@ const filterTypes = computed(
     },
 );
 
-// Инициализация фильтров
 const filters = reactive<Filters>({
   property_type_id: null,
   is_new_house: null,
@@ -657,7 +655,6 @@ const filters = reactive<Filters>({
   source: [],
 });
 
-// Опции фильтров
 const priceCategoryOptions = [
   {label: "Выше рынка", value: "expensive"},
   {label: "Рыночная цена", value: "normal"},
@@ -693,7 +690,6 @@ const flatTypeOptions = [
   {label: "Новостройка", value: true},
 ];
 
-// Computed properties
 function makeOptions(key: keyof FilterTypes) {
   return computed(() => filterTypes.value[key]?.map(t => ({label: t.name, value: t.id})) || []);
 }
@@ -716,18 +712,15 @@ const currentPropertyType = computed(() => filterTypes.value.property_types?.fin
 const isFlat = computed(() => ["Квартира", "Апартаменты"].includes(currentPropertyType.value?.name || ""));
 const isHouse = computed(() => ["Дом", "Таунхаус", "Коттедж"].includes(currentPropertyType.value?.name || ""));
 
-// Исключаем address_query из подсчета активных фильтров
 const activeFiltersCount = computed(() =>
   Object.entries(filters).reduce((count, [key, value]) => {
-    // Исключаем системные поля
+
     if (key === "property_type_id" || key === "address_query") return count;
 
-    // Для массивов
     if (Array.isArray(value)) {
       return count + (value.length > 0 ? 1 : 0);
     }
 
-    // Для булевых значений учитываем только true
     if (key === "is_new_house") {
       return count + (value !== null ? 1 : 0);
     }
@@ -735,7 +728,6 @@ const activeFiltersCount = computed(() =>
       return count + (value !== false ? 1 : 0);
     }
 
-    // Для чисел и строк
     return count + (value != null && value !== "" ? 1 : 0);
   }, 0),
 );
@@ -796,7 +788,6 @@ const filteredHeatingOptions = computed(() =>
   }),
 );
 
-// Методы для работы с фильтрами
 function setPropertyType(typeId: number) {
   filters.property_type_id = typeId;
   console.log("МЕНЯЕМ ТИП НЕДВИЖИМОСТИ ФИЛЬТРЫ:", filters);

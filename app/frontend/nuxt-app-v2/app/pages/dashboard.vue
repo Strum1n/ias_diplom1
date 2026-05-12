@@ -648,7 +648,7 @@ async function addComparison() {
     filters: filtersSnapshot,
     priceHistory,
     viewsHistory,
-    settlementsData: settlements, // ← исправлено
+    settlementsData: settlements,
     stats: one_stats,
   });
 
@@ -1517,7 +1517,7 @@ const chartOption = computed(() => {
       label: appliedFiltersLabel.value,
     },
     ...comparisons.value.map(c => ({
-      settlements: c.settlementsData ?? [], // ← исправлено
+      settlements: c.settlementsData ?? [], 
       filters: {...c.filters, chartType: appliedFilters.chartType},
       label: c.label,
     })),

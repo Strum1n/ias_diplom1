@@ -74,7 +74,6 @@ import type {FormError} from "@nuxt/ui";
 const {login, loading, error} = useAuth();
 const route = useRoute();
 
-// Показываем сообщение об успешной регистрации
 const registrationSuccess = computed(() => route.query.registered === "true");
 
 const form = reactive({

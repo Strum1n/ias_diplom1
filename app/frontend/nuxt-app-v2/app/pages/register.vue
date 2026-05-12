@@ -64,10 +64,10 @@ const form = reactive({
   email: "",
   password: "",
   confirmPassword: "",
-  login: "", // имя пользователя
+  login: "", 
   name: "",
-  surname: "", // полное имя
-  role: "Стандарт", // роль, можно будет динамически обновить
+  surname: "", 
+  role: "Стандарт", 
 });
 
 const roleOptions = ref<SelectItem[]>(["Стандарт", "Премиум"]);
@@ -75,7 +75,7 @@ const roleOptions = ref<SelectItem[]>(["Стандарт", "Премиум"]);
 const router = useRouter();
 const runtimeConfig = useRuntimeConfig();
 const handleSubmit = async () => {
-  // Проверяем, совпадают ли пароли
+
   if (form.password.length < 6) {
     error.value = "Пароль должен быть не менее 6 символов.";
     return;
@@ -89,26 +89,23 @@ const handleSubmit = async () => {
   error.value = null;
 
   try {
-    // Отправляем запрос на сервер с правильными данными
     const response = await $fetch(`${runtimeConfig.public.apiBase}/auth/register`, {
       method: "POST",
       body: {
-        login: form.login, // Имя пользователя
-        email: form.email, // Email
-        password: form.password, // Пароль
-        name: form.name, // Полное имя
+        login: form.login, 
+        email: form.email, 
+        password: form.password, 
+        name: form.name, 
         surname: form.surname,
-        role: form.role, // Роль
+        role: form.role, 
       },
     });
 
-    // Если регистрация успешна, перенаправляем на страницу входа
     if (response.message === "User registered successfully") {
       router.push({path: "/login", query: {registered: "true"}});
     }
   } catch (err: any) {
     console.error(err);
-    // Если сервер вернул JSON с detail
     if (err?.data?.detail === "Username already registered") {
       error.value = "Email уже зарегистрирован";
     } else {
